@@ -1,4 +1,4 @@
-# Logistics Business Network GTT Standard Apps
+# Standard Apps for SAP Logistics Business Network, global track and trace option
 
 ## Description
 
