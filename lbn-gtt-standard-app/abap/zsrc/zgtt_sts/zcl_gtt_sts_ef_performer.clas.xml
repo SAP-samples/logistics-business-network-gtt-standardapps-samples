@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZCL_GTT_STS_EF_PERFORMER</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Extractor Function Performer Class</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_EF_PERFORMER</CLSNAME>
+     <CMPNAME>CHECK_RELEVANCE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Check Relevance</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_EF_PERFORMER</CLSNAME>
+     <CMPNAME>GET_CONTROL_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Control Data</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_EF_PERFORMER</CLSNAME>
+     <CMPNAME>GET_PLANNED_EVENTS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Planned Events</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_EF_PERFORMER</CLSNAME>
+     <CMPNAME>GET_TRACK_ID_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Tracking ID Data</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_EF_PERFORMER</CLSNAME>
+     <CMPNAME>TS_DEFINITION</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>TS_DEFINITION</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

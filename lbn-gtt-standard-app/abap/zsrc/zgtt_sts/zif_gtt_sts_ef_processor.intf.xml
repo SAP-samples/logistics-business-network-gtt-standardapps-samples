@@ -1,0 +1,46 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_INTF" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOINTERF>
+    <CLSNAME>ZIF_GTT_STS_EF_PROCESSOR</CLSNAME>
+    <LANGU>E</LANGU>
+    <EXPOSURE>2</EXPOSURE>
+    <STATE>1</STATE>
+    <UNICODE>X</UNICODE>
+   </VSEOINTERF>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_STS_EF_PROCESSOR</CLSNAME>
+     <CMPNAME>CHECK_APP_OBJECTS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Check Application Objects</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_STS_EF_PROCESSOR</CLSNAME>
+     <CMPNAME>CHECK_RELEVANCE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Check Relevance</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_STS_EF_PROCESSOR</CLSNAME>
+     <CMPNAME>GET_CONTROL_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Control Data</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_STS_EF_PROCESSOR</CLSNAME>
+     <CMPNAME>GET_PLANNED_EVENTS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Planned Events</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_STS_EF_PROCESSOR</CLSNAME>
+     <CMPNAME>GET_TRACK_ID_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Tracking ID Data</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

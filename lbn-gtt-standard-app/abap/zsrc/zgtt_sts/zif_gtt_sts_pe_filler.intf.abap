@@ -1,0 +1,14 @@
+interface ZIF_GTT_STS_PE_FILLER
+  public .
+
+
+  methods GET_PLANNED_EVENTS
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_STS_EF_TYPES=>TT_EXPEVENTDATA
+      !CT_MEASRMNTDATA type ZIF_GTT_STS_EF_TYPES=>TT_MEASRMNTDATA
+      !CT_INFODATA type ZIF_GTT_STS_EF_TYPES=>TT_INFODATA
+    raising
+      CX_UDM_MESSAGE .
+endinterface.
