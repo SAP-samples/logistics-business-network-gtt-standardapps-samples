@@ -41,4 +41,9 @@ INTERFACE zif_gtt_sts_ef_constants
     END OF cs_change_mode .
   CONSTANTS cv_aot TYPE string VALUE 'AOT' ##NO_TEXT.
   CONSTANTS cv_max_end_date TYPE /saptrx/tid_end_date_tsloc VALUE '099991231000000' ##NO_TEXT.
+  CONSTANTS:
+    BEGIN OF cs_version,
+      gtt10 TYPE /saptrx/em_version VALUE 'GTT1.0',
+      gtt20 TYPE /saptrx/em_version VALUE 'GTT2.0',
+    END OF cs_version .
 ENDINTERFACE.

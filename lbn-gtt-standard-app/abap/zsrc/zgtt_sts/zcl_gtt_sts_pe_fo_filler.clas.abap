@@ -18,6 +18,8 @@ CLASS ZCL_GTT_STS_PE_FO_FILLER IMPLEMENTATION.
 
   METHOD zif_gtt_sts_pe_filler~get_planned_events.
 
+    DATA lv_counter TYPE /saptrx/seq_num.
+
     get_data_for_planned_event(
       EXPORTING
         is_app_objects = is_app_objects
@@ -27,7 +29,7 @@ CLASS ZCL_GTT_STS_PE_FO_FILLER IMPLEMENTATION.
         et_loc_address = DATA(lt_loc_address)
         et_stop_points = DATA(lt_stop_points) ).
 
-    load_start(
+    shp_arrival(
       EXPORTING
         iv_tor_id       = lv_tor_id
         it_stop         = lt_stop
@@ -37,7 +39,7 @@ CLASS ZCL_GTT_STS_PE_FO_FILLER IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
-    load_end(
+    decoupling(
       EXPORTING
         iv_tor_id       = lv_tor_id
         it_stop         = lt_stop
@@ -67,7 +69,7 @@ CLASS ZCL_GTT_STS_PE_FO_FILLER IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
-    shp_arrival(
+    pod(
       EXPORTING
         iv_tor_id       = lv_tor_id
         it_stop         = lt_stop
@@ -77,7 +79,17 @@ CLASS ZCL_GTT_STS_PE_FO_FILLER IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
-    shp_departure(
+    load_start(
+      EXPORTING
+        iv_tor_id       = lv_tor_id
+        it_stop         = lt_stop
+        it_loc_addr     = lt_loc_address
+        it_stop_points  = lt_stop_points
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
+    load_end(
       EXPORTING
         iv_tor_id       = lv_tor_id
         it_stop         = lt_stop
@@ -97,7 +109,7 @@ CLASS ZCL_GTT_STS_PE_FO_FILLER IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
-    decoupling(
+    shp_departure(
       EXPORTING
         iv_tor_id       = lv_tor_id
         it_stop         = lt_stop
@@ -107,16 +119,22 @@ CLASS ZCL_GTT_STS_PE_FO_FILLER IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
-    pod(
-      EXPORTING
-        iv_tor_id       = lv_tor_id
-        it_stop         = lt_stop
-        it_loc_addr     = lt_loc_address
-        it_stop_points  = lt_stop_points
-        is_app_objects  = is_app_objects
-      CHANGING
-        ct_expeventdata = ct_expeventdata ).
+    SORT ct_expeventdata BY locid2 ASCENDING.
 
+    lv_counter = 1.
+    LOOP AT ct_expeventdata ASSIGNING FIELD-SYMBOL(<ls_expeventdata>).
+      <ls_expeventdata>-milestonenum = lv_counter.
+      lv_counter += 1.
+    ENDLOOP.
+*    LOOP AT ct_expeventdata ASSIGNING FIELD-SYMBOL(<ls_expeventdata>)
+*      GROUP BY <ls_expeventdata>-appobjid ASSIGNING FIELD-SYMBOL(<lt_expeventdata_group>).
+*
+*      lv_counter = 1.
+*      LOOP AT GROUP <lt_expeventdata_group> ASSIGNING FIELD-SYMBOL(<ls_expeventdata_group>).
+*        <ls_expeventdata_group>-milestonenum = lv_counter.
+*        lv_counter += 1.
+*      ENDLOOP.
+*    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

@@ -64,6 +64,8 @@ private section.
   data MT_AOTYPE type TT_AOTYPE .
   data MT_IDOC_DATA type TT_IDOC_DATA .
   data MV_TZONE type TIMEZONE  ##NEEDED.
+  constants CV_MSG_TYPE_GTTMSG type EDI_MESTYP value 'GTTMSG' ##NO_TEXT.
+  constants CV_IDOC_TYPE_GTTMSG01 type EDI_IDOCTP value 'GTTMSG' ##NO_TEXT.
 
   methods SEND_IDOC_EHPOST01
     importing
@@ -99,6 +101,11 @@ private section.
       !IV_TEXTID type SOTR_CONC default ''
     raising
       CX_UDM_MESSAGE .
+  methods SEND_IDOC_GTTMSG01
+    importing
+      !IV_APPSYS type LOGSYS
+      !IS_TRXSERV type /SAPTRX/TRXSERV
+      !IT_APPOBJ_DTABS type TRXAS_APPOBJ_CTABS .
 ENDCLASS.
 
 
@@ -121,8 +128,10 @@ CLASS ZCL_GTT_STS_SEND_DELETION_IDOC IMPLEMENTATION.
 
     SELECT SINGLE /saptrx/trxserv~trx_server_id
                   /saptrx/trxserv~trx_server
+                  /saptrx/trxserv~em_version
       INTO ( cs_idoc_data-trxserv-trx_server_id,
-             cs_idoc_data-trxserv-trx_server )
+             cs_idoc_data-trxserv-trx_server,
+             cs_idoc_data-trxserv-em_version )
       FROM /saptrx/trxserv
       WHERE trx_server_id = is_aotype-server_name.
 
@@ -267,10 +276,18 @@ CLASS ZCL_GTT_STS_SEND_DELETION_IDOC IMPLEMENTATION.
   METHOD send_idoc_data.
 
     LOOP AT mt_idoc_data ASSIGNING FIELD-SYMBOL(<ls_idoc_data>).
-      send_idoc_ehpost01(
-          iv_appsys       = <ls_idoc_data>-appsys
-          is_trxserv      = <ls_idoc_data>-trxserv
-          it_appobj_dtabs = <ls_idoc_data>-appobj_dtabs ).
+      CASE <ls_idoc_data>-trxserv-em_version.
+        WHEN zif_gtt_sts_ef_constants=>cs_version-gtt10.
+          send_idoc_ehpost01(
+              iv_appsys       = <ls_idoc_data>-appsys
+              is_trxserv      = <ls_idoc_data>-trxserv
+              it_appobj_dtabs = <ls_idoc_data>-appobj_dtabs ).
+        WHEN zif_gtt_sts_ef_constants=>cs_version-gtt20.
+          send_idoc_gttmsg01(
+              iv_appsys       = <ls_idoc_data>-appsys
+              is_trxserv      = <ls_idoc_data>-trxserv
+              it_appobj_dtabs = <ls_idoc_data>-appobj_dtabs ).
+      ENDCASE.
     ENDLOOP.
 
   ENDMETHOD.
@@ -338,6 +355,56 @@ CLASS ZCL_GTT_STS_SEND_DELETION_IDOC IMPLEMENTATION.
         m_msgv2 = sy-msgv2
         m_msgv3 = sy-msgv3
         m_msgv4 = sy-msgv4.
+
+  ENDMETHOD.
+
+
+  METHOD send_idoc_gttmsg01.
+
+    DATA:
+      ls_e1ehpao                    TYPE e1ehpao,
+      ls_e1ehptid                   TYPE e1ehptid,
+      ls_master_idoc_control        TYPE edidc,
+      lt_master_idoc_data           TYPE edidd_tt,
+      ls_master_idoc_data           TYPE edidd,
+      lt_communication_idoc_control TYPE edidc_tt,
+      lr_appobj_dtabs               TYPE REF TO trxas_appobj_ctab_wa.
+
+    ls_master_idoc_control-rcvprt = cv_partner_type.
+    ls_master_idoc_control-rcvprn = is_trxserv-trx_server.
+    ls_master_idoc_control-mestyp = cv_msg_type_gttmsg.
+    ls_master_idoc_control-idoctp = cv_idoc_type_gttmsg01.
+
+    LOOP AT it_appobj_dtabs REFERENCE INTO lr_appobj_dtabs WHERE trxservername = is_trxserv-trx_server_id.
+      CLEAR ls_e1ehpao.
+
+      ls_master_idoc_data-mandt   = sy-mandt.
+      ls_master_idoc_data-segnam  = cv_seg_e1ehpao.
+      ls_e1ehpao-appsys           = iv_appsys.
+      ls_e1ehpao-appobjtype       = lr_appobj_dtabs->appobjtype.
+      ls_e1ehpao-appobjid         = lr_appobj_dtabs->appobjid.
+      ls_e1ehpao-update_indicator = lr_appobj_dtabs->update_indicator.
+      ls_master_idoc_data-sdata   = ls_e1ehpao.
+      INSERT ls_master_idoc_data INTO TABLE lt_master_idoc_data.
+
+      " Dummy entry for TID is needed, since this is mandatory segment in the IDOC
+      CLEAR ls_e1ehptid.
+      ls_master_idoc_data-segnam = cv_seg_e1ehptid.
+      ls_master_idoc_data-sdata  = ls_e1ehptid.
+      INSERT ls_master_idoc_data INTO TABLE lt_master_idoc_data.
+
+    ENDLOOP.
+
+    IF lt_master_idoc_data IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    CALL FUNCTION 'MASTER_IDOC_DISTRIBUTE'
+      EXPORTING
+        master_idoc_control        = ls_master_idoc_control
+      TABLES
+        communication_idoc_control = lt_communication_idoc_control
+        master_idoc_data           = lt_master_idoc_data.
 
   ENDMETHOD.
 ENDCLASS.

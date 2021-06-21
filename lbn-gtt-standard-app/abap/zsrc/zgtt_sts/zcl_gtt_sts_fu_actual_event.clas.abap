@@ -1,18 +1,20 @@
-CLASS zcl_gtt_sts_fu_actual_event DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_sts_actual_event
-  CREATE PUBLIC .
+class ZCL_GTT_STS_FU_ACTUAL_EVENT definition
+  public
+  inheriting from ZCL_GTT_STS_ACTUAL_EVENT
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS zif_gtt_sts_actual_event~extract_event
-        REDEFINITION .
-  PROTECTED SECTION.
+  methods ZIF_GTT_STS_ACTUAL_EVENT~EXTRACT_EVENT
+    redefinition .
+  methods ZIF_GTT_STS_ACTUAL_EVENT~CHECK_EVENT_RELEVANCE
+    redefinition .
+protected section.
 
-    METHODS check_tor_sent_to_gtt
-        REDEFINITION .
-    METHODS check_tor_type_specific_events
-        REDEFINITION .
+  methods CHECK_TOR_SENT_TO_GTT
+    redefinition .
+  methods CHECK_TOR_TYPE_SPECIFIC_EVENTS
+    redefinition .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -157,6 +159,22 @@ CLASS ZCL_GTT_STS_FU_ACTUAL_EVENT IMPLEMENTATION.
 
     APPEND ls_trackingheader TO ct_trackingheader.
     APPEND ls_tracklocation TO ct_tracklocation.
+
+  ENDMETHOD.
+
+
+  METHOD zif_gtt_sts_actual_event~check_event_relevance.
+
+    super->zif_gtt_sts_actual_event~check_event_relevance(
+      EXPORTING
+        it_all_appl_tables = it_all_appl_tables
+        iv_event_code      = iv_event_code
+        is_event           = is_event
+      IMPORTING
+        ev_result          = ev_result ).
+
+*   Disable sending FU’s actual events to GTT
+    ev_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
   ENDMETHOD.
 ENDCLASS.

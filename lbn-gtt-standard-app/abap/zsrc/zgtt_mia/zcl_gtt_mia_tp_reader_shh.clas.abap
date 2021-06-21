@@ -396,9 +396,7 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
   METHOD fill_tracked_object_tables.
 
     IF is_vttk-exti1 IS NOT INITIAL AND
-       ( is_vttk-vsart = '01' OR
-         is_vttk-vsart = '05' OR
-         is_vttk-vsart = '15' ).
+       is_vttk-vsart = '01'.
 
       et_res_id  = VALUE #( ( 'NA' ) ).
       et_res_val = VALUE #( ( is_vttk-exti1 ) ).
@@ -408,6 +406,13 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
 
       et_res_id  = VALUE #( ( 'CONTAINER_ID' ) ).
       et_res_val = VALUE #( ( is_vttk-signi ) ).
+
+    ELSEIF is_vttk-exti1 IS NOT INITIAL AND
+           ( is_vttk-vsart = '05' OR
+             is_vttk-vsart = '15' ).
+
+      et_res_id  = VALUE #( ( 'FLIGHT_NUMBER' ) ).
+      et_res_val = VALUE #( ( is_vttk-exti1 ) ).
 
     ELSE.
       CLEAR: et_res_id[], et_res_val[].
@@ -707,8 +712,6 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
         appobjid    = is_app_object-appobjid
         trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_number
         trxid       = |{ <ls_vttk>-tknum }|
-        start_date  = zcl_gtt_mia_tools=>get_system_date_time( )
-        end_date    = zif_gtt_mia_ef_constants=>cv_max_end_date
         timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
       ) ).
 

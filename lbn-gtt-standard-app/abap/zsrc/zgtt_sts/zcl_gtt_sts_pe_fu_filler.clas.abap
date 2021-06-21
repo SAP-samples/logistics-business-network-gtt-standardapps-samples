@@ -269,7 +269,7 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
       CHANGING
         cv_timestamp = lv_exp_datetime ).
 
-    DATA(lv_locid2) = <ls_root>-tor_id.
+    DATA(lv_locid2) = get_capa_matchkey( iv_assgn_stop_key = <ls_stop>-assgn_stop_key ).
     mv_milestonecnt += 1.
 
     APPEND VALUE #( appsys           = mo_ef_parameters->get_appsys(  )
@@ -594,20 +594,15 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
 
   METHOD zif_gtt_sts_pe_filler~get_planned_events.
 
+    DATA lv_counter TYPE /saptrx/seq_num.
+
     get_data_for_planned_event(
       EXPORTING
         is_app_objects = is_app_objects
       IMPORTING
         et_loc_address = DATA(lt_loc_address) ).
 
-    load_start(
-      EXPORTING
-        it_loc_addr     = lt_loc_address
-        is_app_objects  = is_app_objects
-      CHANGING
-        ct_expeventdata = ct_expeventdata ).
-
-    load_end(
+    shp_arrival(
       EXPORTING
         it_loc_addr     = lt_loc_address
         is_app_objects  = is_app_objects
@@ -628,7 +623,21 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
-    shp_arrival(
+    pod(
+      EXPORTING
+        it_loc_addr     = lt_loc_address
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
+    load_start(
+      EXPORTING
+        it_loc_addr     = lt_loc_address
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
+    load_end(
       EXPORTING
         it_loc_addr     = lt_loc_address
         is_app_objects  = is_app_objects
@@ -642,12 +651,29 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
-    pod(
-      EXPORTING
-        it_loc_addr     = lt_loc_address
-        is_app_objects  = is_app_objects
-      CHANGING
-        ct_expeventdata = ct_expeventdata ).
+    SORT ct_expeventdata BY locid2 ASCENDING.
+
+    LOOP AT ct_expeventdata ASSIGNING FIELD-SYMBOL(<ls_expeventdata>)
+      GROUP BY <ls_expeventdata>-locid2 ASSIGNING FIELD-SYMBOL(<lt_expeventdata_group>).
+
+      lv_counter = 1.
+      DATA(lv_first) = abap_true.
+      LOOP AT GROUP <lt_expeventdata_group> ASSIGNING FIELD-SYMBOL(<ls_expeventdata_group>).
+        IF lv_counter = 1.
+          IF line_exists( ct_expeventdata[ sy-tabix - 1 ] ).
+            DATA(ls_previous_line) =  ct_expeventdata[ sy-tabix - 1 ].
+            DATA(shp_num_previous) = ls_previous_line-locid2+0(11).
+            DATA(shp_num) = <ls_expeventdata_group>-locid2+0(11).
+            IF shp_num = shp_num_previous.
+              lv_counter = ct_expeventdata[ sy-tabix - 1 ]-milestonenum + 1.
+            ENDIF.
+          ENDIF.
+        ENDIF.
+        <ls_expeventdata_group>-milestonenum = lv_counter.
+        lv_counter += 1.
+
+      ENDLOOP.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

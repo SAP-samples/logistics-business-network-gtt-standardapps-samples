@@ -10,84 +10,86 @@ CLASS zcl_gtt_sts_bo_fo_reader DEFINITION
     METHODS zif_gtt_sts_bo_reader~get_track_id_data
         REDEFINITION .
   PROTECTED SECTION.
-PRIVATE SECTION.
+  PRIVATE SECTION.
 
-  TYPES:
-    BEGIN OF ts_fo_header,
-      shipment_type         TYPE string,
-      tor_id                TYPE /scmtms/s_em_bo_tor_root-tor_id,
-      mtr                   TYPE /scmtms/s_em_bo_tor_root-mtr,  "/SAPAPO/TR_MOTSCODE,
-      gro_vol_val           TYPE /scmtms/s_em_bo_tor_root-gro_vol_val,
-      gro_vol_uni           TYPE /scmtms/s_em_bo_tor_root-gro_vol_uni,
-      gro_wei_val           TYPE /scmtms/s_em_bo_tor_root-gro_wei_val,
-      gro_wei_uni           TYPE /scmtms/s_em_bo_tor_root-gro_wei_uni,
-      qua_pcs_val           TYPE /scmtms/s_em_bo_tor_root-qua_pcs_val,
-      qua_pcs_uni           TYPE /scmtms/s_em_bo_tor_root-qua_pcs_uni,
-      total_distance_km     TYPE /scmtms/s_em_bo_tor_root-total_distance_km,
-      total_distance_km_uom TYPE meins,
-      dgo_indicator         TYPE /scmtms/s_em_bo_tor_root-dgo_indicator,
-      total_duration_net    TYPE /scmtms/s_em_bo_tor_root-total_duration_net,
-      pln_grs_duration      TYPE /scmtms/total_duration,
-      shipping_type         TYPE /scmtms/s_em_bo_tor_root-shipping_type,
-      traffic_direct        TYPE /scmtms/s_em_bo_tor_root-traffic_direct,
-      trmodcod              TYPE /scmtms/s_em_bo_tor_root-trmodcod,
-      tspid                 TYPE bu_id_number,
-      tracked_object_type   TYPE tt_tracked_object_type,
-      tracked_object_id     TYPE tt_tracked_object_id,
-      ref_doc_id            TYPE tt_ref_doc_id,
-      ref_doc_type          TYPE tt_ref_doc_type,
-      inc_class_code        TYPE /scmtms/s_em_bo_tor_item-inc_class_code,
-      inc_transf_loc_n      TYPE /scmtms/s_em_bo_tor_item-inc_transf_loc_n,
-      country               TYPE /scmtms/s_em_bo_tor_item-country,
-      platenumber           TYPE /scmtms/s_em_bo_tor_item-platenumber,
-      res_id                TYPE /scmtms/s_em_bo_tor_item-res_id,
-      pln_dep_loc_id        TYPE /scmtms/location_id,
-      pln_dep_loc_type      TYPE /saptrx/loc_id_type,
-      pln_dep_timest        TYPE char16,
-      pln_dep_timezone      TYPE ad_tzone,
-      pln_arr_loc_id        TYPE /scmtms/location_id,
-      pln_arr_loc_type      TYPE /saptrx/loc_id_type,
-      pln_arr_timest        TYPE char16,
-      pln_arr_timezone      TYPE ad_tzone,
-      stop_id               TYPE tt_stop_id,
-      ordinal_no            TYPE tt_ordinal_no,
-      loc_type              TYPE tt_loc_type,
-      loc_id                TYPE tt_loc_id,
-      req_doc_line_no       TYPE tt_req_doc_line_number,
-      req_doc_no            TYPE tt_req_doc_number,
-*      req_doc_first_stop    TYPE tt_stop,
-*      req_doc_last_stop     TYPE tt_stop,
-    END OF ts_fo_header .
+    TYPES:
+      BEGIN OF ts_fo_header,
+        shipment_type         TYPE string,
+        tor_id                TYPE /scmtms/s_em_bo_tor_root-tor_id,
+        mtr                   TYPE /scmtms/s_em_bo_tor_root-mtr,  "/SAPAPO/TR_MOTSCODE,
+        gro_vol_val           TYPE /scmtms/s_em_bo_tor_root-gro_vol_val,
+        gro_vol_uni           TYPE /scmtms/s_em_bo_tor_root-gro_vol_uni,
+        gro_wei_val           TYPE /scmtms/s_em_bo_tor_root-gro_wei_val,
+        gro_wei_uni           TYPE /scmtms/s_em_bo_tor_root-gro_wei_uni,
+        qua_pcs_val           TYPE /scmtms/s_em_bo_tor_root-qua_pcs_val,
+        qua_pcs_uni           TYPE /scmtms/s_em_bo_tor_root-qua_pcs_uni,
+        total_distance_km     TYPE /scmtms/s_em_bo_tor_root-total_distance_km,
+        total_distance_km_uom TYPE meins,
+        dgo_indicator         TYPE /scmtms/s_em_bo_tor_root-dgo_indicator,
+        total_duration_net    TYPE /scmtms/s_em_bo_tor_root-total_duration_net,
+        pln_grs_duration      TYPE /scmtms/total_duration,
+        shipping_type         TYPE /scmtms/s_em_bo_tor_root-shipping_type,
+        traffic_direct        TYPE /scmtms/s_em_bo_tor_root-traffic_direct,
+        trmodcod              TYPE /scmtms/s_em_bo_tor_root-trmodcod,
+        tspid                 TYPE bu_id_number,
+        tracked_object_type   TYPE tt_tracked_object_type,
+        tracked_object_id     TYPE tt_tracked_object_id,
+        carrier_ref_value     TYPE tt_carrier_ref_value,
+        carrier_ref_type      TYPE tt_carrier_ref_type,
+        shipper_ref_value     TYPE tt_shipper_ref_value,
+        shipper_ref_type      TYPE tt_shipper_ref_type,
+        inc_class_code        TYPE /scmtms/s_em_bo_tor_item-inc_class_code,
+        inc_transf_loc_n      TYPE /scmtms/s_em_bo_tor_item-inc_transf_loc_n,
+        country               TYPE /scmtms/s_em_bo_tor_item-country,
+        platenumber           TYPE /scmtms/s_em_bo_tor_item-platenumber,
+        res_id                TYPE /scmtms/s_em_bo_tor_item-res_id,
+        pln_dep_loc_id        TYPE /scmtms/location_id,
+        pln_dep_loc_type      TYPE /saptrx/loc_id_type,
+        pln_dep_timest        TYPE char16,
+        pln_dep_timezone      TYPE ad_tzone,
+        pln_arr_loc_id        TYPE /scmtms/location_id,
+        pln_arr_loc_type      TYPE /saptrx/loc_id_type,
+        pln_arr_timest        TYPE char16,
+        pln_arr_timezone      TYPE ad_tzone,
+        stop_id               TYPE tt_stop_id,
+        ordinal_no            TYPE tt_ordinal_no,
+        loc_type              TYPE tt_loc_type,
+        loc_id                TYPE tt_loc_id,
+        req_doc_line_no       TYPE tt_req_doc_line_number,
+        req_doc_no            TYPE tt_req_doc_number,
+        req_doc_first_stop    TYPE tt_stop,
+        req_doc_last_stop     TYPE tt_stop,
+      END OF ts_fo_header .
 
-  METHODS get_data_from_root
-    IMPORTING
-      !iv_old_data  TYPE abap_bool DEFAULT abap_false
-      !ir_root      TYPE REF TO data
-    CHANGING
-      !cs_fo_header TYPE ts_fo_header
-    RAISING
-      cx_udm_message .
-  METHODS get_data_from_item
-    IMPORTING
-      !iv_old_data  TYPE abap_bool DEFAULT abap_false   ##NEEDED
-      !ir_item      TYPE REF TO data
-    CHANGING
-      !cs_fo_header TYPE ts_fo_header
-    RAISING
-      cx_udm_message .
-  METHODS get_data_from_textcoll
-    IMPORTING
-      !iv_old_data  TYPE abap_bool DEFAULT abap_false
-      !ir_root      TYPE REF TO data
-    CHANGING
-      !cs_fo_header TYPE ts_fo_header
-    RAISING
-      cx_udm_message .
-  METHODS get_maintabref
-    IMPORTING
-      !is_app_object       TYPE trxas_appobj_ctab_wa
-    RETURNING
-      VALUE(rr_maintabref) TYPE REF TO data .
+    METHODS get_data_from_root
+      IMPORTING
+        !iv_old_data  TYPE abap_bool DEFAULT abap_false
+        !ir_root      TYPE REF TO data
+      CHANGING
+        !cs_fo_header TYPE ts_fo_header
+      RAISING
+        cx_udm_message .
+    METHODS get_data_from_item
+      IMPORTING
+        !iv_old_data  TYPE abap_bool DEFAULT abap_false   ##NEEDED
+        !ir_item      TYPE REF TO data
+      CHANGING
+        !cs_fo_header TYPE ts_fo_header
+      RAISING
+        cx_udm_message .
+    METHODS get_data_from_textcoll
+      IMPORTING
+        !iv_old_data  TYPE abap_bool DEFAULT abap_false
+        !ir_root      TYPE REF TO data
+      CHANGING
+        !cs_fo_header TYPE ts_fo_header
+      RAISING
+        cx_udm_message .
+    METHODS get_maintabref
+      IMPORTING
+        !is_app_object       TYPE trxas_appobj_ctab_wa
+      RETURNING
+        VALUE(rr_maintabref) TYPE REF TO data .
 ENDCLASS.
 
 
@@ -269,10 +271,15 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
         iv_old_data     = iv_old_data
         ir_root         = lr_maintabref
       CHANGING
-        ct_ref_doc_id   = <ls_freight_order>-ref_doc_id
-        ct_ref_doc_type = <ls_freight_order>-ref_doc_type ).
-    IF <ls_freight_order>-ref_doc_id IS INITIAL.
-      APPEND '' TO <ls_freight_order>-ref_doc_id.
+        ct_carrier_ref_value = <ls_freight_order>-carrier_ref_value
+        ct_carrier_ref_type  = <ls_freight_order>-carrier_ref_type
+        ct_shipper_ref_value = <ls_freight_order>-shipper_ref_value
+        ct_shipper_ref_type  = <ls_freight_order>-shipper_ref_type ).
+    IF <ls_freight_order>-carrier_ref_value IS INITIAL.
+      APPEND '' TO <ls_freight_order>-carrier_ref_value.
+    ENDIF.
+    IF <ls_freight_order>-shipper_ref_value IS INITIAL.
+      APPEND '' TO <ls_freight_order>-shipper_ref_value.
     ENDIF.
 
     get_data_from_stop(
@@ -298,8 +305,10 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
         ir_data            = lr_maintabref
         iv_old_data        = iv_old_data
       CHANGING
-        ct_req_doc_line_no = <ls_freight_order>-req_doc_line_no
-        ct_req_doc_no      = <ls_freight_order>-req_doc_no ).
+        ct_req_doc_line_no     = <ls_freight_order>-req_doc_line_no
+        ct_req_doc_no          = <ls_freight_order>-req_doc_no
+        ct_req_doc_first_stop = <ls_freight_order>-req_doc_first_stop
+        ct_req_doc_last_stop  = <ls_freight_order>-req_doc_last_stop  ).
     IF <ls_freight_order>-req_doc_no IS INITIAL.
       APPEND '' TO <ls_freight_order>-req_doc_line_no.
     ENDIF.
@@ -317,10 +326,12 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       lt_track_id_data_old TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data.
 
     FIELD-SYMBOLS:
-      <lt_item_new> TYPE /scmtms/t_em_bo_tor_item,
-      <lt_item_old> TYPE /scmtms/t_em_bo_tor_item,
-      <ls_root_new> TYPE /scmtms/s_em_bo_tor_root,
-      <lt_root_old> TYPE /scmtms/t_em_bo_tor_root.
+      <lt_item_new>         TYPE /scmtms/t_em_bo_tor_item,
+      <lt_item_old>         TYPE /scmtms/t_em_bo_tor_item,
+      <ls_root_new>         TYPE /scmtms/s_em_bo_tor_root,
+      <lt_root_old>         TYPE /scmtms/t_em_bo_tor_root,
+      <lt_tor_req_root_new> TYPE /scmtms/t_em_bo_tor_root,
+      <lt_tor_req_root_old> TYPE /scmtms/t_em_bo_tor_root.
 
     ASSIGN is_app_object-maintabref->* TO <ls_root_new>.
 
@@ -354,6 +365,8 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
 
     lr_item_new = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_item_new ).
     lr_item_old = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_item_old ).
+    DATA(lr_tor_req_root_new) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-req_root ).
+    DATA(lr_tor_req_root_old) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-req_root_before ).
 
     ASSIGN <lt_root_old>[ node_id = <ls_root_new>-node_id ] TO FIELD-SYMBOL(<ls_root_old>).
     IF sy-subrc = 0.
@@ -361,8 +374,48 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
                           is_root_new = <ls_root_new>
                           is_root_old = <ls_root_old> ).
       IF lv_deleted = zif_gtt_sts_ef_constants=>cs_condition-true.
-        CLEAR: lt_track_id_data_old, lr_item_old.
+        CLEAR: lt_track_id_data_old, lr_item_old, lr_tor_req_root_old.
       ENDIF.
+    ENDIF.
+
+    ASSIGN lr_tor_req_root_new->* TO <lt_tor_req_root_new>.
+    IF <lt_tor_req_root_new> IS ASSIGNED.
+      LOOP AT <lt_tor_req_root_new> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_new>).
+        IF <ls_tor_req_root_new>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
+           <ls_tor_req_root_new>-tor_root_node = <ls_root_new>-node_id.
+
+          APPEND VALUE #( key = <ls_tor_req_root_new>-tor_id
+                  appsys      = mo_ef_parameters->get_appsys( )
+                  appobjtype  = is_app_object-appobjtype
+                  appobjid    = is_app_object-appobjid
+                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
+                  trxid       = <ls_tor_req_root_new>-tor_id
+                  start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
+                  end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
+                  timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
+                  msrid       = space  ) TO lt_track_id_data_new.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+    ASSIGN lr_tor_req_root_old->* TO <lt_tor_req_root_old>.
+    IF sy-subrc = 0 AND lv_deleted = zif_gtt_sts_ef_constants=>cs_condition-false.
+      LOOP AT <lt_tor_req_root_old> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_old>).
+        IF <ls_tor_req_root_old>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
+           <ls_tor_req_root_old>-tor_root_node = <ls_root_new>-node_id.
+
+          APPEND VALUE #( key = <ls_tor_req_root_old>-tor_id
+                  appsys      = mo_ef_parameters->get_appsys( )
+                  appobjtype  = is_app_object-appobjtype
+                  appobjid    = is_app_object-appobjid
+                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
+                  trxid       = <ls_tor_req_root_old>-tor_id
+                  start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
+                  end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
+                  timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
+                  msrid       = space  ) TO lt_track_id_data_old.
+        ENDIF.
+      ENDLOOP.
     ENDIF.
 
     ASSIGN lr_item_new->* TO <lt_item_new>.

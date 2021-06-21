@@ -116,13 +116,15 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
                      iv_parameter  = zif_gtt_mia_ef_constants=>cs_parameter_id-no_empty_tag
                    ) = abap_false.
 
-              ls_control_data-value     = zcl_gtt_mia_tools=>get_pretty_value(
-                                            iv_value = <lv_value> ).
+              ls_control_data-paramindex  = 0.
+              ls_control_data-value       = zcl_gtt_mia_tools=>get_pretty_value(
+                                              iv_value = <lv_value> ).
               APPEND ls_control_data TO ct_control_data.
             ELSEIF ( zcl_gtt_mia_tools=>is_date( iv_value = <lv_value> ) = abap_true OR
                      zcl_gtt_mia_tools=>is_timestamp( iv_value = <lv_value> ) = abap_true ).
 
-              ls_control_data-value     = ''.
+              ls_control_data-paramindex  = 0.
+              ls_control_data-value       = ''.
               APPEND ls_control_data TO ct_control_data.
             ENDIF.
           ELSEIF <lv_value> IS NOT ASSIGNED.

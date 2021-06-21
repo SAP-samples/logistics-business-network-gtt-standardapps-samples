@@ -588,8 +588,6 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
           appobjid    = is_app_object-appobjid
           trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_position
           trxid       = |{ <ls_lips>-vbeln }{ <ls_lips>-posnr }|
-          start_date  = zcl_gtt_mia_tools=>get_system_date_time( )
-          end_date    = zif_gtt_mia_ef_constants=>cv_max_end_date
           timzon      = lv_tzone
           msrid       = space
         ) ).
@@ -601,8 +599,6 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
             appobjid    = is_app_object-appobjid
             trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
             trxid       = |{ <ls_lips>-vbeln }|
-            start_date  = zcl_gtt_mia_tools=>get_system_date_time( )
-            end_date    = zif_gtt_mia_ef_constants=>cv_max_end_date
             timzon      = lv_tzone
             msrid       = space
           ) ).

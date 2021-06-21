@@ -37,7 +37,7 @@ INTERFACE zif_gtt_mia_app_types
   TYPES tv_arrival_dt TYPE timestamp .
   TYPES tv_arrival_tz TYPE timezone .
   TYPES tv_deliv_cnt TYPE int4 .
-  TYPES tv_trobj_res_id TYPE char12 .
+  TYPES tv_trobj_res_id TYPE char20 .
   TYPES tv_trobj_res_val TYPE char20 .
   TYPES tv_resrc_cnt TYPE int4 .
   TYPES tv_resrc_tp_id TYPE char30 .

@@ -27,8 +27,7 @@ CLASS zcl_gtt_mia_tp_reader_dlh DEFINITION
         werks_lt  TYPE /saptrx/loc_id_type,
         bldat     TYPE likp-bldat,
         lfdat     TYPE likp-lfdat,
-        erdat     TYPE timestamp,    "likp-erdat,
-        ernam     TYPE likp-ernam,
+        erdat     TYPE timestamp,
         btgew     TYPE likp-btgew,
         ntgew     TYPE likp-ntgew,
         gewei     TYPE likp-gewei,
@@ -57,7 +56,6 @@ CLASS zcl_gtt_mia_tp_reader_dlh DEFINITION
         bldat     TYPE /saptrx/paramname VALUE 'YN_DL_DOCUMENT_DATE',
         lfdat     TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATE',
         erdat     TYPE /saptrx/paramname VALUE 'YN_DL_CREATION_DATE',     "MIA
-        ernam     TYPE /saptrx/paramname VALUE 'YN_DL_CREATED_BY',        "MIA
         btgew     TYPE /saptrx/paramname VALUE 'YN_DL_TOTAL_WEIGHT',
         ntgew     TYPE /saptrx/paramname VALUE 'YN_DL_NET_WEIGHT',
         gewei     TYPE /saptrx/paramname VALUE 'YN_DL_WEIGHT_UNITS',

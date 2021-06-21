@@ -484,8 +484,8 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
     DATA(lt_track_id_data_new) = it_track_id_data_new.
     DATA(lt_track_id_data_old) = it_track_id_data_old.
 
-    LOOP AT lt_track_id_data_new ASSIGNING FIELD-SYMBOL(<ls_track_id_data>)
-      WHERE trxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
+    LOOP AT lt_track_id_data_new ASSIGNING FIELD-SYMBOL(<ls_track_id_data>).
+*      WHERE trxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
       READ TABLE lt_track_id_data_old WITH KEY key = <ls_track_id_data>-key ASSIGNING FIELD-SYMBOL(<ls_track_id_data_old>).
       IF sy-subrc = 0.
         DATA(lt_fields) = CAST cl_abap_structdescr( cl_abap_typedescr=>describe_by_data(

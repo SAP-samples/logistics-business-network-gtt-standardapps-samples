@@ -258,8 +258,6 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
       appobjid    = get_delivery_item_tracking_id( is_lips = is_lips )
       trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_position
       trxid       = get_delivery_item_tracking_id( is_lips = is_lips )
-      start_date  = zcl_gtt_mia_tools=>get_local_timestamp( )
-      end_date    = zif_gtt_mia_ef_constants=>cv_max_end_date
       timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
     ) ).
 

@@ -201,8 +201,6 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
       appobjid    = is_delivery-vbeln
       trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
       trxid       = is_delivery-vbeln
-      start_date  = zcl_gtt_mia_tools=>get_local_timestamp( )
-      end_date    = zif_gtt_mia_ef_constants=>cv_max_end_date
       timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
     ) ).
 

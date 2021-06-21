@@ -86,5 +86,25 @@ INTERFACE zif_gtt_sts_constants
     BEGIN OF cs_shipment_type,
       tor TYPE string VALUE 'TOR',
     END OF cs_shipment_type.
+  CONSTANTS:
+    BEGIN OF cs_mtr,
+      road_031 TYPE /scmtms/transmeanstypecode VALUE '0001',
+      rail     TYPE /scmtms/transmeanstypecode VALUE '0002',
+      air      TYPE /scmtms/transmeanstypecode VALUE '0003',
+      mail     TYPE /scmtms/transmeanstypecode VALUE '0004',
+      sea      TYPE /scmtms/transmeanstypecode VALUE '0005',
+      road_038 TYPE /scmtms/transmeanstypecode VALUE '0006',
+    END OF cs_mtr.
+  CONSTANTS:
+    BEGIN OF cs_btd_type_code,
+      bill_of_landing        TYPE /scmtms/btd_type_code VALUE 'T50',
+      master_bill_of_landing TYPE /scmtms/btd_type_code VALUE 'T52',
+      master_air_waybill     TYPE /scmtms/btd_type_code VALUE 'T55',
+      carrier_assigned       TYPE /scmtms/btd_type_code VALUE 'BN',
+      purchase_order         TYPE /scmtms/btd_type_code VALUE '001',
+      inbound_delivery       TYPE /scmtms/btd_type_code VALUE '58',
+      outbound_delivery      TYPE /scmtms/btd_type_code VALUE '73',
+      sales_order            TYPE /scmtms/btd_type_code VALUE '114',
+    END OF cs_btd_type_code.
 
 ENDINTERFACE.

@@ -253,8 +253,6 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dli IMPLEMENTATION.
       trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_position
       trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
                       ir_lips = REF #( is_lips ) )
-      start_date  = zcl_gtt_mia_tools=>get_local_timestamp( )
-      end_date    = zif_gtt_mia_ef_constants=>cv_max_end_date
       timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
     ) ).
 
