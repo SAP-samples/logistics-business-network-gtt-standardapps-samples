@@ -1,5 +1,8 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2107 Release
+1.	Based on the event type and stop sequence, fill in the payload sequence field for the planned events of the inbound delivery, inbound delivery item, LE-TRA shipment, freight order, freight booking and freight unit.</br>
+
 ## What's New in the 2106 Release
 1. Separately send freight order, freight booking and freight unit’s reference documents to the carrier reference document table and the shipper reference document table in the Track Shipments app according to the document type. Currently we only support the following document types:</br>
 * Shipper reference document type: 001(Purchase Order), 58(Inbound Delivery), 114(Sales Order), 73(Outbound Delivery)</br>
@@ -8,8 +11,6 @@
 3.	To enable integration with Air Sense, the air freight booking’s flight number is now sent as a tracked object.</br>
 4. Remove Created by Business User from the Inbound Delivery Tracked Process.</br>
 5. Remove valid-from and valid-to value extracting from SAP ERP and let the GTT system to set the default values.</br>
-
-
 
 ## Description
 You can find the sample code for SAP ERP extractors that are necessary to integrate SAP ERP with [SAP Logistics Business Network, global track and trace option](https://help.sap.com/viewer/product/SAP_LBN_GTT_OPTION/LBN/en-US?task=discover_task) in this project. You can either implement the sample code or customize it to fit your needs. The delivered contents include: 
