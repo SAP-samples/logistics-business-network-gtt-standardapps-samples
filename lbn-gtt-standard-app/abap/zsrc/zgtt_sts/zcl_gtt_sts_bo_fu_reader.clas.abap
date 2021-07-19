@@ -1010,11 +1010,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
                 appobjtype  = is_app_object-appobjtype
                 appobjid    = is_app_object-appobjid
                 trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_number
-                trxid       = <ls_tor_capa_root_new>-tor_id
-                start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                msrid       = space  ) TO lt_track_id_data_new.
+                trxid       = <ls_tor_capa_root_new>-tor_id ) TO lt_track_id_data_new.
       ENDIF.
     ENDLOOP.
 
@@ -1036,11 +1032,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
                 appobjtype  = is_app_object-appobjtype
                 appobjid    = is_app_object-appobjid
                 trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_number
-                trxid       = <ls_tor_capa_root_old>-tor_id
-                start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                msrid       = space  ) TO lt_track_id_data_old.
+                trxid       = <ls_tor_capa_root_old>-tor_id ) TO lt_track_id_data_old.
       ENDIF.
     ENDLOOP.
 

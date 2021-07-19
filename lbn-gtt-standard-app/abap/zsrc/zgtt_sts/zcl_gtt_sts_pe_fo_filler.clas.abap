@@ -126,15 +126,6 @@ CLASS ZCL_GTT_STS_PE_FO_FILLER IMPLEMENTATION.
       <ls_expeventdata>-milestonenum = lv_counter.
       lv_counter += 1.
     ENDLOOP.
-*    LOOP AT ct_expeventdata ASSIGNING FIELD-SYMBOL(<ls_expeventdata>)
-*      GROUP BY <ls_expeventdata>-appobjid ASSIGNING FIELD-SYMBOL(<lt_expeventdata_group>).
-*
-*      lv_counter = 1.
-*      LOOP AT GROUP <lt_expeventdata_group> ASSIGNING FIELD-SYMBOL(<ls_expeventdata_group>).
-*        <ls_expeventdata_group>-milestonenum = lv_counter.
-*        lv_counter += 1.
-*      ENDLOOP.
-*    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

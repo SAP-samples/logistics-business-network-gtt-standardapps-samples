@@ -20,6 +20,7 @@ CLASS zcl_gtt_mia_pe_filler_dlh DEFINITION
       IMPORTING
         !is_app_objects  TYPE trxas_appobj_ctab_wa
         !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
+        !iv_milestonenum TYPE /saptrx/seq_num
       CHANGING
         !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
       RAISING
@@ -31,6 +32,7 @@ CLASS zcl_gtt_mia_pe_filler_dlh DEFINITION
         !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
       RAISING
         cx_udm_message .
+
     METHODS is_time_of_delivery_changed
       IMPORTING
         !is_app_objects  TYPE trxas_appobj_ctab_wa
@@ -59,6 +61,7 @@ CLASS zcl_gtt_mia_pe_filler_dlh IMPLEMENTATION.
         evt_exp_tzone     = zcl_gtt_mia_tools=>get_system_time_zone( )
         evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
                               ir_data = is_app_objects-maintabref )
+        milestonenum      = iv_milestonenum
       ) ).
     ENDIF.
 
@@ -94,7 +97,6 @@ CLASS zcl_gtt_mia_pe_filler_dlh IMPLEMENTATION.
     mo_bo_reader        = io_bo_reader.
 
   ENDMETHOD.
-
 
   METHOD is_time_of_delivery_changed.
 
@@ -181,16 +183,18 @@ CLASS zcl_gtt_mia_pe_filler_dlh IMPLEMENTATION.
     " store calculated relevance flags
     lo_relevance->update( ).
 
+    add_shipment_events(
+      EXPORTING
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
     add_goods_receipt_event(
       EXPORTING
         is_app_objects  = is_app_objects
         io_relevance    = lo_relevance
-      CHANGING
-        ct_expeventdata = ct_expeventdata ).
-
-    add_shipment_events(
-      EXPORTING
-        is_app_objects  = is_app_objects
+        iv_milestonenum = zcl_gtt_mia_tools=>get_next_sequence_id(
+                            it_expeventdata = ct_expeventdata )
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 

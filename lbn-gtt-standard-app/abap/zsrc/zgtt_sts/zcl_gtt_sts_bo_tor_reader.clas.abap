@@ -285,10 +285,6 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
                     appobjid   = is_app_object-appobjid
                     trxcod     = iv_trxcod
                     trxid      = iv_trxid
-                    start_date = zcl_gtt_sts_tools=>get_system_date_time( )
-                    end_date   = zif_gtt_sts_ef_constants=>cv_max_end_date
-                    timzon     = zcl_gtt_sts_tools=>get_system_time_zone( )
-                    msrid      = space
                     action     = iv_action ) TO ct_track_id.
 
   ENDMETHOD.
@@ -468,11 +464,7 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
                    appobjtype  = is_app_object-appobjtype
                    appobjid    = is_app_object-appobjid
                    trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                   trxid       = |{ <ls_root>-tor_id }{ <ls_text_content>-text }|
-                   start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                   end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                   timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                   msrid       = space  ) TO ct_track_id_data.
+                   trxid       = |{ <ls_root>-tor_id }{ <ls_text_content>-text }| ) TO ct_track_id_data.
         ENDIF.
       ENDLOOP.
     ENDIF.
@@ -500,12 +492,57 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
+*    IF sy-uname <> 'C5204218'.
     /scmtms/cl_tor_helper_stop=>get_stop_sequence(
       EXPORTING
         it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
         iv_before_image = SWITCH #( iv_old_data WHEN abap_true THEN abap_true ELSE abap_false )
       IMPORTING
         et_stop_seq_d   = DATA(lt_stop_seq) ).
+
+*    ELSE.
+*      DATA lt_stop TYPE /scmtms/t_tor_stop_k.
+**
+*      DATA(lo_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+*      lo_srvmgr_tor->retrieve_by_association(
+*        EXPORTING
+*          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+*          it_key          = VALUE #( ( key = <ls_tor_root>-node_id ) )
+*          iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+*          iv_fill_data    = abap_true
+*          iv_before_image = iv_old_data
+*        IMPORTING
+*          et_data         = lt_stop ).
+**
+**      /scmtms/cl_tor_helper_stop=>get_stop_sequence(
+**        EXPORTING
+**          it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
+**          iv_before_image = SWITCH #( iv_old_data WHEN abap_true THEN abap_true ELSE abap_false )
+**          it_stop_succ    = lt_stop_succ
+**        IMPORTING
+**          et_stop_seq_d   = lt_stop_seq ).
+*
+*
+*      FIELD-SYMBOLS <lt_tor_stop_succ> TYPE /scmtms/t_em_bo_tor_stop_succ.
+*
+*      DATA(lr_stop_succ) = mo_ef_parameters->get_appl_table(
+*           SWITCH #( iv_old_data WHEN abap_true
+*                                   THEN /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-stop_successor_before
+*                                 ELSE /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-stop_successor ) ).
+*      ASSIGN lr_stop_succ->* TO <lt_tor_stop_succ>.
+*
+*      DATA(lt_stop_succ) = CORRESPONDING /scmtms/t_tor_stop_succ_k( <lt_tor_stop_succ> MAPPING key = node_id ).
+*
+*      /scmtms/cl_tor_helper_stop=>get_stop_sequence(
+*        EXPORTING
+*          it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
+*          iv_before_image = SWITCH #( iv_old_data WHEN abap_true THEN abap_true ELSE abap_false )
+*          it_stop_succ    = lt_stop_succ
+*          it_stop         = lt_stop
+*        IMPORTING
+*          et_stop_seq_d   = lt_stop_seq ).
+
+*    ENDIF.
 
     get_stop_seq(
       EXPORTING
@@ -770,11 +807,11 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
     ENDIF.
 
     /scmtms/cl_tor_helper_stop=>get_stop_sequence(
-        EXPORTING
-          it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
-          iv_before_image = iv_old_data
-        IMPORTING
-          et_stop_seq_d   = DATA(lt_stop_seq) ).
+      EXPORTING
+        it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
+        iv_before_image = iv_old_data
+      IMPORTING
+        et_stop_seq_d   = DATA(lt_stop_seq) ).
 
     ASSIGN lt_stop_seq[ root_key = <ls_tor_root>-node_id ] TO FIELD-SYMBOL(<ls_stop_seq>) ##WARN_OK.
     IF sy-subrc = 0.
@@ -788,12 +825,11 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
     ENDIF.
 
     zcl_gtt_sts_tools=>get_stop_points(
-           EXPORTING
-             iv_root_id     = <ls_tor_root>-tor_id
-             it_stop        = lt_fo_stop
-           IMPORTING
-             et_stop_points = DATA(lt_stop_points)
-         ).
+      EXPORTING
+        iv_root_id     = <ls_tor_root>-tor_id
+        it_stop        = lt_fo_stop
+       IMPORTING
+        et_stop_points = DATA(lt_stop_points) ).
 
     LOOP AT lt_capa2req_link ASSIGNING FIELD-SYMBOL(<ls_capa2req_link>).
       ASSIGN <lt_tor_root_req>[ node_id = <ls_capa2req_link>-target_key ] TO FIELD-SYMBOL(<ls_tor_req_id>).

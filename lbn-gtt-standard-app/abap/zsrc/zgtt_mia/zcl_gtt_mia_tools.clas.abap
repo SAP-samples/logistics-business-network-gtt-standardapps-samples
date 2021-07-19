@@ -58,6 +58,19 @@ CLASS zcl_gtt_mia_tools DEFINITION
         VALUE(rv_logsys) TYPE logsys
       RAISING
         cx_udm_message.
+
+    CLASS-METHODS get_max_sequence_id
+      IMPORTING
+        it_expeventdata        TYPE zif_gtt_mia_ef_types=>tt_expeventdata
+      RETURNING
+        VALUE(rv_milestonenum) TYPE /saptrx/seq_num.
+
+    CLASS-METHODS get_next_sequence_id
+      IMPORTING
+        it_expeventdata        TYPE zif_gtt_mia_ef_types=>tt_expeventdata
+      RETURNING
+        VALUE(rv_milestonenum) TYPE /saptrx/seq_num.
+
     CLASS-METHODS get_pretty_location_id
       IMPORTING
         !iv_locid       TYPE c
@@ -328,6 +341,21 @@ CLASS zcl_gtt_mia_tools IMPLEMENTATION.
       zcl_gtt_mia_tools=>throw_exception( ).
     ENDIF.
 
+  ENDMETHOD.
+
+  METHOD get_max_sequence_id.
+    CLEAR: rv_milestonenum.
+
+    LOOP AT it_expeventdata ASSIGNING FIELD-SYMBOL(<ls_expeventdata>).
+      IF rv_milestonenum < <ls_expeventdata>-milestonenum.
+        rv_milestonenum = <ls_expeventdata>-milestonenum.
+      ENDIF.
+    ENDLOOP.
+  ENDMETHOD.
+
+  METHOD get_next_sequence_id.
+    rv_milestonenum   = get_max_sequence_id(
+                          it_expeventdata = it_expeventdata ) + 1.
   ENDMETHOD.
 
   METHOD get_pretty_location_id.

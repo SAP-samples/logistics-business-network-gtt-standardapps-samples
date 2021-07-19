@@ -1,14 +1,14 @@
-CLASS zcl_gtt_sts_bo_fo_reader DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_sts_bo_tor_reader
-  CREATE PUBLIC .
+class ZCL_GTT_STS_BO_FO_READER definition
+  public
+  inheriting from ZCL_GTT_STS_BO_TOR_READER
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS zif_gtt_sts_bo_reader~get_data
-        REDEFINITION .
-    METHODS zif_gtt_sts_bo_reader~get_track_id_data
-        REDEFINITION .
+  methods ZIF_GTT_STS_BO_READER~GET_DATA
+    redefinition .
+  methods ZIF_GTT_STS_BO_READER~GET_TRACK_ID_DATA
+    redefinition .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -302,11 +302,11 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
 
     get_requirement_doc_list(
       EXPORTING
-        ir_data            = lr_maintabref
-        iv_old_data        = iv_old_data
+        ir_data               = lr_maintabref
+        iv_old_data           = iv_old_data
       CHANGING
-        ct_req_doc_line_no     = <ls_freight_order>-req_doc_line_no
-        ct_req_doc_no          = <ls_freight_order>-req_doc_no
+        ct_req_doc_line_no    = <ls_freight_order>-req_doc_line_no
+        ct_req_doc_no         = <ls_freight_order>-req_doc_no
         ct_req_doc_first_stop = <ls_freight_order>-req_doc_first_stop
         ct_req_doc_last_stop  = <ls_freight_order>-req_doc_last_stop  ).
     IF <ls_freight_order>-req_doc_no IS INITIAL.
@@ -389,11 +389,7 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
-                  trxid       = <ls_tor_req_root_new>-tor_id
-                  start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                  end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                  timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                  msrid       = space  ) TO lt_track_id_data_new.
+                  trxid       = <ls_tor_req_root_new>-tor_id ) TO lt_track_id_data_new.
         ENDIF.
       ENDLOOP.
     ENDIF.
@@ -409,11 +405,7 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
-                  trxid       = <ls_tor_req_root_old>-tor_id
-                  start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                  end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                  timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                  msrid       = space  ) TO lt_track_id_data_old.
+                  trxid       = <ls_tor_req_root_old>-tor_id ) TO lt_track_id_data_old.
         ENDIF.
       ENDLOOP.
     ENDIF.

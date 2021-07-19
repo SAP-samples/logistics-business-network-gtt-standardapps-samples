@@ -336,11 +336,7 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                  trxid       = |{ is_root-tor_id }{ <ls_item>-res_id }|
-                  start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                  end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                  timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                  msrid       = space  ) TO ct_track_id_data.
+                  trxid       = |{ is_root-tor_id }{ <ls_item>-res_id }| ) TO ct_track_id_data.
         ENDIF.
 
         DATA(lv_mtr) = is_root-mtr.
@@ -352,11 +348,7 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                  trxid       = |{ is_root-tor_id }{ <ls_item>-platenumber }|
-                  start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                  end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                  timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                  msrid       = space  ) TO ct_track_id_data.
+                  trxid       = |{ is_root-tor_id }{ <ls_item>-platenumber }| ) TO ct_track_id_data.
         ENDIF.
       ENDIF.
     ENDLOOP.
@@ -485,7 +477,6 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
     DATA(lt_track_id_data_old) = it_track_id_data_old.
 
     LOOP AT lt_track_id_data_new ASSIGNING FIELD-SYMBOL(<ls_track_id_data>).
-*      WHERE trxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
       READ TABLE lt_track_id_data_old WITH KEY key = <ls_track_id_data>-key ASSIGNING FIELD-SYMBOL(<ls_track_id_data_old>).
       IF sy-subrc = 0.
         DATA(lt_fields) = CAST cl_abap_structdescr( cl_abap_typedescr=>describe_by_data(
@@ -511,21 +502,13 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
                           appobjtype  = is_app_object-appobjtype
                           appobjid    = is_app_object-appobjid
                           trxcod      = <ls_track_id_data>-trxcod
-                          trxid       = <ls_track_id_data>-trxid
-                          start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                          end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                          timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                          msrid       = space  ) TO ct_track_id_data.
+                          trxid       = <ls_track_id_data>-trxid ) TO ct_track_id_data.
 
           APPEND VALUE #( appsys      = iv_appsys
                           appobjtype  = is_app_object-appobjtype
                           appobjid    = is_app_object-appobjid
                           trxcod      = <ls_track_id_data_old>-trxcod
                           trxid       = <ls_track_id_data_old>-trxid
-                          start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                          end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                          timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                          msrid       = space
                           action      = /scmtms/cl_scem_int_c=>sc_param_action-delete ) TO ct_track_id_data.
         ENDIF.
 
@@ -536,11 +519,7 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
                         appobjtype  = is_app_object-appobjtype
                         appobjid    = is_app_object-appobjid
                         trxcod      = <ls_track_id_data>-trxcod
-                        trxid       = <ls_track_id_data>-trxid
-                        start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                        end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                        timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                        msrid       = space ) TO ct_track_id_data.
+                        trxid       = <ls_track_id_data>-trxid ) TO ct_track_id_data.
       ENDIF.
     ENDLOOP.
 
@@ -551,10 +530,6 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
                       appobjid    = is_app_object-appobjid
                       trxcod      = <ls_track_id_data_del>-trxcod
                       trxid       = <ls_track_id_data_del>-trxid
-                      start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                      end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                      timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                      msrid       = space
                       action      = /scmtms/cl_scem_int_c=>sc_param_action-delete ) TO ct_track_id_data.
     ENDLOOP.
 

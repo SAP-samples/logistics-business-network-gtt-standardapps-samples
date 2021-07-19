@@ -224,7 +224,10 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
   METHOD fill_idoc_exp_event.
 
-    DATA: lt_exp_event TYPE /saptrx/bapi_trk_ee_tab.
+    DATA: lt_exp_event      TYPE /saptrx/bapi_trk_ee_tab,
+          lt_exp_event_dlv  TYPE /saptrx/bapi_trk_ee_tab,
+          lv_milestonenum   TYPE /saptrx/seq_num VALUE 1,
+          lv_tknum          TYPE tknum.
 
     zcl_gtt_mia_ctp_tools=>get_delivery_head_planned_evt(
       EXPORTING
@@ -233,17 +236,22 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
         is_likp      = CORRESPONDING #( is_likp )
         it_lips      = CORRESPONDING #( is_ship-lips )
       IMPORTING
-        et_exp_event = lt_exp_event ).
+        et_exp_event = lt_exp_event_dlv ).
 
-    LOOP AT lt_exp_event TRANSPORTING NO FIELDS
+    LOOP AT lt_exp_event_dlv TRANSPORTING NO FIELDS
       WHERE ( milestone = zif_gtt_mia_app_constants=>cs_milestone-sh_arrival OR
               milestone = zif_gtt_mia_app_constants=>cs_milestone-sh_departure OR
               milestone = zif_gtt_mia_app_constants=>cs_milestone-sh_pod ).
-      DELETE lt_exp_event.
+      DELETE lt_exp_event_dlv.
     ENDLOOP.
 
     LOOP AT is_stops-watching ASSIGNING FIELD-SYMBOL(<ls_watching>)
       WHERE vbeln = is_likp-vbeln.
+
+      IF lv_tknum <> <ls_watching>-stopid(10).
+        lv_tknum        = <ls_watching>-stopid(10).
+        lv_milestonenum = 1.
+      ENDIF.
 
       READ TABLE is_stops-stops ASSIGNING FIELD-SYMBOL(<ls_stops>)
         WITH KEY stopid = <ls_watching>-stopid
@@ -262,7 +270,9 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
                                   iv_loctype = <ls_stops>-loctype )
             evt_exp_datetime  = <ls_stops>-pln_evt_datetime
             evt_exp_tzone     = <ls_stops>-pln_evt_timezone
+            milestonenum      = lv_milestonenum
         ) ).
+        ADD 1 TO lv_milestonenum.
 
         " POD
         IF <ls_stops>-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
@@ -280,7 +290,9 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
                                     iv_loctype = <ls_stops>-loctype )
               evt_exp_datetime  = <ls_stops>-pln_evt_datetime
               evt_exp_tzone     = <ls_stops>-pln_evt_timezone
+              milestonenum      = lv_milestonenum
           ) ).
+          ADD 1 TO lv_milestonenum.
         ENDIF.
       ELSE.
         MESSAGE e005(zgtt_mia)
@@ -289,6 +301,18 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
         zcl_gtt_mia_tools=>throw_exception( ).
       ENDIF.
     ENDLOOP.
+
+    " fill sequence number in DLV events
+    lv_milestonenum   = zcl_gtt_mia_tools=>get_next_sequence_id(
+                          it_expeventdata = lt_exp_event ).
+
+    LOOP AT lt_exp_event_dlv ASSIGNING FIELD-SYMBOL(<ls_exp_event_dlv>).
+      <ls_exp_event_dlv>-milestonenum   = lv_milestonenum.
+      ADD 1 TO lv_milestonenum.
+    ENDLOOP.
+
+    lt_exp_event    = VALUE #( BASE lt_exp_event
+                                ( LINES OF lt_exp_event_dlv ) ).
 
     IF lt_exp_event[] IS INITIAL.
       lt_exp_event = VALUE #( (

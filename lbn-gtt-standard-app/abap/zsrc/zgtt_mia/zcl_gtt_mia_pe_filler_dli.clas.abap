@@ -20,6 +20,7 @@ CLASS zcl_gtt_mia_pe_filler_dli DEFINITION
       IMPORTING
         !is_app_objects  TYPE trxas_appobj_ctab_wa
         !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
+        !iv_milestonenum TYPE /saptrx/seq_num
       CHANGING
         !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
       RAISING
@@ -28,6 +29,7 @@ CLASS zcl_gtt_mia_pe_filler_dli DEFINITION
       IMPORTING
         !is_app_objects  TYPE trxas_appobj_ctab_wa
         !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
+        !iv_milestonenum TYPE /saptrx/seq_num
       CHANGING
         !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
       RAISING
@@ -36,6 +38,7 @@ CLASS zcl_gtt_mia_pe_filler_dli DEFINITION
       IMPORTING
         !is_app_objects  TYPE trxas_appobj_ctab_wa
         !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
+        !iv_milestonenum TYPE /saptrx/seq_num
       CHANGING
         !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
       RAISING
@@ -84,6 +87,7 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
                               iv_locid   = lv_werks
                               iv_loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant )
         loctype           = zif_gtt_mia_ef_constants=>cs_loc_types-plant
+        milestonenum      = iv_milestonenum
       ) ).
     ENDIF.
 
@@ -111,6 +115,7 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
                               iv_locid   = lv_werks
                               iv_loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant )
         loctype           = zif_gtt_mia_ef_constants=>cs_loc_types-plant
+        milestonenum      = iv_milestonenum
       ) ).
     ENDIF.
 
@@ -140,6 +145,7 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
                               iv_locid   = lv_werks
                               iv_loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant )
         loctype           = zif_gtt_mia_ef_constants=>cs_loc_types-plant
+        milestonenum      = iv_milestonenum
       ) ).
     ENDIF.
 
@@ -175,7 +181,6 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
     mo_bo_reader        = io_bo_reader.
 
   ENDMETHOD.
-
 
   METHOD is_time_of_delivery_changed.
 
@@ -269,10 +274,18 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
     " store calculated relevance flags
     lo_relevance->update( ).
 
+    add_shipment_events(
+      EXPORTING
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
     add_put_away_event(
       EXPORTING
         is_app_objects  = is_app_objects
         io_relevance    = lo_relevance
+        iv_milestonenum = zcl_gtt_mia_tools=>get_next_sequence_id(
+                            it_expeventdata = ct_expeventdata )
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
@@ -280,6 +293,8 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
       EXPORTING
         is_app_objects  = is_app_objects
         io_relevance    = lo_relevance
+        iv_milestonenum = zcl_gtt_mia_tools=>get_next_sequence_id(
+                            it_expeventdata = ct_expeventdata )
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
@@ -287,12 +302,8 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
       EXPORTING
         is_app_objects  = is_app_objects
         io_relevance    = lo_relevance
-      CHANGING
-        ct_expeventdata = ct_expeventdata ).
-
-    add_shipment_events(
-      EXPORTING
-        is_app_objects  = is_app_objects
+        iv_milestonenum = zcl_gtt_mia_tools=>get_next_sequence_id(
+                            it_expeventdata = ct_expeventdata )
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 

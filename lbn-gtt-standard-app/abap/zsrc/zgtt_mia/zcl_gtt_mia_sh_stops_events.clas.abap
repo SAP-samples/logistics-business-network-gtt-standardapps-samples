@@ -187,9 +187,12 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
 
   METHOD get_planned_events.
 
-    DATA: lt_exp_event TYPE /saptrx/bapi_trk_ee_tab.
+    DATA: lt_exp_event    TYPE /saptrx/bapi_trk_ee_tab,
+          lv_milestonenum TYPE /saptrx/seq_num.
 
     LOOP AT mt_stops_info ASSIGNING FIELD-SYMBOL(<ls_stops_info>).
+      lv_milestonenum  = 1.
+
       LOOP AT <ls_stops_info>-watching ASSIGNING FIELD-SYMBOL(<ls_watching>)
         WHERE vbeln = mv_vbeln.
 
@@ -210,7 +213,10 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
                                     iv_loctype = <ls_stops>-loctype )
               evt_exp_datetime  = <ls_stops>-pln_evt_datetime
               evt_exp_tzone     = <ls_stops>-pln_evt_timezone
+              milestonenum      = lv_milestonenum
           ) ).
+
+          ADD 1 TO lv_milestonenum.
 
           " POD
           IF <ls_stops>-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
@@ -226,7 +232,10 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
                                       iv_loctype = <ls_stops>-loctype )
                 evt_exp_datetime  = <ls_stops>-pln_evt_datetime
                 evt_exp_tzone     = <ls_stops>-pln_evt_timezone
+                milestonenum      = lv_milestonenum
             ) ).
+
+            ADD 1 TO lv_milestonenum.
           ENDIF.
         ELSE.
           MESSAGE e005(zgtt_mia)
@@ -308,6 +317,9 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
         IMPORTING
           et_stops              = ls_stops_info-stops
           et_dlv_watching_stops = ls_stops_info-watching ).
+
+      " important for milestonenum (sequence number) calculation
+      SORT ls_stops_info-watching BY stopid loccat.
 
       APPEND ls_stops_info TO et_stops_info.
     ENDLOOP.

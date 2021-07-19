@@ -115,6 +115,8 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
         CHANGING
           cv_timestamp = lv_exp_datetime ).
 
+      CHECK <ls_stop>-assgn_stop_key IS NOT INITIAL.
+
       DATA(lv_locid2) = get_capa_matchkey( iv_assgn_stop_key = <ls_stop>-assgn_stop_key ).
       mv_milestonecnt += 1.
 
@@ -185,6 +187,8 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
           iv_timezone  =  lv_tz
         CHANGING
           cv_timestamp = lv_exp_datetime ).
+
+      CHECK <ls_stop>-assgn_stop_key IS NOT INITIAL.
 
       DATA(lv_locid2) = get_capa_matchkey( iv_assgn_stop_key = <ls_stop>-assgn_stop_key ).
       mv_milestonecnt += 1.
@@ -268,6 +272,8 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
         iv_timezone  =  lv_tz
       CHANGING
         cv_timestamp = lv_exp_datetime ).
+
+    CHECK <ls_stop>-assgn_stop_key IS NOT INITIAL.
 
     DATA(lv_locid2) = get_capa_matchkey( iv_assgn_stop_key = <ls_stop>-assgn_stop_key ).
     mv_milestonecnt += 1.
@@ -500,6 +506,8 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
         CHANGING
           cv_timestamp = lv_exp_datetime ).
 
+      CHECK <ls_stop>-assgn_stop_key IS NOT INITIAL.
+
       DATA(lv_locid2) = get_capa_matchkey( iv_assgn_stop_key = <ls_stop>-assgn_stop_key ).
       mv_milestonecnt += 1.
 
@@ -570,6 +578,8 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
           iv_timezone  =  lv_tz
         CHANGING
           cv_timestamp = lv_exp_datetime ).
+
+      CHECK <ls_stop>-assgn_stop_key IS NOT INITIAL.
 
       DATA(lv_locid2) = get_capa_matchkey( iv_assgn_stop_key = <ls_stop>-assgn_stop_key ).
       mv_milestonecnt += 1.
@@ -654,7 +664,7 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
     SORT ct_expeventdata BY locid2 ASCENDING.
 
     LOOP AT ct_expeventdata ASSIGNING FIELD-SYMBOL(<ls_expeventdata>)
-      GROUP BY <ls_expeventdata>-locid2 ASSIGNING FIELD-SYMBOL(<lt_expeventdata_group>).
+         GROUP BY <ls_expeventdata>-locid2 ASSIGNING FIELD-SYMBOL(<lt_expeventdata_group>).
 
       lv_counter = 1.
       DATA(lv_first) = abap_true.

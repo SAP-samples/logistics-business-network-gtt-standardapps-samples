@@ -211,6 +211,7 @@ CLASS zcl_gtt_mia_ctp_snd IMPLEMENTATION.
           is_trxserv      = <ls_idoc_data>-trxserv
           iv_appsys       = <ls_idoc_data>-appsys
           it_appobj_ctabs = <ls_idoc_data>-appobj_ctabs
+          iv_upd_task     = 'X'
         IMPORTING
           et_bapireturn   = lt_bapiret1 ).
 

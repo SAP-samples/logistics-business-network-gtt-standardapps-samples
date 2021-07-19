@@ -275,7 +275,6 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
           lt_measrmntdata     TYPE zif_gtt_sts_ef_types=>tt_measrmntdata,
           lt_infodata         TYPE zif_gtt_sts_ef_types=>tt_infodata,
           lr_app_objects      TYPE REF TO data.
-*          lv_counter          TYPE /saptrx/seq_num.
 
     FIELD-SYMBOLS <lt_app_objects> TYPE trxas_appobj_ctabs.
 
@@ -302,33 +301,9 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
 
     ENDLOOP.
 
-*    SORT lt_expeventdata BY locid2 ASCENDING.
-*
-*    LOOP AT lt_expeventdata ASSIGNING FIELD-SYMBOL(<ls_expeventdata>)
-*      GROUP BY <ls_expeventdata>-locid2 <ls_expeventdata>-ap ASSIGNING FIELD-SYMBOL(<lt_expeventdata_group>).
-*
-*      lv_counter = 1.
-*      DATA(lv_first) = abap_true.
-*      LOOP AT GROUP <lt_expeventdata_group> ASSIGNING FIELD-SYMBOL(<ls_expeventdata_group>).
-*        IF lv_counter = 1.
-*          IF line_exists( lt_expeventdata[ sy-tabix - 1 ] ).
-*            DATA(ls_previous_line) =  lt_expeventdata[ sy-tabix - 1 ].
-*            DATA(shp_num_previous) = ls_previous_line-locid2+0(11).
-*            DATA(shp_num) = <ls_expeventdata_group>-locid2+0(11).
-*            IF shp_num = shp_num_previous.
-*              lv_counter = ls_previous_line-milestonenum + 1.
-*            ENDIF.
-*          ENDIF.
-*        ENDIF.
-*        <ls_expeventdata_group>-milestonenum = lv_counter.
-*        lv_counter += 1.
-*
-*      ENDLOOP.
-*    ENDLOOP.
-
     " Add all the changes to result tables in the end of the method,
     " so that in case of exceptions there will be no inconsistent data in them
-    IF lt_expeventdata[] IS NOT INITIAL.
+    IF lt_expeventdata_all[] IS NOT INITIAL.
       ct_expeventdata[] = VALUE #( BASE ct_expeventdata ( LINES OF lt_expeventdata_all ) ).
     ENDIF.
     IF lt_measrmntdata[] IS NOT INITIAL.

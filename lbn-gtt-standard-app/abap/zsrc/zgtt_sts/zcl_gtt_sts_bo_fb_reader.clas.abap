@@ -596,11 +596,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
-                  trxid       = <ls_tor_req_root_new>-tor_id
-                  start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                  end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                  timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                  msrid       = space  ) TO lt_track_id_data_new.
+                  trxid       = <ls_tor_req_root_new>-tor_id ) TO lt_track_id_data_new.
         ENDIF.
       ENDLOOP.
     ENDIF.
@@ -618,11 +614,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
                     trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                    trxid       = |{ <ls_root_new>-tor_id }{ <ls_item_new>-vessel_id }|
-                    start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                    end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                    timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                    msrid       = space  ) TO lt_track_id_data_new.
+                    trxid       = |{ <ls_root_new>-tor_id }{ <ls_item_new>-vessel_id }| ) TO lt_track_id_data_new.
           ENDIF.
         ENDIF.
       ENDLOOP.
@@ -638,11 +630,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
-                  trxid       = <ls_tor_req_root_old>-tor_id
-                  start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                  end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                  timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                  msrid       = space  ) TO lt_track_id_data_old.
+                  trxid       = <ls_tor_req_root_old>-tor_id ) TO lt_track_id_data_old.
         ENDIF.
       ENDLOOP.
     ENDIF.
@@ -658,11 +646,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
                     trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                    trxid       = |{ <ls_root_old>-tor_id }{ <ls_item_old>-vessel_id }|
-                    start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                    end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                    timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                    msrid       = space  ) TO lt_track_id_data_old.
+                    trxid       = |{ <ls_root_old>-tor_id }{ <ls_item_old>-vessel_id }| ) TO lt_track_id_data_old.
           ENDIF.
         ENDIF.
       ENDLOOP.
@@ -732,11 +716,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
                     trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                    trxid       =  |{ <ls_tor_root>-tor_id }{ <ls_tor_item>-flight_code }|
-                    start_date  = zcl_gtt_sts_tools=>get_system_date_time( )
-                    end_date    = zif_gtt_sts_ef_constants=>cv_max_end_date
-                    timzon      = zcl_gtt_sts_tools=>get_system_time_zone( )
-                    msrid       = space  ) TO ct_track_id_data.
+                    trxid       =  |{ <ls_tor_root>-tor_id }{ <ls_tor_item>-flight_code }| ) TO ct_track_id_data.
         ENDIF.
       ENDIF.
     ENDIF.

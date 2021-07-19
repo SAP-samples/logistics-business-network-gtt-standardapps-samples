@@ -38,6 +38,7 @@ CLASS zcl_gtt_mia_pe_filler_shh DEFINITION
     METHODS add_stops_events
       IMPORTING
         !is_app_objects  TYPE trxas_appobj_ctab_wa
+        !iv_milestonenum TYPE /saptrx/seq_num
       CHANGING
         !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
         !ct_measrmntdata TYPE zif_gtt_mia_ef_types=>tt_measrmntdata
@@ -108,6 +109,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
                               iv_date = <ls_vttk>-dpreg
                               iv_time = <ls_vttk>-upreg )
         evt_exp_tzone     = zcl_gtt_mia_tools=>get_system_time_zone( )
+        milestonenum      = 1
       ) ).
 
       " LOAD START
@@ -121,6 +123,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
                               iv_date = <ls_vttk>-dplbg
                               iv_time = <ls_vttk>-uplbg )
         evt_exp_tzone     = zcl_gtt_mia_tools=>get_system_time_zone( )
+        milestonenum      = 2
       ) ).
 
       " LOAD END
@@ -134,6 +137,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
                               iv_date = <ls_vttk>-dplen
                               iv_time = <ls_vttk>-uplen )
         evt_exp_tzone     = zcl_gtt_mia_tools=>get_system_time_zone( )
+        milestonenum      = 3
       ) ).
     ENDIF.
 
@@ -142,10 +146,11 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
 
   METHOD add_stops_events.
 
-    DATA(lv_tknum) = CONV tknum( zcl_gtt_mia_tools=>get_field_of_structure(
-                                   ir_struct_data = is_app_objects-maintabref
-                                   iv_field_name  = 'TKNUM' ) ).
+    DATA(lv_tknum)        = CONV tknum( zcl_gtt_mia_tools=>get_field_of_structure(
+                                          ir_struct_data = is_app_objects-maintabref
+                                          iv_field_name  = 'TKNUM' ) ).
 
+    DATA(lv_milestonenum) = iv_milestonenum.
     DATA: lt_stops    TYPE zif_gtt_mia_app_types=>tt_stops.
 
     FIELD-SYMBOLS: <lt_vttp> TYPE vttpvb_tab,
@@ -176,6 +181,9 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
         IMPORTING
           et_stops              = lt_stops ).
 
+      " important for correct sequence number calculation
+      SORT lt_stops BY stopid loccat.
+
       LOOP AT lt_stops ASSIGNING FIELD-SYMBOL(<ls_stops>).
         " DEPARTURE / ARRIVAL
         ct_expeventdata = VALUE #( BASE ct_expeventdata (
@@ -193,7 +201,10 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
           locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                                 iv_locid   = <ls_stops>-locid
                                 iv_loctype = <ls_stops>-loctype )
+          milestonenum      = lv_milestonenum
         ) ).
+
+        ADD 1 TO lv_milestonenum.
 
         IF is_pod_relevant( is_stops = <ls_stops>
                             it_vttp  = <lt_vttp>
@@ -212,7 +223,10 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
             locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                                   iv_locid   = <ls_stops>-locid
                                   iv_loctype = <ls_stops>-loctype )
+            milestonenum      = lv_milestonenum
           ) ).
+
+          ADD 1 TO lv_milestonenum.
         ENDIF.
       ENDLOOP.
     ELSE.
@@ -270,7 +284,6 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
                            ( 'DPLEN' ) ( 'UPLEN' ) ).
 
   ENDMETHOD.
-
 
   METHOD get_shippment_header.
 
@@ -483,6 +496,8 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
     add_stops_events(
       EXPORTING
         is_app_objects  = is_app_objects
+        iv_milestonenum = zcl_gtt_mia_tools=>get_next_sequence_id(
+                            it_expeventdata = ct_expeventdata )
       CHANGING
         ct_expeventdata = ct_expeventdata
         ct_measrmntdata = ct_measrmntdata
