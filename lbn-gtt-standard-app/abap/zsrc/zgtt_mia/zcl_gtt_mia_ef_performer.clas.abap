@@ -7,7 +7,7 @@ CLASS zcl_gtt_mia_ef_performer DEFINITION
     CLASS-METHODS check_relevance
       IMPORTING
         !is_definition         TYPE zif_gtt_mia_ef_types=>ts_definition
-        !io_bo_factory         TYPE REF TO zif_gtt_mia_tp_factory
+        !io_tp_factory         TYPE REF TO zif_gtt_mia_tp_factory
         !iv_appsys             TYPE /saptrx/applsystem
         !is_app_obj_types      TYPE /saptrx/aotypes
         !it_all_appl_tables    TYPE trxas_tabcontainer
@@ -17,10 +17,23 @@ CLASS zcl_gtt_mia_ef_performer DEFINITION
         VALUE(rv_result)       TYPE sy-binpt
       RAISING
         cx_udm_message .
+    CLASS-METHODS get_app_obj_type_id
+      IMPORTING
+        !is_definition         TYPE zif_gtt_mia_ef_types=>ts_definition
+        !io_tp_factory         TYPE REF TO zif_gtt_mia_tp_factory
+        !iv_appsys             TYPE /saptrx/applsystem
+        !is_app_obj_types      TYPE /saptrx/aotypes
+        !it_all_appl_tables    TYPE trxas_tabcontainer
+        !it_app_type_cntl_tabs TYPE trxas_apptype_tabs OPTIONAL
+        !it_app_objects        TYPE trxas_appobj_ctabs
+      RETURNING
+        VALUE(rv_appobjid) TYPE /saptrx/aoid
+      RAISING
+        cx_udm_message .
     CLASS-METHODS get_control_data
       IMPORTING
         !is_definition         TYPE zif_gtt_mia_ef_types=>ts_definition
-        !io_bo_factory         TYPE REF TO zif_gtt_mia_tp_factory
+        !io_tp_factory         TYPE REF TO zif_gtt_mia_tp_factory
         !iv_appsys             TYPE /saptrx/applsystem
         !is_app_obj_types      TYPE /saptrx/aotypes
         !it_all_appl_tables    TYPE trxas_tabcontainer
@@ -33,7 +46,7 @@ CLASS zcl_gtt_mia_ef_performer DEFINITION
     CLASS-METHODS get_planned_events
       IMPORTING
         !is_definition         TYPE zif_gtt_mia_ef_types=>ts_definition
-        !io_factory            TYPE REF TO zif_gtt_mia_tp_factory
+        !io_tp_factory            TYPE REF TO zif_gtt_mia_tp_factory
         !iv_appsys             TYPE /saptrx/applsystem
         !is_app_obj_types      TYPE /saptrx/aotypes
         !it_all_appl_tables    TYPE trxas_tabcontainer
@@ -48,7 +61,7 @@ CLASS zcl_gtt_mia_ef_performer DEFINITION
     CLASS-METHODS get_track_id_data
       IMPORTING
         !is_definition         TYPE zif_gtt_mia_ef_types=>ts_definition
-        !io_bo_factory         TYPE REF TO zif_gtt_mia_tp_factory
+        !io_tp_factory         TYPE REF TO zif_gtt_mia_tp_factory
         !iv_appsys             TYPE /saptrx/applsystem
         !is_app_obj_types      TYPE /saptrx/aotypes
         !it_all_appl_tables    TYPE trxas_tabcontainer
@@ -72,9 +85,9 @@ CLASS zcl_gtt_mia_ef_performer IMPLEMENTATION.
     DATA: lo_ef_processor   TYPE REF TO zif_gtt_mia_ef_processor.
 
     " get instance of extractor function processor
-    lo_ef_processor   = io_bo_factory->get_ef_processor(
+    lo_ef_processor   = io_tp_factory->get_ef_processor(
                           is_definition         = is_definition
-                          io_bo_factory         = io_bo_factory
+                          io_bo_factory         = io_tp_factory
                           iv_appsys             = iv_appsys
                           is_app_obj_types      = is_app_obj_types
                           it_all_appl_tables    = it_all_appl_tables
@@ -89,15 +102,35 @@ CLASS zcl_gtt_mia_ef_performer IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_app_obj_type_id.
+    DATA: lo_ef_processor   TYPE REF TO zif_gtt_mia_ef_processor.
+
+    " get instance of extractor function processor
+    lo_ef_processor   = io_tp_factory->get_ef_processor(
+                          is_definition         = is_definition
+                          io_bo_factory         = io_tp_factory
+                          iv_appsys             = iv_appsys
+                          is_app_obj_types      = is_app_obj_types
+                          it_all_appl_tables    = it_all_appl_tables
+                          it_app_type_cntl_tabs = it_app_type_cntl_tabs
+                          it_app_objects        = it_app_objects
+                        ).
+
+    " check i_app_objects     : is maintabdef correct?
+    lo_ef_processor->check_app_objects( ).
+
+    " fill control data from business object data
+    rv_appobjid   = lo_ef_processor->get_app_obj_type_id( ).
+  ENDMETHOD.
 
   METHOD get_control_data.
 
     DATA: lo_ef_processor   TYPE REF TO zif_gtt_mia_ef_processor.
 
     " get instance of extractor function processor
-    lo_ef_processor   = io_bo_factory->get_ef_processor(
+    lo_ef_processor   = io_tp_factory->get_ef_processor(
                           is_definition         = is_definition
-                          io_bo_factory         = io_bo_factory
+                          io_bo_factory         = io_tp_factory
                           iv_appsys             = iv_appsys
                           is_app_obj_types      = is_app_obj_types
                           it_all_appl_tables    = it_all_appl_tables
@@ -123,9 +156,9 @@ CLASS zcl_gtt_mia_ef_performer IMPLEMENTATION.
     DATA: lo_ef_processor   TYPE REF TO zif_gtt_mia_ef_processor.
 
     " get instance of extractor function processor
-    lo_ef_processor   = io_factory->get_ef_processor(
+    lo_ef_processor   = io_tp_factory->get_ef_processor(
                           is_definition         = is_definition
-                          io_bo_factory         = io_factory
+                          io_bo_factory         = io_tp_factory
                           iv_appsys             = iv_appsys
                           is_app_obj_types      = is_app_obj_types
                           it_all_appl_tables    = it_all_appl_tables
@@ -155,9 +188,9 @@ CLASS zcl_gtt_mia_ef_performer IMPLEMENTATION.
     CLEAR: et_track_id_data[].
 
     " get instance of extractor function processor
-    lo_ef_processor   = io_bo_factory->get_ef_processor(
+    lo_ef_processor   = io_tp_factory->get_ef_processor(
                           is_definition         = is_definition
-                          io_bo_factory         = io_bo_factory
+                          io_bo_factory         = io_tp_factory
                           iv_appsys             = iv_appsys
                           is_app_obj_types      = is_app_obj_types
                           it_all_appl_tables    = it_all_appl_tables

@@ -16,7 +16,7 @@ CLASS zcl_gtt_mia_ef_processor DEFINITION
   PRIVATE SECTION.
 
     DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
-    DATA mo_bo_reader TYPE REF TO zif_gtt_mia_tp_reader .
+    DATA mo_tp_reader TYPE REF TO zif_gtt_mia_tp_reader .
     DATA mo_pe_filler TYPE REF TO zif_gtt_mia_pe_filler .
     DATA ms_definition TYPE zif_gtt_mia_ef_types=>ts_definition .
 
@@ -65,7 +65,7 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
                   )->get_components( ).
 
       " assign mapping table to use it in converting of field names into external format
-      lr_mapping  = mo_bo_reader->get_mapping_structure( ).
+      lr_mapping  = mo_tp_reader->get_mapping_structure( ).
       ASSIGN lr_mapping->* TO <ls_mapping>.
 
       IF <ls_mapping> IS ASSIGNED.
@@ -99,7 +99,7 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
 
               " add clearing value, when multivalues table is empty
               IF <lt_value>[] IS INITIAL AND
-                  mo_bo_reader->get_field_parameter(
+                  mo_tp_reader->get_field_parameter(
                     iv_field_name = <lv_paramname>
                     iv_parameter  = zif_gtt_mia_ef_constants=>cs_parameter_id-key_field
                   ) = abap_true.
@@ -111,7 +111,7 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
 
               " simple copy for usual values
             ELSEIF <lv_value> IS NOT INITIAL OR
-                   mo_bo_reader->get_field_parameter(
+                   mo_tp_reader->get_field_parameter(
                      iv_field_name = <lv_paramname>
                      iv_parameter  = zif_gtt_mia_ef_constants=>cs_parameter_id-no_empty_tag
                    ) = abap_false.
@@ -178,7 +178,7 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
   METHOD constructor.
 
     mo_ef_parameters    = io_ef_parameters.
-    mo_bo_reader        = io_bo_reader.
+    mo_tp_reader        = io_bo_reader.
     mo_pe_filler        = io_pe_filler.
     ms_definition       = is_definition.
 
@@ -236,7 +236,7 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
     rv_result = zif_gtt_mia_ef_constants=>cs_condition-false.
 
     LOOP AT <lt_app_objects> ASSIGNING FIELD-SYMBOL(<ls_app_objects>).
-      rv_result   = mo_bo_reader->check_relevance( is_app_object = <ls_app_objects> ).
+      rv_result   = mo_tp_reader->check_relevance( is_app_object = <ls_app_objects> ).
 
       IF rv_result = zif_gtt_mia_ef_constants=>cs_condition-false AND
          mo_pe_filler IS BOUND.
@@ -250,6 +250,29 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD zif_gtt_mia_ef_processor~get_app_obj_type_id.
+    DATA: lr_app_objects   TYPE REF TO data,
+          lt_track_id_data TYPE zif_gtt_mia_ef_types=>tt_track_id_data,
+          lr_bo_data       TYPE REF TO data.
+
+    FIELD-SYMBOLS: <lt_app_objects>   TYPE trxas_appobj_ctabs.
+
+
+    lr_app_objects  = mo_ef_parameters->get_app_objects( ).
+    ASSIGN lr_app_objects->* TO <lt_app_objects>.
+
+    READ TABLE <lt_app_objects> ASSIGNING FIELD-SYMBOL(<ls_app_objects>)
+      INDEX 1.
+
+    IF sy-subrc = 0.
+      rv_appobjid = mo_tp_reader->get_app_obj_type_id(
+                      is_app_object = <ls_app_objects> ).
+
+    ELSE.
+      MESSAGE E012(zgtt_mia) INTO DATA(lv_dummy).
+      zcl_gtt_mia_tools=>throw_exception( ).
+    ENDIF.
+  ENDMETHOD.
 
   METHOD zif_gtt_mia_ef_processor~get_control_data.
 
@@ -265,7 +288,7 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
     LOOP AT <lt_app_objects> ASSIGNING FIELD-SYMBOL(<ls_app_objects>)
       WHERE maintabdef = ms_definition-maintab.
 
-      lr_bo_data    = mo_bo_reader->get_data(
+      lr_bo_data    = mo_tp_reader->get_data(
         EXPORTING
           is_app_object    = <ls_app_objects> ).
 
@@ -351,7 +374,7 @@ CLASS zcl_gtt_mia_ef_processor IMPLEMENTATION.
     LOOP AT <lt_app_objects> ASSIGNING FIELD-SYMBOL(<ls_app_objects>)
       WHERE maintabdef = ms_definition-maintab.
 
-      mo_bo_reader->get_track_id_data(
+      mo_tp_reader->get_track_id_data(
         EXPORTING
           is_app_object    = <ls_app_objects>
         IMPORTING

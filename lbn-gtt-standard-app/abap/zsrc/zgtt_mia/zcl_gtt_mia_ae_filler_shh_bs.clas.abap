@@ -287,7 +287,8 @@ CLASS zcl_gtt_mia_ae_filler_shh_bs IMPLEMENTATION.
           ct_trackingheader = VALUE #( BASE ct_trackingheader (
             language    = sy-langu
             trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_number
-            trxid       = <ls_stops>-tknum
+            trxid       = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
+                            ir_vttk = is_events-maintabref )
             evtcnt      = lv_evtcnt
             evtid       = get_eventid( )
             evtdat      = zcl_gtt_mia_tools=>get_field_of_structure(
@@ -310,7 +311,7 @@ CLASS zcl_gtt_mia_ae_filler_shh_bs IMPLEMENTATION.
             locid1      = zcl_gtt_mia_tools=>get_pretty_location_id(
                             iv_locid   = <ls_stops>-locid
                             iv_loctype = <ls_stops>-loctype )
-            locid2      = <ls_stops>-stopid
+            locid2      = <ls_stops>-stopid_txt
           ) ).
 
           IF is_location_required( ) = abap_true.

@@ -118,7 +118,7 @@ CLASS ZCL_GTT_STS_SEND_DELETION_IDOC IMPLEMENTATION.
     cs_idoc_data-appobj_dtabs = VALUE #( BASE cs_idoc_data-appobj_dtabs (
       trxservername    = cs_idoc_data-trxserv-trx_server_id
       appobjtype       = is_aotype-aot_type
-      appobjid         = is_tor_root-tor_id
+      appobjid         = |{ is_tor_root-tor_id ALPHA = OUT }|
       update_indicator = cs_change_mode-delete ) ).
 
   ENDMETHOD.

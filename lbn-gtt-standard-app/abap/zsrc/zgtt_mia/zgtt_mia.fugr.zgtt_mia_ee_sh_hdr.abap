@@ -29,7 +29,7 @@ FUNCTION zgtt_mia_ee_sh_hdr.
         EXPORTING
           is_definition         = VALUE #(
                                     maintab   = zif_gtt_mia_app_constants=>cs_tabledef-sh_header_new )
-          io_factory            = NEW zcl_gtt_mia_tp_factory_shh( )
+          io_tp_factory            = NEW zcl_gtt_mia_tp_factory_shh( )
           iv_appsys             = i_appsys
           is_app_obj_types      = i_app_obj_types
           it_all_appl_tables    = i_all_appl_tables

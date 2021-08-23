@@ -74,6 +74,12 @@
      <MSGNR>011</MSGNR>
      <TEXT>Stop ID &amp;1 is not found for Shipment &amp;2</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZGTT_MIA</ARBGB>
+     <MSGNR>012</MSGNR>
+     <TEXT>No application object type is found (it_app_objects)</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>

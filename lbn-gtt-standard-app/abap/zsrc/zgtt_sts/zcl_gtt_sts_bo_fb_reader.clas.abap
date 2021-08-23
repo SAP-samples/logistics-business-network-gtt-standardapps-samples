@@ -1,22 +1,22 @@
-CLASS zcl_gtt_sts_bo_fb_reader DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_sts_bo_tor_reader
-  CREATE PUBLIC .
+class ZCL_GTT_STS_BO_FB_READER definition
+  public
+  inheriting from ZCL_GTT_STS_BO_TOR_READER
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS zif_gtt_sts_bo_reader~get_data
-        REDEFINITION .
-    METHODS zif_gtt_sts_bo_reader~get_track_id_data
-        REDEFINITION .
+  methods ZIF_GTT_STS_BO_READER~GET_DATA
+    redefinition .
+  methods ZIF_GTT_STS_BO_READER~GET_TRACK_ID_DATA
+    redefinition .
   PROTECTED SECTION.
 
     METHODS get_docref_data
         REDEFINITION .
-  PRIVATE SECTION.
+private section.
 
-    TYPES:
-      BEGIN OF ts_freight_booking,
+  types:
+    BEGIN OF ts_freight_booking,
         shipment_type         TYPE string,
         tor_id                TYPE /scmtms/s_em_bo_tor_root-tor_id,
         mtr                   TYPE /scmtms/s_em_bo_tor_root-mtr,
@@ -61,70 +61,67 @@ CLASS zcl_gtt_sts_bo_fb_reader DEFINITION
         req_doc_last_stop     TYPE tt_stop,
       END OF ts_freight_booking .
 
-    CONSTANTS:
-      BEGIN OF cs_mbl_doctype,
+  constants:
+    BEGIN OF cs_mbl_doctype,
         ocean_fb TYPE string VALUE 'T52' ##NO_TEXT,
         air_fb   TYPE string VALUE 'T55' ##NO_TEXT,
       END OF cs_mbl_doctype .
 
-    METHODS get_data_from_maintab
-      IMPORTING
-        !ir_maintab         TYPE REF TO data
-        !iv_old_data        TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !cs_freight_booking TYPE ts_freight_booking
-      RAISING
-        cx_udm_message .
-    METHODS get_tracked_objects
-      IMPORTING
-        !ir_data            TYPE REF TO data
-        !iv_old_data        TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !cs_freight_booking TYPE ts_freight_booking
-      RAISING
-        cx_udm_message .
-    METHODS get_maintabref
-      IMPORTING
-        !is_app_object       TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rr_maintabref) TYPE REF TO data .
-    METHODS get_vessel_track
-      IMPORTING
-        !ir_data                TYPE REF TO data
-        !iv_old_data            TYPE abap_bool
-      CHANGING
-        !ct_tracked_object_type TYPE tt_tracked_object_type
-        !ct_tracked_object_id   TYPE tt_tracked_object_id
-      RAISING
-        cx_udm_message .
-    METHODS get_vessel_track_id   ##RELAX
-      IMPORTING
-        !is_app_object    TYPE trxas_appobj_ctab_wa
-      CHANGING
-        !ct_track_id_data TYPE zif_gtt_sts_ef_types=>tt_track_id_data
-      RAISING
-        cx_udm_message .
-    METHODS get_data_from_item
-      IMPORTING
-        !ir_data            TYPE REF TO data
-        !iv_old_data        TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !cs_freight_booking TYPE ts_freight_booking
-      RAISING
-        cx_udm_message .
-    METHODS get_flight_number_track
-      IMPORTING
-        !ir_data                TYPE REF TO data
-        !iv_old_data            TYPE abap_bool
-      CHANGING
-        !ct_tracked_object_type TYPE tt_tracked_object_type
-        !ct_tracked_object_id   TYPE tt_tracked_object_id .
-    METHODS get_flight_number_track_id
-      IMPORTING
-        !is_app_object    TYPE trxas_appobj_ctab_wa
-        !iv_old_data      TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !ct_track_id_data TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data .
+  methods GET_DATA_FROM_MAINTAB
+    importing
+      !IR_MAINTAB type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CS_FREIGHT_BOOKING type TS_FREIGHT_BOOKING
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_TRACKED_OBJECTS
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CS_FREIGHT_BOOKING type TS_FREIGHT_BOOKING
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_MAINTABREF
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RR_MAINTABREF) type ref to DATA .
+  methods GET_VESSEL_TRACK
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL
+    changing
+      !CT_TRACKED_OBJECT_TYPE type TT_TRACKED_OBJECT_TYPE
+      !CT_TRACKED_OBJECT_ID type TT_TRACKED_OBJECT_ID
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_DATA_FROM_ITEM
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CS_FREIGHT_BOOKING type TS_FREIGHT_BOOKING
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_FLIGHT_NUMBER_TRACK
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL
+    changing
+      !CT_TRACKED_OBJECT_TYPE type TT_TRACKED_OBJECT_TYPE
+      !CT_TRACKED_OBJECT_ID type TT_TRACKED_OBJECT_ID
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_FLIGHT_NUMBER_TRACK_ID
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CT_TRACK_ID_DATA type ZIF_GTT_STS_EF_TYPES=>TT_ENH_TRACK_ID_DATA
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -210,20 +207,25 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
     cs_freight_booking-dgo_indicator = <ls_root>-dgo_indicator.
     cs_freight_booking-tspid = get_carrier_name( iv_tspid = cs_freight_booking-tspid ).
 
-    SELECT SINGLE motscode
-      FROM /sapapo/trtype
-      INTO cs_freight_booking-mtr
-      WHERE ttype = <ls_root>-mtr.
-    SHIFT cs_freight_booking-mtr LEFT DELETING LEADING '0'.
+    TEST-SEAM lv_mtr.
+      SELECT SINGLE motscode
+        FROM /sapapo/trtype
+        INTO cs_freight_booking-mtr
+        WHERE ttype = <ls_root>-mtr.
+      SHIFT cs_freight_booking-mtr LEFT DELETING LEADING '0'.
+    END-TEST-SEAM.
 
-    /scmtms/cl_tor_helper_root=>det_transient_root_fields(
-      EXPORTING
-        it_key               = VALUE #( ( key = <ls_root>-node_id ) )
-        iv_get_stop_infos    = abap_true
-        iv_get_mainitem_info = abap_true
-        iv_before_image      = lv_before_image
-      IMPORTING
-        et_tor_add_info      = DATA(lt_tor_add_info) ).
+
+    TEST-SEAM lt_tor_add_info.
+      /scmtms/cl_tor_helper_root=>det_transient_root_fields(
+        EXPORTING
+          it_key               = VALUE #( ( key = <ls_root>-node_id ) )
+          iv_get_stop_infos    = abap_true
+          iv_get_mainitem_info = abap_true
+          iv_before_image      = lv_before_image
+        IMPORTING
+          et_tor_add_info      = DATA(lt_tor_add_info) ).
+    END-TEST-SEAM.
     ASSIGN lt_tor_add_info[ 1 ] TO FIELD-SYMBOL(<ls_tor_additional_info>).
     IF sy-subrc = 0.
       cs_freight_booking-pln_grs_duration = <ls_tor_additional_info>-tot_duration.
@@ -249,15 +251,17 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
       <ls_root>     TYPE /scmtms/s_em_bo_tor_root,
       <lt_root_old> TYPE /scmtms/t_em_bo_tor_root.
 
-    super->get_docref_data(
-      EXPORTING
-        ir_root         = ir_root
-        iv_old_data     = iv_old_data
-      CHANGING
-        ct_carrier_ref_value = ct_carrier_ref_value
-        ct_carrier_ref_type  = ct_carrier_ref_type
-        ct_shipper_ref_value = ct_shipper_ref_value
-        ct_shipper_ref_type  = ct_shipper_ref_type ).
+    TEST-SEAM lt_ref_values.
+      super->get_docref_data(
+        EXPORTING
+          ir_root         = ir_root
+          iv_old_data     = iv_old_data
+        CHANGING
+          ct_carrier_ref_value = ct_carrier_ref_value
+          ct_carrier_ref_type  = ct_carrier_ref_type
+          ct_shipper_ref_value = ct_shipper_ref_value
+          ct_shipper_ref_type  = ct_shipper_ref_type ).
+    END-TEST-SEAM.
 
     ASSIGN ir_root->* TO <ls_root>.
     IF sy-subrc <> 0.
@@ -378,34 +382,6 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_vessel_track_id.
-
-    FIELD-SYMBOLS:
-      <lt_tor_item> TYPE /scmtms/t_em_bo_tor_item,
-      <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
-
-    ASSIGN is_app_object-maintabref->* TO <ls_tor_root>.
-    IF sy-subrc = 0.
-      DATA(lr_item) = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_item_new ).
-      ASSIGN lr_item->* TO <lt_tor_item>.
-      IF sy-subrc = 0.
-        ASSIGN <lt_tor_item>[ item_cat       = /scmtms/if_tor_const=>sc_tor_item_category-booking
-                              parent_node_id = <ls_tor_root>-node_id ]-vessel_id TO FIELD-SYMBOL(<lv_vessel_id>).
-        IF sy-subrc = 0.
-          add_track_id_data(
-            EXPORTING
-              is_app_object = is_app_object
-              iv_trxcod     = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-              iv_trxid      = |{ <ls_tor_root>-tor_id }{ <lv_vessel_id> }|
-            CHANGING
-              ct_track_id   = ct_track_id_data ).
-        ENDIF.
-      ENDIF.
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD zif_gtt_sts_bo_reader~get_data.
 
     FIELD-SYMBOLS <ls_freight_booking> TYPE ts_freight_booking.
@@ -485,9 +461,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
         iv_old_data        = iv_old_data
       CHANGING
         ct_req_doc_line_no     = <ls_freight_booking>-req_doc_line_no
-        ct_req_doc_no          = <ls_freight_booking>-req_doc_no
-        ct_req_doc_first_stop = <ls_freight_booking>-req_doc_first_stop
-        ct_req_doc_last_stop  = <ls_freight_booking>-req_doc_last_stop   ).
+        ct_req_doc_no          = <ls_freight_booking>-req_doc_no ).
     IF <ls_freight_booking>-req_doc_no IS INITIAL.
       APPEND '' TO <ls_freight_booking>-req_doc_line_no.
     ENDIF.
@@ -540,7 +514,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
       EXPORTING
         is_app_object = is_app_object
         iv_trxcod     = zif_gtt_sts_constants=>cs_trxcod-fo_number
-        iv_trxid      = |{ <ls_root_new>-tor_id }|
+        iv_trxid      = |{ <ls_root_new>-tor_id ALPHA = OUT }|
       CHANGING
         ct_track_id   = et_track_id_data ).
 
@@ -586,20 +560,21 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    ASSIGN lr_tor_req_root_new->* TO <lt_tor_req_root_new>.
-    IF <lt_tor_req_root_new> IS ASSIGNED.
-      LOOP AT <lt_tor_req_root_new> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_new>).
-        IF <ls_tor_req_root_new>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
-           <ls_tor_req_root_new>-tor_root_node = <ls_root_new>-node_id.
-          APPEND VALUE #( key = <ls_tor_req_root_new>-tor_id
-                  appsys      = mo_ef_parameters->get_appsys( )
-                  appobjtype  = is_app_object-appobjtype
-                  appobjid    = is_app_object-appobjid
-                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
-                  trxid       = <ls_tor_req_root_new>-tor_id ) TO lt_track_id_data_new.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
+    " FU watch FO
+*    ASSIGN lr_tor_req_root_new->* TO <lt_tor_req_root_new>.
+*    IF <lt_tor_req_root_new> IS ASSIGNED.
+*      LOOP AT <lt_tor_req_root_new> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_new>).
+*        IF <ls_tor_req_root_new>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
+*           <ls_tor_req_root_new>-tor_root_node = <ls_root_new>-node_id.
+*          APPEND VALUE #( key = <ls_tor_req_root_new>-tor_id
+*                  appsys      = mo_ef_parameters->get_appsys( )
+*                  appobjtype  = is_app_object-appobjtype
+*                  appobjid    = is_app_object-appobjid
+*                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
+*                  trxid       = <ls_tor_req_root_new>-tor_id ) TO lt_track_id_data_new.
+*        ENDIF.
+*      ENDLOOP.
+*    ENDIF.
 
     ASSIGN lr_item_new->* TO <lt_item_new>.
     IF <lt_item_new> IS ASSIGNED.
@@ -608,32 +583,35 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
         IF <ls_item_new>-vessel_id IS ASSIGNED AND <ls_item_new>-item_id   IS ASSIGNED AND
            <ls_item_new>-item_cat IS ASSIGNED AND <ls_item_new>-item_cat = /scmtms/if_tor_const=>sc_tor_item_category-booking.
 
+          DATA(lv_tor_id) = |{ <ls_root_new>-tor_id ALPHA = OUT }|.
+          CONDENSE lv_tor_id.
           IF <ls_root_new>-tor_id IS NOT INITIAL AND <ls_item_new>-vessel_id IS NOT INITIAL.
             APPEND VALUE #( key = <ls_item_new>-item_id
                     appsys      = mo_ef_parameters->get_appsys( )
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
                     trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                    trxid       = |{ <ls_root_new>-tor_id }{ <ls_item_new>-vessel_id }| ) TO lt_track_id_data_new.
+                    trxid       = |{ lv_tor_id }{ <ls_item_new>-vessel_id }| ) TO lt_track_id_data_new.
           ENDIF.
         ENDIF.
       ENDLOOP.
     ENDIF.
 
-    ASSIGN lr_tor_req_root_old->* TO <lt_tor_req_root_old>.
-    IF sy-subrc = 0 AND lv_deleted = zif_gtt_sts_ef_constants=>cs_condition-false.
-      LOOP AT <lt_tor_req_root_old> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_old>).
-        IF <ls_tor_req_root_old>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
-           <ls_tor_req_root_old>-tor_root_node = <ls_root_new>-node_id.
-          APPEND VALUE #( key = <ls_tor_req_root_old>-tor_id
-                  appsys      = mo_ef_parameters->get_appsys( )
-                  appobjtype  = is_app_object-appobjtype
-                  appobjid    = is_app_object-appobjid
-                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
-                  trxid       = <ls_tor_req_root_old>-tor_id ) TO lt_track_id_data_old.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
+    " FO watch FU
+*    ASSIGN lr_tor_req_root_old->* TO <lt_tor_req_root_old>.
+*    IF sy-subrc = 0 AND lv_deleted = zif_gtt_sts_ef_constants=>cs_condition-false.
+*      LOOP AT <lt_tor_req_root_old> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_old>).
+*        IF <ls_tor_req_root_old>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
+*           <ls_tor_req_root_old>-tor_root_node = <ls_root_new>-node_id.
+*          APPEND VALUE #( key = <ls_tor_req_root_old>-tor_id
+*                  appsys      = mo_ef_parameters->get_appsys( )
+*                  appobjtype  = is_app_object-appobjtype
+*                  appobjid    = is_app_object-appobjid
+*                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
+*                  trxid       = <ls_tor_req_root_old>-tor_id ) TO lt_track_id_data_old.
+*        ENDIF.
+*      ENDLOOP.
+*    ENDIF.
 
     ASSIGN lr_item_old->* TO <lt_item_old>.
     IF sy-subrc = 0 AND lv_deleted = zif_gtt_sts_ef_constants=>cs_condition-false.
@@ -641,12 +619,15 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
         IF <ls_item_old>-vessel_id IS ASSIGNED AND <ls_item_old>-item_id   IS ASSIGNED AND
            <ls_item_old>-item_cat IS ASSIGNED AND <ls_item_old>-item_cat = /scmtms/if_tor_const=>sc_tor_item_category-booking.
           IF <ls_root_old>-tor_id IS NOT INITIAL AND <ls_item_old>-vessel_id IS NOT INITIAL.
+
+            lv_tor_id = |{ <ls_root_old>-tor_id ALPHA = OUT }|.
+            CONDENSE lv_tor_id.
             APPEND VALUE #( key = <ls_item_old>-item_id
                     appsys      = mo_ef_parameters->get_appsys( )
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
                     trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                    trxid       = |{ <ls_root_old>-tor_id }{ <ls_item_old>-vessel_id }| ) TO lt_track_id_data_old.
+                    trxid       = |{ lv_tor_id }{ <ls_item_old>-vessel_id }| ) TO lt_track_id_data_old.
           ENDIF.
         ENDIF.
       ENDLOOP.
@@ -711,12 +692,16 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
           AND <ls_tor_item>-mtr = zif_gtt_sts_constants=>cs_mtr-air
           AND <ls_tor_item>-flight_code   IS NOT INITIAL
           AND <ls_tor_item>-flight_number IS NOT INITIAL.
+
+          DATA(lv_tor_id) = |{ <ls_tor_root>-tor_id ALPHA = OUT }|.
+          CONDENSE lv_tor_id.
+
           APPEND VALUE #(
                     appsys      = mo_ef_parameters->get_appsys( )
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
                     trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                    trxid       =  |{ <ls_tor_root>-tor_id }{ <ls_tor_item>-flight_code }| ) TO ct_track_id_data.
+                    trxid       =  |{ lv_tor_id }{ <ls_tor_item>-flight_code }| ) TO ct_track_id_data.
         ENDIF.
       ENDIF.
     ENDIF.

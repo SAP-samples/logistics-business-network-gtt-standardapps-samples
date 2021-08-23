@@ -330,25 +330,29 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
       IF <ls_item>-platenumber IS ASSIGNED AND <ls_item>-res_id IS ASSIGNED AND <ls_item>-node_id IS ASSIGNED AND
          <ls_item>-item_cat    IS ASSIGNED AND <ls_item>-item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item.
 
+        DATA(lv_tor_id) = |{ is_root-tor_id ALPHA = OUT }|.
+        CONDENSE lv_tor_id.
         IF is_root-tor_id IS NOT INITIAL AND <ls_item>-res_id IS NOT INITIAL.
           APPEND VALUE #( key = <ls_item>-node_id
                   appsys      = iv_appsys
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                  trxid       = |{ is_root-tor_id }{ <ls_item>-res_id }| ) TO ct_track_id_data.
+                  trxid       = |{ lv_tor_id }{ <ls_item>-res_id }| ) TO ct_track_id_data.
         ENDIF.
 
         DATA(lv_mtr) = is_root-mtr.
         SELECT SINGLE motscode FROM /sapapo/trtype INTO lv_mtr WHERE ttype = lv_mtr.
         SHIFT lv_mtr LEFT DELETING LEADING '0'.
         IF is_root-tor_id IS NOT INITIAL AND <ls_item>-platenumber IS NOT INITIAL AND lv_mtr = cs_mtr_truck.
+          lv_tor_id = |{ is_root-tor_id ALPHA = OUT }|.
+          CONDENSE lv_tor_id.
           APPEND VALUE #( key = |{ <ls_item>-node_id }P|
                   appsys      = iv_appsys
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                  trxid       = |{ is_root-tor_id }{ <ls_item>-platenumber }| ) TO ct_track_id_data.
+                  trxid       = |{ lv_tor_id }{ <ls_item>-platenumber }| ) TO ct_track_id_data.
         ENDIF.
       ENDIF.
     ENDLOOP.
@@ -464,7 +468,7 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
         customizing_missing = 1
         OTHERS              = 2.
     IF sy-subrc <> 0.
-      MESSAGE e003(zpof_gtt) INTO DATA(lv_dummy) ##needed.
+      MESSAGE e003(ZGTT_STS) INTO DATA(lv_dummy) ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 

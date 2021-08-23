@@ -7,9 +7,13 @@ CLASS zcl_gtt_mia_event_rel_dl_it DEFINITION
   PROTECTED SECTION.
 
     METHODS get_field_name
-        REDEFINITION .
+      REDEFINITION .
+
     METHODS get_object_status
-        REDEFINITION .
+      REDEFINITION .
+
+    METHODS get_old_appobjid
+      REDEFINITION.
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -94,5 +98,20 @@ CLASS zcl_gtt_mia_event_rel_dl_it IMPLEMENTATION.
       zcl_gtt_mia_tools=>throw_exception( ).
     ENDIF.
 
+  ENDMETHOD.
+
+  METHOD get_old_appobjid.
+    DATA: lv_vbeln TYPE lips-vbeln,
+          lv_posnr TYPE lips-posnr.
+
+    lv_vbeln  = zcl_gtt_mia_tools=>get_field_of_structure(
+                  ir_struct_data = ms_app_objects-maintabref
+                  iv_field_name  = 'VBELN' ).
+
+    lv_posnr  = zcl_gtt_mia_tools=>get_field_of_structure(
+                  ir_struct_data = ms_app_objects-maintabref
+                  iv_field_name  = 'POSNR' ).
+
+    rv_appobjid   = |{ lv_vbeln ALPHA = IN }{ lv_posnr ALPHA = IN }|.
   ENDMETHOD.
 ENDCLASS.

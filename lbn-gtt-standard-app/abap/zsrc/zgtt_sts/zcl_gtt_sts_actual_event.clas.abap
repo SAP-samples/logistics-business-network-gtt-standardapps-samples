@@ -18,11 +18,6 @@ public section.
       !IT_ALL_APPL_TABLES type TRXAS_TABCONTAINER
     returning
       value(RT_STOP) type /SCMTMS/T_EM_BO_TOR_STOP .
-  methods GET_ROOT
-    importing
-      !IT_ALL_APPL_TABLES type TRXAS_TABCONTAINER
-    returning
-      value(RT_ROOT) type /SCMTMS/T_EM_BO_TOR_ROOT .
   methods GET_CAPA_STOP
     importing
       !IT_ALL_APPL_TABLES type TRXAS_TABCONTAINER
@@ -33,12 +28,6 @@ public section.
       !IT_ALL_APPL_TABLES type TRXAS_TABCONTAINER
     returning
       value(RT_ROOT) type /SCMTMS/T_EM_BO_TOR_ROOT .
-  methods GET_LOCID2
-    importing
-      !IV_TOR_ID type /SCMTMS/TOR_ID
-      !IV_SEQ_NUM type /SCMTMS/SEQ_NUM
-    returning
-      value(RV_LOCID2) type /SAPTRX/EV_LOCID2 .
   methods GET_EXECUTION
     importing
       !IT_ALL_APPL_TABLES type TRXAS_TABCONTAINER
@@ -97,7 +86,14 @@ protected section.
       !IV_EVENT_CODE type /SCMTMS/TOR_EVENT
     returning
       value(EV_RESULT) like SY-BINPT .
-  PRIVATE SECTION.
+private section.
+
+  methods ADD_ADDITIONAL_MATCH_KEY
+    importing
+      !IV_EXECUTION_INFO_SOURCE type /SCMTMS/EXECINFO_SOURCE
+      !IV_EVTCNT type /SAPTRX/EVTCNT
+    changing
+      !CT_TRACKPARAMETERS type ZIF_GTT_STS_ACTUAL_EVENT=>TT_TRACKPARAMETERS .
 ENDCLASS.
 
 
@@ -181,13 +177,14 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
     ASSIGN is_event-maintabref->* TO <ls_tor_root>.
 
-    SELECT SINGLE /saptrx/aotypes~trxservername
-      FROM /scmtms/c_torty
-      JOIN /saptrx/aotypes ON /scmtms/c_torty~aotype = /saptrx/aotypes~aotype
-      INTO @DATA(lv_trxservername)
-      WHERE /scmtms/c_torty~type         = @<ls_tor_root>-tor_type AND
-            /saptrx/aotypes~trk_obj_type = @zif_gtt_sts_actual_event~cv_tor_trk_obj_typ ##WARN_OK. "#EC CI_BUFFJOIN
-
+    TEST-SEAM lv_trxservername.
+      SELECT SINGLE /saptrx/aotypes~trxservername
+        FROM /scmtms/c_torty
+        JOIN /saptrx/aotypes ON /scmtms/c_torty~aotype = /saptrx/aotypes~aotype
+        INTO @DATA(lv_trxservername)
+        WHERE /scmtms/c_torty~type         = @<ls_tor_root>-tor_type AND
+              /saptrx/aotypes~trk_obj_type = @zif_gtt_sts_actual_event~cv_tor_trk_obj_typ ##WARN_OK. "#EC CI_BUFFJOIN
+    END-TEST-SEAM.
     IF is_event-trxservername <> lv_trxservername.
       ev_result = zif_gtt_sts_ef_constants=>cs_condition-false.
     ENDIF.
@@ -322,16 +319,6 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_locid2.
-
-    DATA(lv_tor_id)  = iv_tor_id.
-    SHIFT lv_tor_id LEFT DELETING LEADING '0'.
-    DATA(lv_stop_id) = iv_seq_num+1(4).
-    rv_locid2 = lv_tor_id && lv_stop_id.
-
-  ENDMETHOD.
-
-
   METHOD get_model_event_id.
 
     CASE iv_standard_event_id.
@@ -362,21 +349,6 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       WHEN OTHERS.
         RETURN.
     ENDCASE.
-
-  ENDMETHOD.
-
-
-  METHOD get_root.
-
-    FIELD-SYMBOLS <lt_root> TYPE /scmtms/t_em_bo_tor_root.
-    ASSIGN it_all_appl_tables[ tabledef = zif_gtt_sts_actual_event~cs_tabledef-tor_root ]-tableref
-      TO FIELD-SYMBOL(<lr_tabref>) ##WARN_OK.
-    IF sy-subrc = 0.
-      ASSIGN <lr_tabref>->* TO <lt_root>.
-      IF sy-subrc = 0.
-        rt_root = <lt_root>.
-      ENDIF.
-    ENDIF.
 
   ENDMETHOD.
 
@@ -424,14 +396,16 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       lv_timezone    TYPE /scmtms/tzone.
 
     DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
-    lo_tor_srv_mgr->retrieve_by_association(
-      EXPORTING
-        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
-        it_key         = VALUE #( ( key = is_tor_root-node_id ) )
-        iv_association = /scmtms/if_tor_c=>sc_association-root-executioninformation_tr
-        iv_fill_data   = abap_true
-      IMPORTING
-        et_data        = lt_execinfo_tr ).
+    TEST-SEAM lt_execinfo_tr.
+      lo_tor_srv_mgr->retrieve_by_association(
+        EXPORTING
+          iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+          it_key         = VALUE #( ( key = is_tor_root-node_id ) )
+          iv_association = /scmtms/if_tor_c=>sc_association-root-executioninformation_tr
+          iv_fill_data   = abap_true
+        IMPORTING
+          et_data        = lt_execinfo_tr ).
+    END-TEST-SEAM.
 
     ASSIGN lt_execinfo_tr[ parent_key   = is_execinfo-parent_node_id
                            execution_id = is_execinfo-execution_id ] TO FIELD-SYMBOL(<ls_execinfo_tr>) ##PRIMKEY
@@ -546,6 +520,13 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
         ct_trackparameters = ct_trackparameters
         ct_eventid_map     = ct_eventid_map ).
 
+    add_additional_match_key(
+      EXPORTING
+        iv_evtcnt                = iv_evt_cnt
+        iv_execution_info_source = is_execinfo-execinfo_source
+      CHANGING
+        ct_trackparameters       = ct_trackparameters ).
+
     ASSIGN is_event-maintabref->* TO <ls_root>.
     IF sy-subrc <> 0.
       RETURN.
@@ -616,7 +597,7 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ASSIGN <ls_event>-maintabref->* TO <ls_tor_root>.
       CHECK sy-subrc = 0.
 
-      ls_trackingheader-trxid   = <ls_tor_root>-tor_id.
+      ls_trackingheader-trxid = |{ <ls_tor_root>-tor_id ALPHA = OUT }|.
 
       CASE <ls_tor_root>-tor_cat.
         WHEN /scmtms/if_tor_const=>sc_tor_category-active.
@@ -666,5 +647,14 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
+  ENDMETHOD.
+
+
+  METHOD add_additional_match_key.
+    IF iv_execution_info_source = /scmtms/if_tor_const=>sc_tor_event_source-prop_predecessor.
+      INSERT VALUE #( evtcnt      = iv_evtcnt
+                      param_name  = zif_gtt_sts_ef_constants=>cs_parameter-additional_match_key
+                      param_value = 'TMFU' ) INTO TABLE ct_trackparameters.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.

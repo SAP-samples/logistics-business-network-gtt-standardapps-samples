@@ -31,7 +31,7 @@ INTERFACE zif_gtt_mia_app_constants
       sh_delivery_item    TYPE /saptrx/strucdatadef VALUE 'DELIVERY_ITEM',
     END OF cs_tabledef .
   CONSTANTS:
-    BEGIN OF cs_system_fields,
+    BEGIN OF cs_system_fields,    "delete?
       actual_bisiness_timezone TYPE /saptrx/paramname VALUE 'ACTUAL_BUSINESS_TIMEZONE',
       actual_bisiness_datetime TYPE /saptrx/paramname VALUE 'ACTUAL_BUSINESS_DATETIME',
     END OF cs_system_fields .
@@ -63,12 +63,12 @@ INTERFACE zif_gtt_mia_app_constants
       location_type TYPE /saptrx/paramname VALUE 'LOCATION_TYPE',
     END OF cs_event_param .
   CONSTANTS:
-    BEGIN OF cs_bstae,
+    BEGIN OF cs_bstae,    "delete?
       confirm  TYPE ekpo-bstae VALUE '0001',
       delivery TYPE ekpo-bstae VALUE '0004',
     END OF cs_bstae .
   CONSTANTS:
-    BEGIN OF cs_loekz,
+    BEGIN OF cs_loekz,    "delete?
       active  TYPE ekpo-loekz VALUE '',
       deleted TYPE ekpo-loekz VALUE 'L',
     END OF cs_loekz .

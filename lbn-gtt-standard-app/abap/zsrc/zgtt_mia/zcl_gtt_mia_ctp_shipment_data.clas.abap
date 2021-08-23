@@ -235,11 +235,13 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
     CLEAR: et_ee_rel.
 
     lt_appobjid   = VALUE #( FOR ls_likp IN is_ship-likp
-                             ( ls_likp-vbeln ) ).
+                             ( zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                                 ir_likp = REF #( ls_likp ) ) ) ).
 
     lt_appobjid   = VALUE #( BASE lt_appobjid
                              FOR ls_lips IN is_ship-lips
-                             ( |{ ls_lips-vbeln }{ ls_lips-posnr }| ) ).
+                             ( zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                                 ir_lips = REF #( ls_lips ) ) ) ).
 
     IF lt_appobjid[] IS NOT INITIAL.
       SELECT *

@@ -170,12 +170,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
                                      WITH KEY root_key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
-
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-      EXPORTING
-        it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-      CHANGING
-        ct_loc_root = lt_loc_root ).
+      TEST-SEAM coupling_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
 
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root)
                                      WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.
@@ -248,12 +249,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                      WITH KEY root_key = <ls_stop>-log_loc_uuid.
 
       CHECK sy-subrc = 0.
-
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-        EXPORTING
-          it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-        CHANGING
-          ct_loc_root = lt_loc_root ).
+      TEST-SEAM decoupling_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
 
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root)
                                      WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.
@@ -314,12 +316,14 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                           iv_field_name  = cs_attribute-node_id ).
 
     IF et_stop IS SUPPLIED.
-      /scmtms/cl_tor_helper_stop=>get_stop_sequence(
-        EXPORTING
-          it_root_key     = VALUE #( ( key = lv_tor_node_id ) )
-          iv_before_image = abap_false
-        IMPORTING
-          et_stop_seq_d   = DATA(lt_stop_seq) ).
+      TEST-SEAM lt_stop_seq.
+        /scmtms/cl_tor_helper_stop=>get_stop_sequence(
+          EXPORTING
+            it_root_key     = VALUE #( ( key = lv_tor_node_id ) )
+            iv_before_image = abap_false
+          IMPORTING
+            et_stop_seq_d   = DATA(lt_stop_seq) ).
+      END-TEST-SEAM.
 
       ASSIGN lt_stop_seq[ root_key = lv_tor_node_id ] TO FIELD-SYMBOL(<ls_stop_seq>) ##WARN_OK.
       IF sy-subrc = 0.
@@ -334,11 +338,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
     ENDIF.
 
     IF et_loc_address IS SUPPLIED.
-      zcl_gtt_sts_tools=>get_postal_address(
-        EXPORTING
-          iv_node_id        = lv_tor_node_id
-        IMPORTING
-          et_postal_address = et_loc_address ).
+      TEST-SEAM et_loc_addres.
+        zcl_gtt_sts_tools=>get_postal_address(
+          EXPORTING
+            iv_node_id        = lv_tor_node_id
+          IMPORTING
+            et_postal_address = et_loc_address ).
+      END-TEST-SEAM.
     ENDIF.
 
     IF et_stop_points IS SUPPLIED.
@@ -377,11 +383,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr WITH KEY root_key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
 
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-        EXPORTING
-          it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-        CHANGING
-          ct_loc_root = lt_loc_root ).
+      TEST-SEAM load_end_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
 
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root) WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
@@ -445,12 +453,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                      WITH KEY root_key = <ls_stop>-log_loc_uuid.
 
       CHECK sy-subrc = 0.
-
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-        EXPORTING
-          it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-        CHANGING
-          ct_loc_root = lt_loc_root ).
+      TEST-SEAM load_start_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
 
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root)
                                      WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.
@@ -513,11 +522,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr WITH KEY root_key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
 
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-        EXPORTING
-          it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-        CHANGING
-          ct_loc_root = lt_loc_root ).
+      TEST-SEAM pod_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
 
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root)
                                      WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.
@@ -580,12 +591,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                      WITH KEY root_key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
 
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-        EXPORTING
-          it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-        CHANGING
-          ct_loc_root = lt_loc_root ).
-
+      TEST-SEAM shp_arrival_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root)
                                      WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
@@ -648,13 +660,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                      WITH KEY root_key = <ls_stop>-log_loc_uuid.
 
       CHECK sy-subrc = 0.
-
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-                EXPORTING
-                  it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-                CHANGING
-                  ct_loc_root = lt_loc_root ).
-
+      TEST-SEAM shp_dep_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root)
                                      WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
@@ -717,11 +729,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                      WITH KEY root_key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
 
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-        EXPORTING
-          it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-        CHANGING
-          ct_loc_root = lt_loc_root ).
+      TEST-SEAM unload_end_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
 
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root)
                                      WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.
@@ -785,12 +799,13 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
                                      WITH KEY root_key = <ls_stop>-log_loc_uuid.
       CHECK sy-subrc = 0.
-
-      /scmtms/cl_pln_bo_data=>get_loc_data(
-        EXPORTING
-          it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
-        CHANGING
-          ct_loc_root = lt_loc_root ).
+      TEST-SEAM unload_start_lt_loc_root.
+        /scmtms/cl_pln_bo_data=>get_loc_data(
+          EXPORTING
+            it_key      = VALUE #( ( key = <ls_stop>-log_loc_uuid ) )
+          CHANGING
+            ct_loc_root = lt_loc_root ).
+      END-TEST-SEAM.
 
       READ TABLE lt_loc_root REFERENCE INTO DATA(ls_loc_root)
                                      WITH KEY key COMPONENTS key = <ls_stop>-log_loc_uuid.

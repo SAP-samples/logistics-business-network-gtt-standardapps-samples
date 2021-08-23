@@ -9,6 +9,240 @@
    </INCLUDES>
    <FUNCTIONS>
     <item>
+     <FUNCNAME>ZGTT_MIA_AOID_DL_HDR</FUNCNAME>
+     <SHORT_TEXT>AOID Extractor for Inbound Delivery Header</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/APPLSYSTEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOTYPES</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_TABCONTAINER</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APPTYPE_TAB</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPTYPE_TABS_WA</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJECT</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPOBJ_CTAB_WA</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_MAINSTRUC</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+      </RSIMP>
+     </IMPORT>
+     <CHANGING>
+      <RSCHA>
+       <PARAMETER>E_APPOBJID</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOID</TYP>
+      </RSCHA>
+     </CHANGING>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Logische System-ID von Applikationssystem</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjektarten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Container mit Referenzen auf alle von Applikation übergebenen Tabellen</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APPTYPE_TAB</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Steuerungstabellen und Nametabs für alle Applikationsobjektarten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJECT</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjektdaten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_MAINSTRUC</PARAMETER>
+       <KIND>P</KIND>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>E_APPOBJID</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjekt</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+    <item>
+     <FUNCNAME>ZGTT_MIA_AOID_DL_ITEM</FUNCNAME>
+     <SHORT_TEXT>AOID Extractor for Inbound Delivery Item</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/APPLSYSTEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOTYPES</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_TABCONTAINER</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APPTYPE_TAB</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPTYPE_TABS_WA</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJECT</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPOBJ_CTAB_WA</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_MAINSTRUC</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+      </RSIMP>
+     </IMPORT>
+     <CHANGING>
+      <RSCHA>
+       <PARAMETER>E_APPOBJID</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOID</TYP>
+      </RSCHA>
+     </CHANGING>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Logische System-ID von Applikationssystem</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjektarten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Container mit Referenzen auf alle von Applikation übergebenen Tabellen</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APPTYPE_TAB</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Steuerungstabellen und Nametabs für alle Applikationsobjektarten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJECT</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjektdaten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_MAINSTRUC</PARAMETER>
+       <KIND>P</KIND>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>E_APPOBJID</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjekt</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+    <item>
+     <FUNCNAME>ZGTT_MIA_AOID_SH_HDR</FUNCNAME>
+     <SHORT_TEXT>AOID Extractor for Shipment Header</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/APPLSYSTEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOTYPES</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_TABCONTAINER</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APPTYPE_TAB</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPTYPE_TABS_WA</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJECT</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPOBJ_CTAB_WA</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_MAINSTRUC</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+      </RSIMP>
+     </IMPORT>
+     <CHANGING>
+      <RSCHA>
+       <PARAMETER>E_APPOBJID</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOID</TYP>
+      </RSCHA>
+     </CHANGING>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Logische System-ID von Applikationssystem</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjektarten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Container mit Referenzen auf alle von Applikation übergebenen Tabellen</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APPTYPE_TAB</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Steuerungstabellen und Nametabs für alle Applikationsobjektarten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJECT</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjektdaten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_MAINSTRUC</PARAMETER>
+       <KIND>P</KIND>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>E_APPOBJID</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjekt</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+    <item>
      <FUNCNAME>ZGTT_MIA_CTP_SH_TO_DL</FUNCNAME>
      <SHORT_TEXT>Cross TP Update from Shipment to Delivery</SHORT_TEXT>
      <IMPORT>
@@ -4062,6 +4296,119 @@
        <PARAMETER>STOP_PROCESSING</PARAMETER>
        <KIND>X</KIND>
        <STEXT>Stop processing</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+    <item>
+     <FUNCNAME>ZGTT_MIA_OTE_DL_HDR_TID</FUNCNAME>
+     <SHORT_TEXT>Tracking ID Extractor for Inbound Delivery Header</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/APPLSYSTEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOTYPES</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_TABCONTAINER</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_TYPE_CNTL_TABS</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPTYPE_TABS</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJECTS</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPOBJ_CTABS</TYP>
+      </RSIMP>
+     </IMPORT>
+     <TABLES>
+      <RSTBL>
+       <PARAMETER>E_TRACKIDDATA</PARAMETER>
+       <DBSTRUCT>/SAPTRX/TRACK_ID_DATA</DBSTRUCT>
+      </RSTBL>
+      <RSTBL>
+       <PARAMETER>E_LOGTABLE</PARAMETER>
+       <DBSTRUCT>BAPIRET2</DBSTRUCT>
+       <OPTIONAL>X</OPTIONAL>
+      </RSTBL>
+     </TABLES>
+     <EXCEPTION>
+      <RSEXC>
+       <EXCEPTION>PARAMETER_ERROR</EXCEPTION>
+      </RSEXC>
+      <RSEXC>
+       <EXCEPTION>TID_DETERMINATION_ERROR</EXCEPTION>
+      </RSEXC>
+      <RSEXC>
+       <EXCEPTION>TABLE_DETERMINATION_ERROR</EXCEPTION>
+      </RSEXC>
+      <RSEXC>
+       <EXCEPTION>STOP_PROCESSING</EXCEPTION>
+      </RSEXC>
+     </EXCEPTION>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Logical system ID of an application system</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Application object type</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Container with references to all tables passed by the application</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_TYPE_CNTL_TABS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Control tables and nametabs for all appl. object types</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJECTS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Tables for all appl. object types</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>E_TRACKIDDATA</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Tracking IDs for application objects</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>E_LOGTABLE</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Return Parameter</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>PARAMETER_ERROR</PARAMETER>
+       <KIND>X</KIND>
+       <STEXT>Error in Parameters</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>TID_DETERMINATION_ERROR</PARAMETER>
+       <KIND>X</KIND>
+       <STEXT>Tracking IDs could not be determined</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>TABLE_DETERMINATION_ERROR</PARAMETER>
+       <KIND>X</KIND>
+       <STEXT>A required datatable could not be found</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>STOP_PROCESSING</PARAMETER>
+       <KIND>X</KIND>
+       <STEXT>Stop Processing</STEXT>
       </RSFDO>
      </DOCUMENTATION>
     </item>

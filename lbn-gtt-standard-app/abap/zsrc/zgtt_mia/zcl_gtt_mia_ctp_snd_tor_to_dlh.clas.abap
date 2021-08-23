@@ -33,9 +33,11 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh DEFINITION
     METHODS fill_idoc_appobj_ctabs
       IMPORTING
         !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
-        !iv_vbeln     TYPE likp-vbeln
+        !is_likp      TYPE zif_gtt_mia_ctp_types=>ts_delivery
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data .
+        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+      RAISING
+        cx_udm_message.
     METHODS fill_idoc_control_data
       IMPORTING
         !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
@@ -72,7 +74,8 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
     cs_idoc_data-appobj_ctabs = VALUE #( BASE cs_idoc_data-appobj_ctabs (
       trxservername = cs_idoc_data-trxserv-trx_server_id
       appobjtype    = is_aotype-aot_type
-      appobjid      = |{ iv_vbeln }|
+      appobjid      = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                        ir_likp = REF #( is_likp ) )
     ) ).
 
   ENDMETHOD.
@@ -87,16 +90,13 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
     lt_control  = VALUE #(
       (
         paramname = cs_mapping-vbeln
-        value     = is_delivery-vbeln
+        value     = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
+                      ir_likp = REF #( is_delivery ) )
       )
       (
         paramname = cs_mapping-fu_relevant
         value     = is_delivery-fu_relevant
       )
-*      (
-*        paramname = cs_mapping-pod_relevant
-*        value     = is_delivery-pod_relevant
-*      )
       (
         paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_bisiness_timezone
         value     = zcl_gtt_mia_tools=>get_system_time_zone( )
@@ -119,7 +119,8 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
     LOOP AT lt_control ASSIGNING FIELD-SYMBOL(<ls_control>).
       <ls_control>-appsys     = mv_appsys.
       <ls_control>-appobjtype = is_aotype-aot_type.
-      <ls_control>-appobjid   = is_delivery-vbeln.
+      <ls_control>-appobjid   = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                                  ir_likp = REF #( is_delivery ) ).
     ENDLOOP.
 
     cs_idoc_data-control  = VALUE #( BASE cs_idoc_data-control
@@ -161,10 +162,10 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
           LOOP AT lt_exp_event ASSIGNING FIELD-SYMBOL(<ls_exp_event>).
             <ls_exp_event>-appsys         = mv_appsys.
             <ls_exp_event>-appobjtype     = is_aotype-aot_type.
-            <ls_exp_event>-appobjid       = zcl_gtt_mia_ctp_tools=>get_delivery_head_tracking_id(
-                                              is_likp = is_delivery-likp ).
+            <ls_exp_event>-appobjid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                                              ir_likp = REF #( is_delivery ) ).
             <ls_exp_event>-language       = sy-langu.
-            <ls_exp_event>-evt_exp_tzone  = zcl_gtt_mia_tools=>get_system_time_zone(  ).
+            <ls_exp_event>-evt_exp_tzone  = zcl_gtt_mia_tools=>get_system_time_zone( ).
           ENDLOOP.
 
           cs_idoc_data-exp_event = VALUE #( BASE cs_idoc_data-exp_event
@@ -198,9 +199,11 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
     cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
       appsys      = mv_appsys
       appobjtype  = is_aotype-aot_type
-      appobjid    = is_delivery-vbeln
+      appobjid    = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                      ir_likp = REF #( is_delivery ) )
       trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
-      trxid       = is_delivery-vbeln
+      trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                      ir_likp = REF #( is_delivery ) )
       timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
     ) ).
 
@@ -265,7 +268,7 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
         fill_idoc_appobj_ctabs(
           EXPORTING
             is_aotype    = <ls_aotype>
-            iv_vbeln     = <ls_dlv>-vbeln
+            is_likp      = <ls_dlv>
           CHANGING
             cs_idoc_data = ls_idoc_data ).
 

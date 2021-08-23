@@ -86,9 +86,8 @@ CLASS zcl_gtt_mia_ae_filler_shh_bh IMPLEMENTATION.
 
     ct_trackingheader = VALUE #( BASE ct_trackingheader (
       language    = sy-langu
-      trxid       = zcl_gtt_mia_tools=>get_field_of_structure(
-                        ir_struct_data = is_events-maintabref
-                        iv_field_name  = 'TKNUM' )
+      trxid       = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
+                      ir_vttk = is_events-maintabref )
       trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_number
       evtcnt      = lv_evtcnt
       evtid       = get_eventid( )

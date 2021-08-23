@@ -37,6 +37,27 @@ CLASS zcl_gtt_mia_dl_tools DEFINITION
         VALUE(rv_date) TYPE /saptrx/event_exp_datetime
       RAISING
         cx_udm_message .
+    CLASS-METHODS get_formated_dlv_item
+      IMPORTING
+        !ir_lips        TYPE REF TO data
+      RETURNING
+        VALUE(rv_posnr) TYPE char6
+      RAISING
+        cx_udm_message.
+    CLASS-METHODS get_formated_dlv_number
+      IMPORTING
+        !ir_likp        TYPE REF TO data
+      RETURNING
+        VALUE(rv_vbeln) TYPE vbeln_vl
+      RAISING
+        cx_udm_message .
+    CLASS-METHODS get_formated_po_item
+      IMPORTING
+        !ir_lips        TYPE REF TO data
+      RETURNING
+        VALUE(rv_po_item) TYPE char20
+      RAISING
+        cx_udm_message.
     CLASS-METHODS get_next_event_counter
       RETURNING
         VALUE(rv_evtcnt) TYPE /saptrx/evtcnt .
@@ -53,6 +74,13 @@ CLASS zcl_gtt_mia_dl_tools DEFINITION
         !iv_lgort       TYPE lgort_d
       RETURNING
         VALUE(rv_lgobe) TYPE lgobe
+      RAISING
+        cx_udm_message .
+    CLASS-METHODS get_tracking_id_dl_header
+      IMPORTING
+        !ir_likp           TYPE REF TO data
+      RETURNING
+        VALUE(rv_track_id) TYPE /saptrx/trxid
       RAISING
         cx_udm_message .
     CLASS-METHODS get_tracking_id_dl_item
@@ -193,6 +221,39 @@ CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_formated_dlv_item.
+
+    rv_posnr  = zcl_gtt_mia_tools=>get_field_of_structure(
+                  ir_struct_data = ir_lips
+                  iv_field_name  = 'POSNR' ).
+
+    rv_posnr   = |{ rv_posnr ALPHA = IN }|.
+
+  ENDMETHOD.
+
+  METHOD get_formated_dlv_number.
+
+    rv_vbeln  = zcl_gtt_mia_tools=>get_field_of_structure(
+                  ir_struct_data = ir_likp
+                  iv_field_name  = 'VBELN' ).
+
+    rv_vbeln   = |{ rv_vbeln ALPHA = OUT }|.
+
+  ENDMETHOD.
+
+  METHOD get_formated_po_item.
+    DATA(lv_ebeln)  = CONV ebeln( zcl_gtt_mia_tools=>get_field_of_structure(
+                                    ir_struct_data = ir_lips
+                                    iv_field_name  = 'VGBEL' ) ).
+
+    DATA(lv_ebelp)  = CONV char5( zcl_gtt_mia_tools=>get_field_of_structure(
+                                    ir_struct_data = ir_lips
+                                    iv_field_name  = 'VGPOS' ) ).
+
+    rv_po_item  = |{ lv_ebeln ALPHA = OUT }{ lv_ebelp }|.
+
+    CONDENSE rv_po_item NO-GAPS.
+  ENDMETHOD.
 
   METHOD get_door_description.
 
@@ -289,6 +350,17 @@ CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_tracking_id_dl_header.
+
+    DATA: lv_vbeln TYPE lips-vbeln.
+
+    lv_vbeln  = zcl_gtt_mia_tools=>get_field_of_structure(
+                  ir_struct_data = ir_likp
+                  iv_field_name  = 'VBELN' ).
+
+    rv_track_id   = |{ lv_vbeln ALPHA = OUT }|.
+
+  ENDMETHOD.
 
   METHOD get_tracking_id_dl_item.
 
@@ -303,8 +375,9 @@ CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
                   ir_struct_data = ir_lips
                   iv_field_name  = 'POSNR' ).
 
-    rv_track_id   = |{ lv_vbeln }{ lv_posnr }|.
+    rv_track_id   = |{ lv_vbeln ALPHA = OUT }{ lv_posnr ALPHA = IN }|.
 
+    CONDENSE rv_track_id NO-GAPS.
   ENDMETHOD.
 
 

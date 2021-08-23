@@ -9,6 +9,84 @@
    </INCLUDES>
    <FUNCTIONS>
     <item>
+     <FUNCNAME>ZGTT_STS_AOID_TOR</FUNCNAME>
+     <SHORT_TEXT>AOID Extractor for FU/FO/FB</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/APPLSYSTEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOTYPES</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_TABCONTAINER</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APPTYPE_TAB</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPTYPE_TABS_WA</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_OBJECT</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>TRXAS_APPOBJ_CTAB_WA</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>I_APP_MAINSTRUC</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+      </RSIMP>
+     </IMPORT>
+     <CHANGING>
+      <RSCHA>
+       <PARAMETER>E_APPOBJID</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SAPTRX/AOID</TYP>
+      </RSCHA>
+     </CHANGING>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>I_APPSYS</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Logische System-ID von Applikationssystem</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJ_TYPES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjektarten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_ALL_APPL_TABLES</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Container mit Referenzen auf alle von Applikation übergebenen Tabellen</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APPTYPE_TAB</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Steuerungstabellen und Nametabs für alle Applikationsobjektarten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_OBJECT</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjektdaten</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>I_APP_MAINSTRUC</PARAMETER>
+       <KIND>P</KIND>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>E_APPOBJID</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Applikationsobjekt</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+    <item>
      <FUNCNAME>ZGTT_STS_EE_FO_ARRIVAL</FUNCNAME>
      <SHORT_TEXT>Actual Event: Arrival</SHORT_TEXT>
      <IMPORT>

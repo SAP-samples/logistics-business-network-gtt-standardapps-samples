@@ -7,9 +7,14 @@ CLASS zcl_gtt_mia_event_rel_dl_hd DEFINITION
   PROTECTED SECTION.
 
     METHODS get_field_name
-        REDEFINITION .
+      REDEFINITION .
+
     METHODS get_object_status
-        REDEFINITION .
+      REDEFINITION .
+
+    METHODS get_old_appobjid
+      REDEFINITION.
+
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -93,5 +98,11 @@ CLASS zcl_gtt_mia_event_rel_dl_hd IMPLEMENTATION.
       zcl_gtt_mia_tools=>throw_exception( ).
     ENDIF.
 
+  ENDMETHOD.
+
+  METHOD get_old_appobjid.
+    rv_appobjid  = zcl_gtt_mia_tools=>get_field_of_structure(
+                     ir_struct_data = ms_app_objects-maintabref
+                     iv_field_name  = 'VBELN' ).
   ENDMETHOD.
 ENDCLASS.

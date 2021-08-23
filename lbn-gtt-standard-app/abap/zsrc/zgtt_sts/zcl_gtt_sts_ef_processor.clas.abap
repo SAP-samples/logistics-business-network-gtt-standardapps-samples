@@ -254,13 +254,13 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
       add_struct_to_control_data(
         EXPORTING
           ir_bo_data      = lr_bo_data
-          iv_appobjid     = <ls_app_objects>-appobjid
+          iv_appobjid     = |{ <ls_app_objects>-appobjid ALPHA = OUT }|
         CHANGING
           ct_control_data = ct_control_data ).
 
       add_sys_attr_to_control_data(
         EXPORTING
-          iv_appobjid     = <ls_app_objects>-appobjid
+          iv_appobjid     = |{ <ls_app_objects>-appobjid ALPHA = OUT }|
         CHANGING
           ct_control_data = ct_control_data ).
     ENDLOOP.

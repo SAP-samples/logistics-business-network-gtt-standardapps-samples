@@ -14,11 +14,7 @@ CLASS zcl_gtt_mia_ctp_tools DEFINITION
         !et_exp_event TYPE /saptrx/bapi_trk_ee_tab
       RAISING
         cx_udm_message .
-    CLASS-METHODS get_delivery_head_tracking_id
-      IMPORTING
-        !is_likp              TYPE zif_gtt_mia_app_types=>ts_likpvb
-      RETURNING
-        VALUE(rv_tracking_id) TYPE /saptrx/trxid .
+
     CLASS-METHODS get_delivery_item_planned_evt
       IMPORTING
         !iv_appsys    TYPE logsys
@@ -29,11 +25,7 @@ CLASS zcl_gtt_mia_ctp_tools DEFINITION
         !et_exp_event TYPE /saptrx/bapi_trk_ee_tab
       RAISING
         cx_udm_message .
-    CLASS-METHODS get_delivery_item_tracking_id
-      IMPORTING
-        !is_lips              TYPE zif_gtt_mia_app_types=>ts_lipsvb
-      RETURNING
-        VALUE(rv_tracking_id) TYPE /saptrx/trxid .
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -57,8 +49,8 @@ CLASS ZCL_GTT_MIA_CTP_TOOLS IMPLEMENTATION.
 
     ls_app_objects                = CORRESPONDING #( ls_app_obj_types ).
     ls_app_objects-appobjtype     = is_aotype-aot_type.
-    ls_app_objects-appobjid       = get_delivery_head_tracking_id(
-                                      is_likp = CORRESPONDING #( is_likp ) ).
+    ls_app_objects-appobjid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                                      ir_likp = REF #( is_likp ) ).
     ls_app_objects-maintabref     = REF #( is_likp ).
     ls_app_objects-maintabdef     = zif_gtt_mia_app_constants=>cs_tabledef-dl_header_new.
 
@@ -91,14 +83,6 @@ CLASS ZCL_GTT_MIA_CTP_TOOLS IMPLEMENTATION.
 
   ENDMETHOD.
 
-
-  METHOD get_delivery_head_tracking_id.
-
-    rv_tracking_id  = |{ is_likp-vbeln }|.
-
-  ENDMETHOD.
-
-
   METHOD get_delivery_item_planned_evt.
 
     DATA: ls_app_obj_types      TYPE /saptrx/aotypes,
@@ -114,8 +98,8 @@ CLASS ZCL_GTT_MIA_CTP_TOOLS IMPLEMENTATION.
 
     ls_app_objects                = CORRESPONDING #( ls_app_obj_types ).
     ls_app_objects-appobjtype     = is_aotype-aot_type.
-    ls_app_objects-appobjid       = get_delivery_item_tracking_id(
-                                      is_lips = is_lips ).
+    ls_app_objects-appobjid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                                      ir_lips = REF #( is_lips ) ).
     ls_app_objects-maintabref     = REF #( is_lips ).
     ls_app_objects-maintabdef     = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new.
     ls_app_objects-mastertabref   = REF #( is_likp ).
@@ -152,10 +136,4 @@ CLASS ZCL_GTT_MIA_CTP_TOOLS IMPLEMENTATION.
 
   ENDMETHOD.
 
-
-  METHOD get_delivery_item_tracking_id.
-
-    rv_tracking_id  = |{ is_lips-vbeln }{ is_lips-posnr }|.
-
-  ENDMETHOD.
 ENDCLASS.

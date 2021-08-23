@@ -3,6 +3,21 @@ CLASS zcl_gtt_mia_tm_tools DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
+    CLASS-METHODS get_formated_tor_id
+      IMPORTING
+        ir_data TYPE REF TO data
+      RETURNING
+        VALUE(rv_tor_id) TYPE /scmtms/tor_id
+      RAISING
+        cx_udm_message.
+
+    CLASS-METHODS get_formated_tor_item
+      IMPORTING
+        ir_data TYPE REF TO data
+      RETURNING
+        VALUE(rv_item_id) TYPE /scmtms/item_id
+      RAISING
+        cx_udm_message.
 
     CLASS-METHODS get_tor_root_tor_id
       IMPORTING
@@ -77,6 +92,23 @@ CLASS zcl_gtt_mia_tm_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_formated_tor_id.
+
+    rv_tor_id   = zcl_gtt_mia_tools=>get_field_of_structure(
+                    ir_struct_data = ir_data
+                    iv_field_name  = 'TOR_ID' ).
+
+    rv_tor_id   = |{ rv_tor_id ALPHA = OUT }|.
+
+  ENDMETHOD.
+
+  METHOD get_formated_tor_item.
+
+    rv_item_id   = zcl_gtt_mia_tools=>get_field_of_structure(
+                    ir_struct_data = ir_data
+                    iv_field_name  = 'ITEM_ID' ).
+
+  ENDMETHOD.
 
   METHOD get_tor_items_for_dlv_items.
 

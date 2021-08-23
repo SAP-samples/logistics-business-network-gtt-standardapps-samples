@@ -290,7 +290,8 @@ CLASS zcl_gtt_mia_ae_filler_dlh_gr IMPLEMENTATION.
 
       ct_trackingheader = VALUE #( BASE ct_trackingheader (
         language    = sy-langu
-        trxid       = <lv_vbeln>
+        trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                        ir_likp = NEW likp( vbeln = <lv_vbeln> ) )
         trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
         evtcnt      = lv_evtcnt
         evtid       = zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt

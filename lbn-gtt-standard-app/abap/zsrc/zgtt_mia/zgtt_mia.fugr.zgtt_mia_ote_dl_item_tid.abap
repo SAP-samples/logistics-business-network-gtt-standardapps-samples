@@ -25,7 +25,7 @@ FUNCTION zgtt_mia_ote_dl_item_tid.
           is_definition         = VALUE #(
                                     maintab   = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new
                                     mastertab = zif_gtt_mia_app_constants=>cs_tabledef-dl_header_new )
-          io_bo_factory         = NEW zcl_gtt_mia_tp_factory_dli( )
+          io_tp_factory         = NEW zcl_gtt_mia_tp_factory_dli( )
           iv_appsys             = i_appsys
           is_app_obj_types      = i_app_obj_types
           it_all_appl_tables    = i_all_appl_tables

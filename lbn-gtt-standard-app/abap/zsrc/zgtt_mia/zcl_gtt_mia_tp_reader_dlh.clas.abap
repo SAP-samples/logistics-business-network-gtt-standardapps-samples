@@ -12,12 +12,6 @@ CLASS zcl_gtt_mia_tp_reader_dlh DEFINITION
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    TYPES tv_item_num TYPE i .
-    TYPES:
-      tt_item_num TYPE STANDARD TABLE OF tv_item_num WITH EMPTY KEY .
-    TYPES tv_item_posnr TYPE char20 .
-    TYPES:
-      tt_item_posnr TYPE STANDARD TABLE OF tv_item_posnr WITH EMPTY KEY .
     TYPES:
       BEGIN OF ts_dl_header,
         vbeln     TYPE likp-vbeln,
@@ -134,6 +128,9 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
     IF <ls_likp> IS ASSIGNED.
       MOVE-CORRESPONDING <ls_likp> TO cs_dl_header.
 
+      cs_dl_header-vbeln    = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
+                                ir_likp = ir_likp ).
+
       cs_dl_header-erdat    = zcl_gtt_mia_tools=>get_local_timestamp(
                                 iv_date = <ls_likp>-erdat
                                 iv_time = <ls_likp>-erzet ).
@@ -167,8 +164,7 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
     TYPES: tt_posnr TYPE SORTED TABLE OF posnr_vl
                            WITH UNIQUE KEY table_line.
 
-    DATA: lt_posnr TYPE tt_posnr,
-          lv_dummy TYPE char100.
+    DATA: lv_dummy TYPE char100.
 
     FIELD-SYMBOLS: <lt_lips_new> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
                    <lt_lips_old> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
@@ -184,40 +180,12 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
 
         IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
              ir_struct = REF #( <ls_lips> ) ) = abap_true.
-          INSERT <ls_lips>-posnr INTO TABLE lt_posnr.
 
           cs_dl_header-werks  = COND #( WHEN cs_dl_header-werks IS INITIAL
                                           THEN <ls_lips>-werks
                                           ELSE cs_dl_header-werks ).
         ENDIF.
       ENDLOOP.
-
-      " process old table
-      IF ir_lips_old IS BOUND.
-        ASSIGN ir_lips_old->* TO <lt_lips_old>.
-        IF sy-subrc = 0.
-          LOOP AT <lt_lips_old> ASSIGNING <ls_lips>
-            WHERE vbeln = iv_vbeln.
-
-            " add deleted records
-            IF <ls_lips>-updkz  = zif_gtt_mia_ef_constants=>cs_change_mode-insert.
-              INSERT <ls_lips>-posnr INTO TABLE lt_posnr.
-
-              " remove inserted records
-            ELSEIF <ls_lips>-updkz  = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
-              READ TABLE lt_posnr TRANSPORTING NO FIELDS
-                WITH KEY table_line = <ls_lips>-posnr.
-
-              IF sy-subrc = 0.
-                DELETE lt_posnr INDEX sy-tabix.
-              ENDIF.
-            ENDIF.
-          ENDLOOP.
-        ELSE.
-          MESSAGE e002(zgtt_mia) WITH 'LIPS OLD' INTO lv_dummy.
-          zcl_gtt_mia_tools=>throw_exception( ).
-        ENDIF.
-      ENDIF.
 
       cs_dl_header-fu_relev = zcl_gtt_mia_tm_tools=>is_fu_relevant(
                                 it_lips = CORRESPONDING #( <lt_lips_new> ) ).
@@ -312,6 +280,10 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD zif_gtt_mia_tp_reader~get_app_obj_type_id.
+    rv_appobjid   = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                        ir_likp = is_app_object-maintabref ).
+  ENDMETHOD.
 
   METHOD zif_gtt_mia_tp_reader~get_data.
 
@@ -333,7 +305,7 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new )
         ir_lips_old  = mo_ef_parameters->get_appl_table(
                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_old )
-        iv_vbeln     = <ls_header>-vbeln
+        iv_vbeln     = |{ <ls_header>-vbeln ALPHA = IN }|
       CHANGING
         cs_dl_header = <ls_header> ).
 
@@ -366,14 +338,13 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
       CHANGING
         cs_dl_header = <ls_header> ).
 
-
     fill_header_from_lips_table(
       EXPORTING
         ir_lips_new  = mo_ef_parameters->get_appl_table(
                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new )
         ir_lips_old  = mo_ef_parameters->get_appl_table(
                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_old )
-        iv_vbeln     = <ls_header>-vbeln
+        iv_vbeln     = |{ <ls_header>-vbeln ALPHA = IN }|
       CHANGING
         cs_dl_header = <ls_header> ).
 
@@ -402,15 +373,20 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
 
 
   METHOD zif_gtt_mia_tp_reader~get_track_id_data.
+    " another tip is that: for tracking ID type 'SHIPMENT_ORDER' of delivery header,
+    " and for tracking ID type 'RESOURCE' of shipment header,
+    " DO NOT enable START DATE and END DATE
 
-    "another tip is that: for tracking ID type 'SHIPMENT_ORDER' of delivery header,
-    "and for tracking ID type 'RESOURCE' of shipment header,
-    "DO NOT enable START DATE and END DATE
-
-    MESSAGE e004(zgtt_mia) WITH 'LCL_BO_READER_DL_HEADER'
-      INTO DATA(lv_dummy).
-    zcl_gtt_mia_tools=>throw_exception(
-      iv_textid = zif_gtt_mia_ef_constants=>cs_errors-stop_processing ).
+    et_track_id_data = VALUE #( BASE et_track_id_data (
+        appsys      = mo_ef_parameters->get_appsys( )
+        appobjtype  = is_app_object-appobjtype
+        appobjid    = is_app_object-appobjid
+        trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
+        trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                        ir_likp = is_app_object-maintabref )
+        timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
+        msrid       = space
+      ) ).
 
   ENDMETHOD.
 ENDCLASS.

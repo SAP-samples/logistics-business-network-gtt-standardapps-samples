@@ -18,7 +18,7 @@ CLASS zcl_gtt_mia_tp_reader_dli DEFINITION
       BEGIN OF ts_dl_item,
         " Header section
         vbeln     TYPE lips-vbeln,
-        posnr     TYPE tv_posnr_txt,      "used char type to avoid leading zeros deletion
+        posnr     TYPE tv_posnr_txt,
         arktx     TYPE lips-arktx,
         matnr     TYPE lips-matnr,
         charg     TYPE lips-charg,         "MIA
@@ -142,13 +142,6 @@ CLASS zcl_gtt_mia_tp_reader_dli DEFINITION
         VALUE(rr_lips) TYPE REF TO data
       RAISING
         cx_udm_message .
-    METHODS get_purchasing_order_item
-      IMPORTING
-        !ir_lips          TYPE REF TO data
-      RETURNING
-        VALUE(rv_po_item) TYPE tv_po_item
-      RAISING
-        cx_udm_message .
     METHODS get_vbpa_table_old
       IMPORTING
         !is_app_object TYPE trxas_appobj_ctab_wa
@@ -187,6 +180,10 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
 
     IF <ls_likp> IS ASSIGNED.
       MOVE-CORRESPONDING <ls_likp> TO cs_dl_item.
+
+      cs_dl_item-vbeln    = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
+                              ir_likp = ir_likp ).
+
     ELSE.
       MESSAGE e002(zgtt_mia) WITH 'LIKP' INTO DATA(lv_dummy).
       zcl_gtt_mia_tools=>throw_exception( ).
@@ -205,6 +202,11 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
 
     IF <ls_lips> IS ASSIGNED.
       MOVE-CORRESPONDING <ls_lips> TO cs_dl_item.
+
+      cs_dl_item-vbeln    = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
+                              ir_likp = ir_lips ).
+      cs_dl_item-posnr    = zcl_gtt_mia_dl_tools=>get_formated_dlv_item(
+                              ir_lips = REF #( <ls_lips> ) ).
 
       cs_dl_item-profl  = boolc( cs_dl_item-profl IS NOT INITIAL ).
 
@@ -243,9 +245,8 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
         ENDTRY.
       ENDIF.
 
-
-      cs_dl_item-po_item    = get_purchasing_order_item(
-                                ir_lips   = ir_lips ).
+      cs_dl_item-po_item    = zcl_gtt_mia_dl_tools=>get_formated_po_item(
+                                ir_lips = ir_lips ).
     ELSE.
       MESSAGE e002(zgtt_mia) WITH 'LIKP' INTO DATA(lv_dummy).
       zcl_gtt_mia_tools=>throw_exception( ).
@@ -369,22 +370,6 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
 
   ENDMETHOD.
 
-
-  METHOD get_purchasing_order_item.
-
-    DATA(lv_ebeln)  = CONV ebeln( zcl_gtt_mia_tools=>get_field_of_structure(
-                                    ir_struct_data = ir_lips
-                                    iv_field_name  = 'VGBEL' ) ).
-
-    DATA(lv_ebelp)  = CONV ebelp( zcl_gtt_mia_tools=>get_field_of_structure(
-                                    ir_struct_data = ir_lips
-                                    iv_field_name  = 'VGPOS' ) ).
-
-    rv_po_item  = |{ lv_ebeln }{ lv_ebelp }|.
-
-  ENDMETHOD.
-
-
   METHOD get_vbpa_table_old.
 
     " when partner data is unchanged, it is absent in table 'PARTNERS_OLD'
@@ -454,6 +439,10 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD zif_gtt_mia_tp_reader~get_app_obj_type_id.
+    rv_appobjid   = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                      ir_lips = is_app_object-maintabref ).
+  ENDMETHOD.
 
   METHOD zif_gtt_mia_tp_reader~get_data.
 
@@ -479,7 +468,7 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
       EXPORTING
         ir_vbpa    = mo_ef_parameters->get_appl_table(
                           iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_partners_new )
-        iv_vbeln   = <ls_item>-vbeln
+        iv_vbeln   = |{ <ls_item>-vbeln ALPHA = IN }|
         iv_posnr   = cv_posnr_empty
       CHANGING
         cs_dl_item = <ls_item> ).
@@ -572,8 +561,6 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
     "please ensure same tracking ID type to be used in the
     "Inbound Delivery Header process
 
-    DATA: lv_fname TYPE char5.
-
     FIELD-SYMBOLS: <ls_lips>  TYPE lipsvb.
 
     " Actual Business Time zone
@@ -587,7 +574,8 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
           appobjtype  = is_app_object-appobjtype
           appobjid    = is_app_object-appobjid
           trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_position
-          trxid       = |{ <ls_lips>-vbeln }{ <ls_lips>-posnr }|
+          trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                          ir_lips = is_app_object-maintabref )
           timzon      = lv_tzone
           msrid       = space
         ) ).
@@ -598,7 +586,8 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
             appobjtype  = is_app_object-appobjtype
             appobjid    = is_app_object-appobjid
             trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
-            trxid       = |{ <ls_lips>-vbeln }|
+            trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                            ir_likp = is_app_object-mastertabref )
             timzon      = lv_tzone
             msrid       = space
           ) ).

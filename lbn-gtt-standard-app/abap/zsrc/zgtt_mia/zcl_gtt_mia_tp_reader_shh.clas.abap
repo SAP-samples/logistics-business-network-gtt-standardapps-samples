@@ -215,7 +215,8 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
 
     ASSIGN ir_vttk->* TO <ls_vttk>.
     IF sy-subrc = 0.
-      cs_header-tknum       = <ls_vttk>-tknum.
+      cs_header-tknum       = zcl_gtt_mia_sh_tools=>get_formated_sh_number(
+                                ir_vttk = ir_vttk ).
       cs_header-bu_id_num   = get_forwarding_agent_id_number(
                                 iv_tdlnr = <ls_vttk>-tdlnr ).
       cs_header-cont_dg     = <ls_vttk>-cont_dg.
@@ -259,7 +260,8 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
   METHOD fill_header_from_vttp.
 
     TYPES: tt_vttp  TYPE STANDARD TABLE OF vttpvb.
-    DATA: lv_count TYPE i VALUE 0.
+    DATA: lv_count TYPE i VALUE 0,
+          lv_vbeln TYPE vbeln_vl.
 
     FIELD-SYMBOLS: <ls_vttk> TYPE vttkvb,
                    <lt_vttp> TYPE tt_vttp.
@@ -274,7 +276,10 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
         ADD 1 TO lv_count.
         APPEND lv_count TO cs_header-deliv_cnt.
 
-        APPEND <ls_vttp>-vbeln TO cs_header-deliv_no.
+        lv_vbeln    = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
+                        ir_likp = REF #( <ls_vttp> ) ).
+
+        APPEND lv_vbeln TO cs_header-deliv_no.
       ENDLOOP.
     ELSEIF <ls_vttk> IS NOT ASSIGNED.
       MESSAGE e002(zgtt_mia) WITH 'VTTK' INTO DATA(lv_dummy).
@@ -290,10 +295,10 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
   METHOD fill_header_from_vtts.
 
     TYPES: BEGIN OF ts_stop_id,
-             stopid  TYPE zif_gtt_mia_app_types=>tv_stopid,
-             stopcnt TYPE zif_gtt_mia_app_types=>tv_stopcnt,
-             loctype TYPE zif_gtt_mia_app_types=>tv_loctype,
-             locid   TYPE zif_gtt_mia_app_types=>tv_locid,
+             stopid_txt TYPE zif_gtt_mia_app_types=>tv_stopid,
+             stopcnt    TYPE zif_gtt_mia_app_types=>tv_stopcnt,
+             loctype    TYPE zif_gtt_mia_app_types=>tv_loctype,
+             locid      TYPE zif_gtt_mia_app_types=>tv_locid,
            END OF ts_stop_id.
 
     DATA(lv_tknum) = CONV tknum( zcl_gtt_mia_tools=>get_field_of_structure(
@@ -305,6 +310,7 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
           lt_stop_ids TYPE STANDARD TABLE OF ts_stop_id,
           lv_datetime TYPE zif_gtt_mia_app_types=>tv_pln_evt_datetime,
           lv_locid    TYPE zif_gtt_mia_app_types=>tv_locid,
+          lv_stopid   TYPE zif_gtt_mia_app_types=>tv_stopid,
           lv_count    TYPE i.
 
     FIELD-SYMBOLS: <lt_vttp>  TYPE vttpvb_tab,
@@ -343,10 +349,10 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
                             iv_locid   = <ls_stop_ids>-locid
                             iv_loctype = <ls_stop_ids>-loctype ).
 
-        APPEND <ls_stop_ids>-stopid  TO cs_header-stpid_stopid.
-        APPEND <ls_stop_ids>-stopcnt TO cs_header-stpid_stopcnt.
-        APPEND <ls_stop_ids>-loctype TO cs_header-stpid_loctype.
-        APPEND lv_locid TO cs_header-stpid_locid.
+        APPEND <ls_stop_ids>-stopid_txt TO cs_header-stpid_stopid.
+        APPEND <ls_stop_ids>-stopcnt    TO cs_header-stpid_stopcnt.
+        APPEND <ls_stop_ids>-loctype    TO cs_header-stpid_loctype.
+        APPEND lv_locid                 TO cs_header-stpid_locid.
       ENDLOOP.
 
       READ TABLE lt_stops ASSIGNING <ls_stops> INDEX 1.
@@ -576,6 +582,10 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD zif_gtt_mia_tp_reader~get_app_obj_type_id.
+    rv_appobjid   = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
+                      ir_vttk = is_app_object-maintabref ).
+  ENDMETHOD.
 
   METHOD zif_gtt_mia_tp_reader~get_data.
 
@@ -711,7 +721,8 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
         appobjtype  = is_app_object-appobjtype
         appobjid    = is_app_object-appobjid
         trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_number
-        trxid       = |{ <ls_vttk>-tknum }|
+        trxid       = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
+                        ir_vttk = is_app_object-maintabref )
         timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
       ) ).
 

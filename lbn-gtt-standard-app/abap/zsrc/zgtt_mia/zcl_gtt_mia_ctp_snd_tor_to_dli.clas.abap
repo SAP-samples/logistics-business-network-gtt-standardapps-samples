@@ -97,11 +97,13 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dli IMPLEMENTATION.
     lt_control  = VALUE #(
       (
         paramname = cs_mapping-vbeln
-        value     = is_lips-vbeln
+        value     = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
+                      ir_likp = REF #( is_likp ) )
       )
       (
         paramname = cs_mapping-posnr
-        value     = is_lips-posnr
+        value     = zcl_gtt_mia_dl_tools=>get_formated_dlv_item(
+                      ir_lips = REF #( is_lips ) )
       )
       (
         paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_bisiness_timezone
@@ -135,14 +137,14 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dli IMPLEMENTATION.
         (
           paramindex  = lv_count
           paramname   = cs_mapping-fu_freightUnit
-          value       = zcl_gtt_mia_tools=>get_pretty_value(
-                          iv_value = <ls_fu_list>-tor_id )
+          value       = zcl_gtt_mia_tm_tools=>get_formated_tor_id(
+                          ir_data = REF #( <ls_fu_list> ) )
         )
         (
           paramindex  = lv_count
           paramname   = cs_mapping-fu_ItemNumber
-          value       = zcl_gtt_mia_tools=>get_pretty_value(
-                          iv_value = <ls_fu_list>-item_id )
+          value       = zcl_gtt_mia_tm_tools=>get_formated_tor_item(
+                          ir_data = REF #( <ls_fu_list> ) )
         )
         (
           paramindex  = lv_count
@@ -215,8 +217,8 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dli IMPLEMENTATION.
           LOOP AT lt_exp_event ASSIGNING FIELD-SYMBOL(<ls_exp_event>).
             <ls_exp_event>-appsys         = mv_appsys.
             <ls_exp_event>-appobjtype     = is_aotype-aot_type.
-            <ls_exp_event>-appobjid       = zcl_gtt_mia_ctp_tools=>get_delivery_head_tracking_id(
-                                              is_likp = is_likp ).
+            <ls_exp_event>-appobjid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                                              ir_lips = REF #( is_lips ) ).
             <ls_exp_event>-language       = sy-langu.
             <ls_exp_event>-evt_exp_tzone  = zcl_gtt_mia_tools=>get_system_time_zone(  ).
           ENDLOOP.

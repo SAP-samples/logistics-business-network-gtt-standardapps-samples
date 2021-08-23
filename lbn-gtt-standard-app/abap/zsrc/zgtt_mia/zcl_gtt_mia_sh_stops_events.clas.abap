@@ -206,7 +206,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
               milestone         = COND #( WHEN <ls_watching>-loccat = zif_gtt_mia_app_constants=>cs_loccat-departure
                                             THEN zif_gtt_mia_app_constants=>cs_milestone-sh_departure
                                             ELSE zif_gtt_mia_app_constants=>cs_milestone-sh_arrival )
-              locid2            = <ls_stops>-stopid
+              locid2            = <ls_stops>-stopid_txt
               loctype           = <ls_stops>-loctype
               locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                                     iv_locid   = <ls_stops>-locid
@@ -225,7 +225,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
 
             lt_exp_event = VALUE #( BASE lt_exp_event (
                 milestone         = zif_gtt_mia_app_constants=>cs_milestone-sh_pod
-                locid2            = <ls_stops>-stopid
+                locid2            = <ls_stops>-stopid_txt
                 loctype           = <ls_stops>-loctype
                 locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                                       iv_locid   = <ls_stops>-locid

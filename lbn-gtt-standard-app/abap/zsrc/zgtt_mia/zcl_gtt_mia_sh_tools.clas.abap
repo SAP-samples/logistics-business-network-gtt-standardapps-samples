@@ -4,6 +4,35 @@ CLASS zcl_gtt_mia_sh_tools DEFINITION
 
   PUBLIC SECTION.
 
+    CLASS-METHODS get_carrier_reference_document
+      IMPORTING
+        !is_vttk    TYPE vttkvb
+      EXPORTING
+        !ev_ref_typ TYPE zif_gtt_mia_app_types=>tv_crdoc_ref_typ
+        !ev_ref_val TYPE zif_gtt_mia_app_types=>tv_crdoc_ref_val .
+    CLASS-METHODS get_formated_sh_number
+      IMPORTING
+        !ir_vttk        TYPE REF TO data
+      RETURNING
+        VALUE(rv_tknum) TYPE tknum
+      RAISING
+        cx_udm_message.
+    CLASS-METHODS get_formated_sh_stopid
+      IMPORTING
+        iv_tknum TYPE tknum
+        iv_cnt   TYPE clike
+      RETURNING
+        VALUE(rv_stopid) TYPE zif_gtt_mia_app_types=>tv_stopid.
+    CLASS-METHODS get_next_event_counter
+      RETURNING
+        VALUE(rv_evtcnt) TYPE /saptrx/evtcnt .
+    CLASS-METHODS get_tracking_id_sh_header
+      IMPORTING
+        !ir_vttk           TYPE REF TO data
+      RETURNING
+        VALUE(rv_track_id) TYPE /saptrx/trxid
+      RAISING
+        cx_udm_message .
     CLASS-METHODS get_stops_from_shipment
       IMPORTING
         !iv_tknum              TYPE tknum
@@ -13,12 +42,6 @@ CLASS zcl_gtt_mia_sh_tools DEFINITION
       EXPORTING
         !et_stops              TYPE zif_gtt_mia_app_types=>tt_stops
         !et_dlv_watching_stops TYPE zif_gtt_mia_app_types=>tt_dlv_watch_stops .
-    CLASS-METHODS get_carrier_reference_document
-      IMPORTING
-        !is_vttk    TYPE vttkvb
-      EXPORTING
-        !ev_ref_typ TYPE zif_gtt_mia_app_types=>tv_crdoc_ref_typ
-        !ev_ref_val TYPE zif_gtt_mia_app_types=>tv_crdoc_ref_val .
     CLASS-METHODS is_appropriate_type
       IMPORTING
         !ir_vttk         TYPE REF TO data
@@ -38,9 +61,7 @@ CLASS zcl_gtt_mia_sh_tools DEFINITION
         !is_events       TYPE trxas_evt_ctab_wa
       RETURNING
         VALUE(rv_result) TYPE abap_bool .
-    CLASS-METHODS get_next_event_counter
-      RETURNING
-        VALUE(rv_evtcnt) TYPE /saptrx/evtcnt .
+
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -72,6 +93,24 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_formated_sh_number.
+
+    rv_tknum  = zcl_gtt_mia_tools=>get_field_of_structure(
+                  ir_struct_data = ir_vttk
+                  iv_field_name  = 'TKNUM' ).
+
+    rv_tknum  = |{ rv_tknum ALPHA = OUT }|.
+
+  ENDMETHOD.
+
+  METHOD get_formated_sh_stopid.
+*    rv_stopid   = |{ iv_tknum ALPHA = OUT }{ iv_cnt ALPHA = OUT }|.
+*    CONDENSE rv_stopid NO-GAPS.
+
+    rv_stopid   = |{ iv_tknum ALPHA = OUT }{ iv_cnt }|.
+
+    CONDENSE rv_stopid NO-GAPS.
+  ENDMETHOD.
 
   METHOD get_next_event_counter.
 
@@ -192,16 +231,19 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
           output = lv_cnt.
 
       CONCATENATE iv_tknum lv_cnt INTO ls_stop-stopid.
-      ls_stop-stopcnt = lv_stopcnt.
-      ls_stop-loccat  = 'S'.
-      ls_stop-loctype = lv_srcloctype.
-      ls_stop-locid   = lv_srclocid.
-      ls_stop-kunablaz_txt = ls_vttsvb-kunabla.
-      ls_stop-lgnumaz = ls_vttsvb-lgnuma.
-      ls_stop-toraz   = ls_vttsvb-tora.
-      ls_stop-tknum   = iv_tknum.
-      ls_stop-tsnum   = ls_vttsvb-tsnum.
-      ls_stop-tsrfo   = ls_vttsvb-tsrfo.
+      ls_stop-stopid_txt    = get_formated_sh_stopid(
+                                iv_tknum = iv_tknum
+                                iv_cnt   = lv_cnt ).
+      ls_stop-stopcnt       = lv_stopcnt.
+      ls_stop-loccat        = 'S'.
+      ls_stop-loctype       = lv_srcloctype.
+      ls_stop-locid         = lv_srclocid.
+      ls_stop-kunablaz_txt  = ls_vttsvb-kunabla.
+      ls_stop-lgnumaz       = ls_vttsvb-lgnuma.
+      ls_stop-toraz         = ls_vttsvb-tora.
+      ls_stop-tknum         = iv_tknum.
+      ls_stop-tsnum         = ls_vttsvb-tsnum.
+      ls_stop-tsrfo         = ls_vttsvb-tsrfo.
       IF ls_vttsvb-dptbg IS INITIAL.
         CLEAR ls_stop-pln_evt_datetime.
       ELSE.
@@ -246,16 +288,19 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
           output = lv_cnt.
 
       CONCATENATE iv_tknum lv_cnt INTO ls_stop-stopid.
-      ls_stop-stopcnt = lv_stopcnt.
-      ls_stop-loccat  = 'D'.
-      ls_stop-loctype = lv_desloctype.
-      ls_stop-locid   = lv_deslocid.
-      ls_stop-kunablaz_txt = ls_vttsvb-kunablz.
-      ls_stop-lgnumaz = ls_vttsvb-lgnumz.
-      ls_stop-toraz   = ls_vttsvb-torz.
-      ls_stop-tknum   = iv_tknum.
-      ls_stop-tsnum   = ls_vttsvb-tsnum.
-      ls_stop-tsrfo   = ls_vttsvb-tsrfo.
+      ls_stop-stopid_txt    = get_formated_sh_stopid(
+                                iv_tknum = iv_tknum
+                                iv_cnt   = lv_cnt ).
+      ls_stop-stopcnt       = lv_stopcnt.
+      ls_stop-loccat        = 'D'.
+      ls_stop-loctype       = lv_desloctype.
+      ls_stop-locid         = lv_deslocid.
+      ls_stop-kunablaz_txt  = ls_vttsvb-kunablz.
+      ls_stop-lgnumaz       = ls_vttsvb-lgnumz.
+      ls_stop-toraz         = ls_vttsvb-torz.
+      ls_stop-tknum         = iv_tknum.
+      ls_stop-tsnum         = ls_vttsvb-tsnum.
+      ls_stop-tsrfo         = ls_vttsvb-tsrfo.
       IF ls_vttsvb-dpten IS INITIAL.
         CLEAR ls_stop-pln_evt_datetime.
       ELSE.
@@ -332,10 +377,13 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
       READ TABLE lt_vttpvb INTO ls_vttpvb WITH KEY tknum = ls_vtspvb-tknum
                                                    tpnum = ls_vtspvb-tpnum.
       ls_dlv_watching_stop-vbeln = ls_vttpvb-vbeln.
-      LOOP AT et_stops INTO ls_stop WHERE tknum = ls_vtspvb-tknum
-                                      AND tsnum = ls_vtspvb-tsnum.
-        ls_dlv_watching_stop-stopid = ls_stop-stopid.
-        ls_dlv_watching_stop-loccat = ls_stop-loccat.
+      LOOP AT et_stops INTO ls_stop
+        WHERE tknum = ls_vtspvb-tknum
+          AND tsnum = ls_vtspvb-tsnum.
+
+        ls_dlv_watching_stop-stopid     = ls_stop-stopid.
+        ls_dlv_watching_stop-stopid_txt = ls_stop-stopid_txt.
+        ls_dlv_watching_stop-loccat     = ls_stop-loccat.
         APPEND ls_dlv_watching_stop TO et_dlv_watching_stops.
       ENDLOOP.
     ENDLOOP.
@@ -344,6 +392,17 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+  METHOD get_tracking_id_sh_header.
+
+    DATA: lv_tknum TYPE vttk-tknum.
+
+    lv_tknum  = zcl_gtt_mia_tools=>get_field_of_structure(
+                  ir_struct_data = ir_vttk
+                  iv_field_name  = 'TKNUM' ).
+
+    rv_track_id   = |{ lv_tknum ALPHA = OUT }|.
+
+  ENDMETHOD.
 
   METHOD is_appropriate_type.
 

@@ -18,6 +18,7 @@ INTERFACE zif_gtt_sts_ef_constants
       estimated_datetime          TYPE /saptrx/paramname VALUE 'ESTIMATED_DATETIME',
       estimated_timezone          TYPE /saptrx/paramname VALUE 'ESTIMATED_TIMEZONE',
       stop_id                     TYPE /saptrx/paramname VALUE 'STOP_ID',
+      additional_match_key        TYPE /saptrx/paramname VALUE 'ADDITIONAL_MATCH_KEY',
     END OF cs_parameter .
   CONSTANTS cv_logistic_location TYPE string VALUE 'LogisticLocation' ##NO_TEXT.
   CONSTANTS:

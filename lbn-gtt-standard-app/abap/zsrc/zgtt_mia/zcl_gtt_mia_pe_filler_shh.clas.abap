@@ -196,7 +196,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
                                         ELSE zif_gtt_mia_app_constants=>cs_milestone-sh_arrival )
           evt_exp_datetime  = <ls_stops>-pln_evt_datetime
           evt_exp_tzone     = <ls_stops>-pln_evt_timezone
-          locid2            = <ls_stops>-stopid
+          locid2            = <ls_stops>-stopid_txt
           loctype           = <ls_stops>-loctype
           locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                                 iv_locid   = <ls_stops>-locid
@@ -218,7 +218,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
             milestone         = zif_gtt_mia_app_constants=>cs_milestone-sh_pod
             evt_exp_datetime  = <ls_stops>-pln_evt_datetime
             evt_exp_tzone     = <ls_stops>-pln_evt_timezone
-            locid2            = <ls_stops>-stopid
+            locid2            = <ls_stops>-stopid_txt
             loctype           = <ls_stops>-loctype
             locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                                   iv_locid   = <ls_stops>-locid
@@ -264,9 +264,10 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
           AND werks IN it_werks.
 
         et_appobjid = VALUE #( BASE et_appobjid (
-                        low = |{ <ls_lips>-vbeln }{ <ls_lips>-posnr }|
-                        option = 'EQ'
-                        sign = 'I'
+                        low     = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                                    ir_lips = REF #( <ls_lips> ) )
+                        option  = 'EQ'
+                        sign    = 'I'
                       ) ).
       ENDLOOP.
     ELSE.
@@ -363,7 +364,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
         get_corresponding_dlv_items(
           EXPORTING
             it_vbeln    = lt_vbeln
-            it_werks    = VALUE #( ( low = is_stops-locid
+            it_werks    = VALUE #( ( low    = is_stops-locid
                                      option = 'EQ'
                                      sign   = 'I'  ) )
           IMPORTING

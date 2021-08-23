@@ -36,7 +36,9 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dli DEFINITION
         !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
         !is_lips      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_lips
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data .
+        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+      RAISING
+        cx_udm_message .
     METHODS fill_idoc_control_data
       IMPORTING
         !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
@@ -80,14 +82,18 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dli DEFINITION
       IMPORTING
         !is_lips              TYPE zcl_gtt_mia_ctp_shipment_data=>ts_lips
       RETURNING
-        VALUE(rv_tracking_id) TYPE /saptrx/trxid .
+        VALUE(rv_tracking_id) TYPE /saptrx/trxid
+      RAISING
+        cx_udm_message.
     METHODS is_pod_relevant
       IMPORTING
         !is_ship         TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
         !is_lips         TYPE zcl_gtt_mia_ctp_shipment_data=>ts_lips
         !is_stops        TYPE zif_gtt_mia_app_types=>ts_stops
       RETURNING
-        VALUE(rv_result) TYPE abap_bool .
+        VALUE(rv_result) TYPE abap_bool
+      RAISING
+        cx_udm_message.
 ENDCLASS.
 
 
@@ -100,7 +106,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
     cs_idoc_data-appobj_ctabs = VALUE #( BASE cs_idoc_data-appobj_ctabs (
       trxservername = cs_idoc_data-trxserv-trx_server_id
       appobjtype    = is_aotype-aot_type
-      appobjid      = get_delivery_item_tracking_id( is_lips = is_lips )
+      appobjid      = get_delivery_item_tracking_id(
+                        is_lips = is_lips )
     ) ).
 
   ENDMETHOD.
@@ -114,11 +121,13 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
     lt_control  = VALUE #(
       (
         paramname = cs_mapping-vbeln
-        value     = is_lips-vbeln
+        value     = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
+                      ir_likp = REF #( is_lips ) )
       )
       (
         paramname = cs_mapping-posnr
-        value     = is_lips-posnr
+        value     = zcl_gtt_mia_dl_tools=>get_formated_dlv_item(
+                      ir_lips = REF #( is_lips ) )
       )
       (
         paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_bisiness_timezone
@@ -142,7 +151,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
     LOOP AT lt_control ASSIGNING FIELD-SYMBOL(<ls_control>).
       <ls_control>-appsys     = mv_appsys.
       <ls_control>-appobjtype = is_aotype-aot_type.
-      <ls_control>-appobjid   = get_delivery_item_tracking_id( is_lips = is_lips ).
+      <ls_control>-appobjid   = get_delivery_item_tracking_id(
+                                  is_lips = is_lips ).
     ENDLOOP.
 
     cs_idoc_data-control  = VALUE #( BASE cs_idoc_data-control
@@ -193,7 +203,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
             milestone         = COND #( WHEN <ls_watching>-loccat = zif_gtt_mia_app_constants=>cs_loccat-departure
                                           THEN zif_gtt_mia_app_constants=>cs_milestone-sh_departure
                                           ELSE zif_gtt_mia_app_constants=>cs_milestone-sh_arrival )
-            locid2            = <ls_stops>-stopid
+            locid2            = <ls_stops>-stopid_txt
             loctype           = <ls_stops>-loctype
             locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                                   iv_locid   = <ls_stops>-locid
@@ -213,7 +223,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
 
           lt_exp_event = VALUE #( BASE lt_exp_event (
               milestone         = zif_gtt_mia_app_constants=>cs_milestone-sh_pod
-              locid2            = <ls_stops>-stopid
+              locid2            = <ls_stops>-stopid_txt
               loctype           = <ls_stops>-loctype
               locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                                     iv_locid   = <ls_stops>-locid
@@ -260,7 +270,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
     LOOP AT lt_exp_event ASSIGNING FIELD-SYMBOL(<ls_exp_event>).
       <ls_exp_event>-appsys         = mv_appsys.
       <ls_exp_event>-appobjtype     = is_aotype-aot_type.
-      <ls_exp_event>-appobjid       = get_delivery_item_tracking_id( is_lips = is_lips ).
+      <ls_exp_event>-appobjid       = get_delivery_item_tracking_id(
+                                        is_lips = is_lips ).
       <ls_exp_event>-language       = sy-langu.
       <ls_exp_event>-evt_exp_tzone  = zcl_gtt_mia_tools=>get_system_time_zone(  ).
     ENDLOOP.
@@ -281,9 +292,11 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
     cs_idoc_data-tracking_id    = VALUE #( BASE cs_idoc_data-tracking_id (
       appsys      = mv_appsys
       appobjtype  = is_aotype-aot_type
-      appobjid    = get_delivery_item_tracking_id( is_lips = is_lips )
+      appobjid    = get_delivery_item_tracking_id(
+                      is_lips = is_lips )
       trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_position
-      trxid       = get_delivery_item_tracking_id( is_lips = is_lips )
+      trxid       = get_delivery_item_tracking_id(
+                      is_lips = is_lips )
       timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
     ) ).
 
@@ -299,7 +312,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
 
   METHOD get_delivery_item_tracking_id.
 
-    rv_tracking_id  = |{ is_lips-vbeln }{ is_lips-posnr }|.
+    rv_tracking_id  = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                        ir_lips = REF #( is_lips ) ).
 
   ENDMETHOD.
 
@@ -353,7 +367,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
        is_stops-loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
 
       READ TABLE is_ship-ee_rel ASSIGNING FIELD-SYMBOL(<ls_ee_rel>)
-        WITH TABLE KEY appobjid = |{ is_lips-vbeln }{ is_lips-posnr }|.
+        WITH TABLE KEY appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                                      ir_lips = REF #( is_lips ) ).
 
       rv_result = boolc( sy-subrc = 0 AND
                          <ls_ee_rel>-z_pdstk = abap_true ).

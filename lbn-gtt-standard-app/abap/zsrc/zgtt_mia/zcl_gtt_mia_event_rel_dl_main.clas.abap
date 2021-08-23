@@ -43,6 +43,13 @@ CLASS zcl_gtt_mia_event_rel_dl_main DEFINITION
         VALUE(rv_value) TYPE /saptrx/paramval200
       RAISING
         cx_udm_message .
+
+    METHODS get_old_appobjid ABSTRACT
+      RETURNING
+        VALUE(rv_appobjid) TYPE /saptrx/aoid
+      RAISING
+        cx_udm_message.
+
   PRIVATE SECTION.
 
     METHODS set_relevance
@@ -70,23 +77,32 @@ CLASS zcl_gtt_mia_event_rel_dl_main IMPLEMENTATION.
 
   ENDMETHOD.
 
-
   METHOD initiate.
-
-*    DATA(lv_appobjid) = lcl_dl_tools=>get_tracking_id_dl_item(
-*                          ir_lips = ms_app_objects-maintabref ).
-    DATA(lv_appobjid) = ms_app_objects-appobjid.
 
     " read stored statuses
     SELECT SINGLE *
       INTO @ms_relevance
       FROM zgtt_mia_ee_rel
-      WHERE appobjid  = @lv_appobjid.
+      WHERE appobjid  = @ms_app_objects-appobjid.
+
+    " read stored statuses using appobjid with leading zero
+    IF sy-subrc <> 0.
+      TRY.
+          DATA(lv_old_appobjid) = get_old_appobjid( ).
+
+          SELECT SINGLE *
+            INTO @ms_relevance
+            FROM zgtt_mia_ee_rel
+            WHERE appobjid  = @lv_old_appobjid.
+
+        CATCH cx_udm_message.
+      ENDTRY.
+    ENDIF.
 
     " initiate statuses with initial values
     IF sy-subrc <> 0.
       CLEAR: ms_relevance.
-      ms_relevance-appobjid = lv_appobjid.
+      ms_relevance-appobjid = ms_app_objects-appobjid.
 
       " recalculate statuses
       recalc_relevance( iv_milestone = zif_gtt_mia_app_constants=>cs_milestone-dl_put_away ).

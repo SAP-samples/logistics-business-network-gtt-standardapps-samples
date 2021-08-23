@@ -9,6 +9,13 @@ INTERFACE zif_gtt_mia_tp_reader
       VALUE(rv_result) TYPE zif_gtt_mia_ef_types=>tv_condition
     RAISING
       cx_udm_message .
+  METHODS get_app_obj_type_id
+    IMPORTING
+      !is_app_object   TYPE trxas_appobj_ctab_wa
+    RETURNING
+      VALUE(rv_appobjid) TYPE /saptrx/aoid
+    RAISING
+      cx_udm_message.
   METHODS get_data
     IMPORTING
       !is_app_object TYPE trxas_appobj_ctab_wa

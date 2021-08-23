@@ -5,15 +5,17 @@ class ZCL_GTT_STS_FU_ACTUAL_EVENT definition
 
 public section.
 
-  methods ZIF_GTT_STS_ACTUAL_EVENT~EXTRACT_EVENT
-    redefinition .
   methods ZIF_GTT_STS_ACTUAL_EVENT~CHECK_EVENT_RELEVANCE
+    redefinition .
+  methods ZIF_GTT_STS_ACTUAL_EVENT~EXTRACT_EVENT
     redefinition .
 protected section.
 
   methods CHECK_TOR_SENT_TO_GTT
     redefinition .
   methods CHECK_TOR_TYPE_SPECIFIC_EVENTS
+    redefinition .
+  methods CHECK_APPLICATION_EVENT_SOURCE
     redefinition .
   PRIVATE SECTION.
 ENDCLASS.
@@ -174,7 +176,43 @@ CLASS ZCL_GTT_STS_FU_ACTUAL_EVENT IMPLEMENTATION.
         ev_result          = ev_result ).
 
 *   Disable sending FU’s actual events to GTT
-    ev_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+*    ev_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+
+  ENDMETHOD.
+
+
+  METHOD check_application_event_source.
+
+    FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    CLEAR ev_result.
+
+    get_execution(
+      EXPORTING
+        it_all_appl_tables = it_all_appl_tables
+      IMPORTING
+        et_execution      = DATA(lt_tor_execinfo) ).
+
+    get_execution(
+      EXPORTING
+        it_all_appl_tables = it_all_appl_tables
+        iv_old            = abap_true
+      IMPORTING
+        et_execution      = DATA(lt_tor_execinfo_old) ).
+
+    ASSIGN is_event-maintabref->* TO <ls_tor_root>.
+
+    LOOP AT lt_tor_execinfo ASSIGNING FIELD-SYMBOL(<ls_tor_execinfo>) WHERE parent_node_id = <ls_tor_root>-node_id.
+
+      ASSIGN lt_tor_execinfo_old[ KEY node_id COMPONENTS node_id = <ls_tor_execinfo>-node_id ]
+        TO FIELD-SYMBOL(<ls_tor_execinfo_old>).
+      IF ( sy-subrc = 0 AND <ls_tor_execinfo_old> <> <ls_tor_execinfo> ) OR sy-subrc <> 0 ##BOOL_OK.
+
+        CHECK <ls_tor_execinfo>-event_code = iv_event_code.
+        CHECK NOT ( <ls_tor_execinfo>-execinfo_source = /scmtms/if_tor_const=>sc_tor_event_source-application ).
+        ev_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

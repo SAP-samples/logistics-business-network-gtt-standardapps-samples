@@ -149,6 +149,7 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
 
     MOVE-CORRESPONDING <ls_root> TO cs_fo_header ##ENH_OK.
 
+   TEST-SEAM det_transient_root_fields.
     /scmtms/cl_tor_helper_root=>det_transient_root_fields(
       EXPORTING
         it_key               = VALUE #( ( key = <ls_root>-node_id ) )
@@ -157,20 +158,26 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
         iv_before_image      = lv_before_image
       IMPORTING
         et_tor_add_info      = DATA(lt_tor_add_info) ).
+    END-TEST-SEAM.
     ASSIGN lt_tor_add_info[ 1 ] TO FIELD-SYMBOL(<ls_tor_additional_info>).
     IF sy-subrc = 0.
       cs_fo_header-pln_grs_duration = <ls_tor_additional_info>-tot_duration.
     ENDIF.
 
     cs_fo_header-shipment_type = zif_gtt_sts_constants=>cs_shipment_type-tor.
+    TEST-SEAM get_carrier_name.
     cs_fo_header-tspid = get_carrier_name( iv_tspid = cs_fo_header-tspid ).
+    END-TEST-SEAM.
     IF cs_fo_header-total_distance_km IS NOT INITIAL.
       cs_fo_header-total_distance_km_uom = zif_gtt_sts_constants=>cs_uom-km.
     ENDIF.
+
+   TEST-SEAM motscode.
     SELECT SINGLE motscode
       FROM /sapapo/trtype
       INTO cs_fo_header-mtr
       WHERE ttype = cs_fo_header-mtr.
+   END-TEST-SEAM.
 
     SHIFT cs_fo_header-mtr    LEFT DELETING LEADING '0'.
     SHIFT cs_fo_header-tor_id LEFT DELETING LEADING '0'.
@@ -181,6 +188,7 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
 
   METHOD get_data_from_textcoll.
 
+  TEST-SEAM get_container_and_mobile_track.
     get_container_and_mobile_track(
       EXPORTING
         ir_data         = ir_root
@@ -188,6 +196,7 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       CHANGING
         ct_tracked_object_type = cs_fo_header-tracked_object_type
         ct_tracked_object_id   = cs_fo_header-tracked_object_id ).
+  END-TEST-SEAM.
 
     IF cs_fo_header-tor_id IS NOT INITIAL AND cs_fo_header-res_id IS NOT INITIAL.
       APPEND cs_track_id-truck_id TO cs_fo_header-tracked_object_id.
@@ -266,15 +275,17 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       APPEND '' TO <ls_freight_order>-tracked_object_id.
     ENDIF.
 
-    get_docref_data(
-      EXPORTING
-        iv_old_data     = iv_old_data
-        ir_root         = lr_maintabref
-      CHANGING
-        ct_carrier_ref_value = <ls_freight_order>-carrier_ref_value
-        ct_carrier_ref_type  = <ls_freight_order>-carrier_ref_type
-        ct_shipper_ref_value = <ls_freight_order>-shipper_ref_value
-        ct_shipper_ref_type  = <ls_freight_order>-shipper_ref_type ).
+    TEST-SEAM get_docref_data.
+      get_docref_data(
+        EXPORTING
+          iv_old_data     = iv_old_data
+          ir_root         = lr_maintabref
+        CHANGING
+          ct_carrier_ref_value = <ls_freight_order>-carrier_ref_value
+          ct_carrier_ref_type  = <ls_freight_order>-carrier_ref_type
+          ct_shipper_ref_value = <ls_freight_order>-shipper_ref_value
+          ct_shipper_ref_type  = <ls_freight_order>-shipper_ref_type ).
+    END-TEST-SEAM.
     IF <ls_freight_order>-carrier_ref_value IS INITIAL.
       APPEND '' TO <ls_freight_order>-carrier_ref_value.
     ENDIF.
@@ -282,33 +293,35 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       APPEND '' TO <ls_freight_order>-shipper_ref_value.
     ENDIF.
 
-    get_data_from_stop(
-      EXPORTING
-        ir_data             = lr_maintabref
-        iv_old_data         = iv_old_data
-      CHANGING
-        cv_pln_dep_loc_id   = <ls_freight_order>-pln_dep_loc_id
-        cv_pln_dep_loc_type = <ls_freight_order>-pln_dep_loc_type
-        cv_pln_dep_timest   = <ls_freight_order>-pln_dep_timest
-        cv_pln_dep_timezone = <ls_freight_order>-pln_dep_timezone
-        cv_pln_arr_loc_id   = <ls_freight_order>-pln_arr_loc_id
-        cv_pln_arr_loc_type = <ls_freight_order>-pln_arr_loc_type
-        cv_pln_arr_timest   = <ls_freight_order>-pln_arr_timest
-        cv_pln_arr_timezone = <ls_freight_order>-pln_arr_timezone
-        ct_stop_id          = <ls_freight_order>-stop_id
-        ct_ordinal_no       = <ls_freight_order>-ordinal_no
-        ct_loc_type         = <ls_freight_order>-loc_type
-        ct_loc_id           = <ls_freight_order>-loc_id ).
+    TEST-SEAM get_data_from_stop.
+      get_data_from_stop(
+        EXPORTING
+          ir_data             = lr_maintabref
+          iv_old_data         = iv_old_data
+        CHANGING
+          cv_pln_dep_loc_id   = <ls_freight_order>-pln_dep_loc_id
+          cv_pln_dep_loc_type = <ls_freight_order>-pln_dep_loc_type
+          cv_pln_dep_timest   = <ls_freight_order>-pln_dep_timest
+          cv_pln_dep_timezone = <ls_freight_order>-pln_dep_timezone
+          cv_pln_arr_loc_id   = <ls_freight_order>-pln_arr_loc_id
+          cv_pln_arr_loc_type = <ls_freight_order>-pln_arr_loc_type
+          cv_pln_arr_timest   = <ls_freight_order>-pln_arr_timest
+          cv_pln_arr_timezone = <ls_freight_order>-pln_arr_timezone
+          ct_stop_id          = <ls_freight_order>-stop_id
+          ct_ordinal_no       = <ls_freight_order>-ordinal_no
+          ct_loc_type         = <ls_freight_order>-loc_type
+          ct_loc_id           = <ls_freight_order>-loc_id ).
+    END-TEST-SEAM.
 
-    get_requirement_doc_list(
-      EXPORTING
-        ir_data               = lr_maintabref
-        iv_old_data           = iv_old_data
-      CHANGING
-        ct_req_doc_line_no    = <ls_freight_order>-req_doc_line_no
-        ct_req_doc_no         = <ls_freight_order>-req_doc_no
-        ct_req_doc_first_stop = <ls_freight_order>-req_doc_first_stop
-        ct_req_doc_last_stop  = <ls_freight_order>-req_doc_last_stop  ).
+    TEST-SEAM get_requirement_doc_list.
+      get_requirement_doc_list(
+        EXPORTING
+          ir_data               = lr_maintabref
+          iv_old_data           = iv_old_data
+        CHANGING
+          ct_req_doc_line_no    = <ls_freight_order>-req_doc_line_no
+          ct_req_doc_no         = <ls_freight_order>-req_doc_no ).
+    END-TEST-SEAM.
     IF <ls_freight_order>-req_doc_no IS INITIAL.
       APPEND '' TO <ls_freight_order>-req_doc_line_no.
     ENDIF.
@@ -346,28 +359,31 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       EXPORTING
         is_app_object = is_app_object
         iv_trxcod     = zif_gtt_sts_constants=>cs_trxcod-fo_number
-        iv_trxid      = |{ <ls_root_new>-tor_id }|
+        iv_trxid      = |{ <ls_root_new>-tor_id  ALPHA = OUT }|
       CHANGING
         ct_track_id   = et_track_id_data ).
 
-    get_container_mobile_track_id(
-      EXPORTING
-        is_app_object    = is_app_object
-      CHANGING
-        ct_track_id_data = lt_track_id_data_new ).
+    TEST-SEAM lt_track_id_data.
+      get_container_mobile_track_id(
+        EXPORTING
+          is_app_object    = is_app_object
+        CHANGING
+          ct_track_id_data = lt_track_id_data_new ).
 
-    get_container_mobile_track_id(
-      EXPORTING
-        is_app_object    = is_app_object
-        iv_old_data      = abap_true
-      CHANGING
-        ct_track_id_data = lt_track_id_data_old ).
+      get_container_mobile_track_id(
+        EXPORTING
+          is_app_object    = is_app_object
+          iv_old_data      = abap_true
+        CHANGING
+          ct_track_id_data = lt_track_id_data_old ).
+    END-TEST-SEAM.
 
     lr_item_new = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_item_new ).
     lr_item_old = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_item_old ).
     DATA(lr_tor_req_root_new) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-req_root ).
     DATA(lr_tor_req_root_old) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-req_root_before ).
 
+    "Check if FO was deleted
     ASSIGN <lt_root_old>[ node_id = <ls_root_new>-node_id ] TO FIELD-SYMBOL(<ls_root_old>).
     IF sy-subrc = 0.
       DATA(lv_deleted) = zcl_gtt_sts_tools=>check_is_fo_deleted(
@@ -378,37 +394,39 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    ASSIGN lr_tor_req_root_new->* TO <lt_tor_req_root_new>.
-    IF <lt_tor_req_root_new> IS ASSIGNED.
-      LOOP AT <lt_tor_req_root_new> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_new>).
-        IF <ls_tor_req_root_new>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
-           <ls_tor_req_root_new>-tor_root_node = <ls_root_new>-node_id.
-
-          APPEND VALUE #( key = <ls_tor_req_root_new>-tor_id
-                  appsys      = mo_ef_parameters->get_appsys( )
-                  appobjtype  = is_app_object-appobjtype
-                  appobjid    = is_app_object-appobjid
-                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
-                  trxid       = <ls_tor_req_root_new>-tor_id ) TO lt_track_id_data_new.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
-
-    ASSIGN lr_tor_req_root_old->* TO <lt_tor_req_root_old>.
-    IF sy-subrc = 0 AND lv_deleted = zif_gtt_sts_ef_constants=>cs_condition-false.
-      LOOP AT <lt_tor_req_root_old> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_old>).
-        IF <ls_tor_req_root_old>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
-           <ls_tor_req_root_old>-tor_root_node = <ls_root_new>-node_id.
-
-          APPEND VALUE #( key = <ls_tor_req_root_old>-tor_id
-                  appsys      = mo_ef_parameters->get_appsys( )
-                  appobjtype  = is_app_object-appobjtype
-                  appobjid    = is_app_object-appobjid
-                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
-                  trxid       = <ls_tor_req_root_old>-tor_id ) TO lt_track_id_data_old.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
+*    "Add FU for Mutual Watch (new FU)
+*    ASSIGN lr_tor_req_root_new->* TO <lt_tor_req_root_new>.
+*    IF <lt_tor_req_root_new> IS ASSIGNED.
+*      LOOP AT <lt_tor_req_root_new> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_new>).
+*        IF <ls_tor_req_root_new>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
+*           <ls_tor_req_root_new>-tor_root_node = <ls_root_new>-node_id.
+*
+*          APPEND VALUE #( key = <ls_tor_req_root_new>-tor_id
+*                  appsys      = mo_ef_parameters->get_appsys( )
+*                  appobjtype  = is_app_object-appobjtype
+*                  appobjid    = is_app_object-appobjid
+*                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
+*                  trxid       = |{ <ls_tor_req_root_new>-tor_id ALPHA = OUT }| ) TO lt_track_id_data_new.
+*        ENDIF.
+*      ENDLOOP.
+*    ENDIF.
+*
+*    "Add FU for Mutual Watch (old FU)
+*    ASSIGN lr_tor_req_root_old->* TO <lt_tor_req_root_old>.
+*    IF sy-subrc = 0 AND lv_deleted = zif_gtt_sts_ef_constants=>cs_condition-false.
+*      LOOP AT <lt_tor_req_root_old> ASSIGNING FIELD-SYMBOL(<ls_tor_req_root_old>).
+*        IF <ls_tor_req_root_old>-tor_root_node IS ASSIGNED AND <ls_tor_req_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit AND
+*           <ls_tor_req_root_old>-tor_root_node = <ls_root_new>-node_id.
+*
+*          APPEND VALUE #( key = <ls_tor_req_root_old>-tor_id
+*                  appsys      = mo_ef_parameters->get_appsys( )
+*                  appobjtype  = is_app_object-appobjtype
+*                  appobjid    = is_app_object-appobjid
+*                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fu_number
+*                  trxid       = |{ <ls_tor_req_root_old>-tor_id ALPHA = OUT }| ) TO lt_track_id_data_old.
+*        ENDIF.
+*      ENDLOOP.
+*    ENDIF.
 
     ASSIGN lr_item_new->* TO <lt_item_new>.
     IF sy-subrc = 0.

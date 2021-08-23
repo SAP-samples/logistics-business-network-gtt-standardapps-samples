@@ -1,64 +1,64 @@
-CLASS zcl_gtt_sts_bo_tor_reader DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_STS_BO_TOR_READER definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_gtt_sts_bo_reader .
+  interfaces ZIF_GTT_STS_BO_READER .
 
-    METHODS constructor
-      IMPORTING
-        !io_ef_parameters TYPE REF TO zif_gtt_sts_ef_parameters .
-  PROTECTED SECTION.
+  methods CONSTRUCTOR
+    importing
+      !IO_EF_PARAMETERS type ref to ZIF_GTT_STS_EF_PARAMETERS .
+protected section.
 
-    TYPES tv_tracked_object_type TYPE string .
-    TYPES:
-      tt_tracked_object_type TYPE STANDARD TABLE OF tv_tracked_object_type WITH EMPTY KEY .
-    TYPES tv_tracked_object_id TYPE char20 .
-    TYPES:
-      tt_tracked_object_id TYPE STANDARD TABLE OF tv_tracked_object_type WITH EMPTY KEY .
-    TYPES tv_carrier_ref_value TYPE /scmtms/btd_id .
-    TYPES:
-      tt_carrier_ref_value TYPE STANDARD TABLE OF tv_carrier_ref_value WITH EMPTY KEY .
-    TYPES tv_carrier_ref_type TYPE char35 .
-    TYPES:
-      tt_carrier_ref_type TYPE STANDARD TABLE OF tv_carrier_ref_type WITH EMPTY KEY .
-    TYPES tv_shipper_ref_value TYPE /scmtms/btd_id .
-    TYPES:
-      tt_shipper_ref_value TYPE STANDARD TABLE OF tv_shipper_ref_value WITH EMPTY KEY .
-    TYPES tv_shipper_ref_type TYPE char35 .
-    TYPES:
-      tt_shipper_ref_type TYPE STANDARD TABLE OF tv_shipper_ref_type WITH EMPTY KEY .
-    TYPES tv_stop_id TYPE string .
-    TYPES:
-      tt_stop_id TYPE STANDARD TABLE OF tv_stop_id WITH EMPTY KEY .
-    TYPES tv_ordinal_no TYPE int4 .
-    TYPES:
-      tt_ordinal_no TYPE STANDARD TABLE OF tv_ordinal_no WITH EMPTY KEY .
-    TYPES tv_loc_type TYPE /saptrx/loc_id_type .
-    TYPES:
-      tt_loc_type TYPE STANDARD TABLE OF tv_loc_type WITH EMPTY KEY .
-    TYPES tv_loc_id TYPE /scmtms/location_id .
-    TYPES:
-      tt_loc_id TYPE STANDARD TABLE OF tv_loc_id WITH EMPTY KEY .
-    TYPES:
-      tt_req_doc_line_number TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
-    TYPES:
-      tt_req_doc_number      TYPE STANDARD TABLE OF /scmtms/tor_id WITH EMPTY KEY .
-    TYPES:
-      tt_capacity_doc_line_number  TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
-    TYPES:
-      tt_capacity_doc_number TYPE STANDARD TABLE OF /scmtms/tor_id WITH EMPTY KEY .
-    TYPES:
-      tt_stop TYPE STANDARD TABLE OF /saptrx/loc_id_2 WITH EMPTY KEY .
+  types TV_TRACKED_OBJECT_TYPE type STRING .
+  types:
+    tt_tracked_object_type TYPE STANDARD TABLE OF tv_tracked_object_type WITH EMPTY KEY .
+  types TV_TRACKED_OBJECT_ID type CHAR20 .
+  types:
+    tt_tracked_object_id TYPE STANDARD TABLE OF tv_tracked_object_type WITH EMPTY KEY .
+  types TV_CARRIER_REF_VALUE type /SCMTMS/BTD_ID .
+  types:
+    tt_carrier_ref_value TYPE STANDARD TABLE OF tv_carrier_ref_value WITH EMPTY KEY .
+  types TV_CARRIER_REF_TYPE type CHAR35 .
+  types:
+    tt_carrier_ref_type TYPE STANDARD TABLE OF tv_carrier_ref_type WITH EMPTY KEY .
+  types TV_SHIPPER_REF_VALUE type /SCMTMS/BTD_ID .
+  types:
+    tt_shipper_ref_value TYPE STANDARD TABLE OF tv_shipper_ref_value WITH EMPTY KEY .
+  types TV_SHIPPER_REF_TYPE type CHAR35 .
+  types:
+    tt_shipper_ref_type TYPE STANDARD TABLE OF tv_shipper_ref_type WITH EMPTY KEY .
+  types TV_STOP_ID type STRING .
+  types:
+    tt_stop_id TYPE STANDARD TABLE OF tv_stop_id WITH EMPTY KEY .
+  types TV_ORDINAL_NO type INT4 .
+  types:
+    tt_ordinal_no TYPE STANDARD TABLE OF tv_ordinal_no WITH EMPTY KEY .
+  types TV_LOC_TYPE type /SAPTRX/LOC_ID_TYPE .
+  types:
+    tt_loc_type TYPE STANDARD TABLE OF tv_loc_type WITH EMPTY KEY .
+  types TV_LOC_ID type /SCMTMS/LOCATION_ID .
+  types:
+    tt_loc_id TYPE STANDARD TABLE OF tv_loc_id WITH EMPTY KEY .
+  types:
+    tt_req_doc_line_number TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
+  types:
+    tt_req_doc_number      TYPE STANDARD TABLE OF char20 WITH EMPTY KEY .
+  types:
+    tt_capacity_doc_line_number  TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
+  types:
+    tt_capacity_doc_number TYPE STANDARD TABLE OF /scmtms/tor_id WITH EMPTY KEY .
+  types:
+    tt_stop TYPE STANDARD TABLE OF /saptrx/loc_id_2 WITH EMPTY KEY .
 
-    CONSTANTS:
-      BEGIN OF cs_text_type,
+  constants:
+    BEGIN OF cs_text_type,
         cont TYPE /bobf/txc_text_type VALUE 'CONT',
         mobl TYPE /bobf/txc_text_type VALUE 'MOBL',
       END OF cs_text_type .
-    CONSTANTS:
-      BEGIN OF cs_track_id,
+  constants:
+    BEGIN OF cs_track_id,
         container_id  TYPE tv_tracked_object_type VALUE 'CONTAINER_ID',
         mobile_number TYPE tv_tracked_object_type VALUE 'MOBILE_NUMBER',
         truck_id      TYPE tv_tracked_object_type VALUE 'TRUCK_ID',
@@ -66,8 +66,8 @@ CLASS zcl_gtt_sts_bo_tor_reader DEFINITION
         vessel        TYPE tv_tracked_object_type VALUE 'VESSEL',
         flight_number TYPE tv_tracked_object_type VALUE 'FLIGHT_NUMBER',
       END OF cs_track_id .
-    CONSTANTS:
-      BEGIN OF cs_mapping,
+  constants:
+    BEGIN OF cs_mapping,
         shipment_type         TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPMENT_TYPE',
         tor_id                TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
         mtr                   TYPE /saptrx/paramname VALUE 'YN_SHP_MTR',
@@ -129,147 +129,145 @@ CLASS zcl_gtt_sts_bo_tor_reader DEFINITION
         estimated_datetime    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_DATETIME',
         estimated_timezone    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_TIMEZONE',
       END OF cs_mapping .
-    CONSTANTS cs_bp_type TYPE bu_id_type VALUE 'LBN001' ##NO_TEXT.
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_sts_ef_parameters .
+  constants CS_BP_TYPE type BU_ID_TYPE value 'LBN001' ##NO_TEXT.
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_STS_EF_PARAMETERS .
 
-    METHODS get_data_from_text_collection
-      IMPORTING
-        !ir_data         TYPE REF TO data
-        !iv_old_data     TYPE abap_bool DEFAULT abap_false
-      EXPORTING
-        !er_text         TYPE REF TO /bobf/t_txc_txt_k
-        !er_text_content TYPE REF TO /bobf/t_txc_con_k
-      RAISING
-        cx_udm_message .
-    METHODS get_container_and_mobile_track
-      IMPORTING
-        !ir_data                TYPE REF TO data
-        !iv_old_data            TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !ct_tracked_object_type TYPE tt_tracked_object_type
-        !ct_tracked_object_id   TYPE tt_tracked_object_id
-      RAISING
-        cx_udm_message .
-    METHODS get_container_mobile_track_id
-      IMPORTING
-        !is_app_object    TYPE trxas_appobj_ctab_wa
-        !iv_old_data      TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !ct_track_id_data TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data
-      RAISING
-        cx_udm_message .
-    METHODS add_track_id_data
-      IMPORTING
-        !is_app_object TYPE trxas_appobj_ctab_wa
-        !iv_trxcod     TYPE /saptrx/trxcod
-        !iv_trxid      TYPE /saptrx/trxid
-        !iv_action     TYPE /saptrx/action OPTIONAL
-      CHANGING
-        !ct_track_id   TYPE zif_gtt_sts_ef_types=>tt_track_id_data
-      RAISING
-        cx_udm_message .
-    METHODS get_docref_data
-      IMPORTING
-        !ir_root              TYPE REF TO data
-        !iv_old_data          TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !ct_carrier_ref_value TYPE tt_carrier_ref_value
-        !ct_carrier_ref_type  TYPE tt_carrier_ref_type
-        !ct_shipper_ref_value TYPE tt_shipper_ref_value
-        !ct_shipper_ref_type  TYPE tt_shipper_ref_type
-      RAISING
-        cx_udm_message .
-    METHODS check_non_idoc_fields
-      IMPORTING
-        !is_app_object   TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE zif_gtt_sts_ef_types=>tv_condition
-      RAISING
-        cx_udm_message .
-    METHODS check_non_idoc_status_fields
-      IMPORTING
-        !is_app_object   TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE zif_gtt_sts_ef_types=>tv_condition
-      RAISING
-        cx_udm_message .
-    METHODS check_non_idoc_stop_fields
-      IMPORTING
-        !is_app_object   TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE zif_gtt_sts_ef_types=>tv_condition
-      RAISING
-        cx_udm_message .
-    METHODS get_header_data_from_stop
-      IMPORTING
-        !ir_data             TYPE REF TO data
-        !iv_old_data         TYPE abap_bool DEFAULT abap_false
-        !it_stop_seq         TYPE /scmtms/t_pln_stop_seq_d
-      CHANGING
-        !cv_pln_dep_loc_id   TYPE /scmtms/s_em_bo_tor_stop-log_locid
-        !cv_pln_dep_loc_type TYPE /saptrx/loc_id_type
-        !cv_pln_dep_timest   TYPE char16
-        !cv_pln_dep_timezone TYPE ad_tzone
-        !cv_pln_arr_loc_id   TYPE /scmtms/s_em_bo_tor_stop-log_locid
-        !cv_pln_arr_loc_type TYPE /saptrx/loc_id_type
-        !cv_pln_arr_timest   TYPE char16
-        !cv_pln_arr_timezone TYPE ad_tzone
-      RAISING
-        cx_udm_message .
-    METHODS get_stop_seq
-      IMPORTING
-        !ir_data       TYPE REF TO data
-        !iv_old_data   TYPE abap_bool DEFAULT abap_false
-        !it_stop_seq   TYPE /scmtms/t_pln_stop_seq_d
-      CHANGING
-        !ct_stop_id    TYPE tt_stop_id
-        !ct_ordinal_no TYPE tt_ordinal_no
-        !ct_loc_type   TYPE tt_loc_type
-        !ct_loc_id     TYPE tt_loc_id
-      RAISING
-        cx_udm_message .
-    METHODS get_data_from_stop
-      IMPORTING
-        !ir_data             TYPE REF TO data
-        !iv_old_data         TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !cv_pln_dep_loc_id   TYPE /scmtms/s_em_bo_tor_stop-log_locid
-        !cv_pln_dep_loc_type TYPE /saptrx/loc_id_type
-        !cv_pln_dep_timest   TYPE char16
-        !cv_pln_dep_timezone TYPE ad_tzone
-        !cv_pln_arr_loc_id   TYPE /scmtms/s_em_bo_tor_stop-log_locid
-        !cv_pln_arr_loc_type TYPE /saptrx/loc_id_type
-        !cv_pln_arr_timest   TYPE char16
-        !cv_pln_arr_timezone TYPE ad_tzone
-        !ct_stop_id          TYPE tt_stop_id
-        !ct_ordinal_no       TYPE tt_ordinal_no
-        !ct_loc_type         TYPE tt_loc_type
-        !ct_loc_id           TYPE tt_loc_id
-      RAISING
-        cx_udm_message .
-    METHODS get_customizing_aot
-      IMPORTING
-        !iv_tor_type  TYPE /scmtms/tor_type
-      RETURNING
-        VALUE(rv_aot) TYPE /saptrx/aotype .
-    METHODS get_requirement_doc_list
-      IMPORTING
-        !ir_data               TYPE REF TO data
-        !iv_old_data           TYPE abap_bool DEFAULT abap_false
-      CHANGING
-        !ct_req_doc_line_no    TYPE tt_req_doc_line_number
-        !ct_req_doc_no         TYPE tt_req_doc_number
-        !ct_req_doc_first_stop TYPE tt_stop
-        !ct_req_doc_last_stop  TYPE tt_stop
-      RAISING
-        cx_udm_message .
-    METHODS get_carrier_name
-      IMPORTING
-        !iv_tspid         TYPE bu_id_number
-      RETURNING
-        VALUE(rv_carrier) TYPE bu_id_number
-      RAISING
-        cx_udm_message .
+  methods GET_DATA_FROM_TEXT_COLLECTION
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ER_TEXT type ref to /BOBF/T_TXC_TXT_K
+      !ER_TEXT_CONTENT type ref to /BOBF/T_TXC_CON_K
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_CONTAINER_AND_MOBILE_TRACK
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CT_TRACKED_OBJECT_TYPE type TT_TRACKED_OBJECT_TYPE
+      !CT_TRACKED_OBJECT_ID type TT_TRACKED_OBJECT_ID
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_CONTAINER_MOBILE_TRACK_ID
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CT_TRACK_ID_DATA type ZIF_GTT_STS_EF_TYPES=>TT_ENH_TRACK_ID_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_TRACK_ID_DATA
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IV_TRXCOD type /SAPTRX/TRXCOD
+      !IV_TRXID type /SAPTRX/TRXID
+      !IV_ACTION type /SAPTRX/ACTION optional
+    changing
+      !CT_TRACK_ID type ZIF_GTT_STS_EF_TYPES=>TT_TRACK_ID_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_DOCREF_DATA
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CT_CARRIER_REF_VALUE type TT_CARRIER_REF_VALUE
+      !CT_CARRIER_REF_TYPE type TT_CARRIER_REF_TYPE
+      !CT_SHIPPER_REF_VALUE type TT_SHIPPER_REF_VALUE
+      !CT_SHIPPER_REF_TYPE type TT_SHIPPER_REF_TYPE
+    raising
+      CX_UDM_MESSAGE .
+  methods CHECK_NON_IDOC_FIELDS
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ZIF_GTT_STS_EF_TYPES=>TV_CONDITION
+    raising
+      CX_UDM_MESSAGE .
+  methods CHECK_NON_IDOC_STATUS_FIELDS
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ZIF_GTT_STS_EF_TYPES=>TV_CONDITION
+    raising
+      CX_UDM_MESSAGE .
+  methods CHECK_NON_IDOC_STOP_FIELDS
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ZIF_GTT_STS_EF_TYPES=>TV_CONDITION
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_HEADER_DATA_FROM_STOP
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+      !IT_STOP_SEQ type /SCMTMS/T_PLN_STOP_SEQ_D
+    changing
+      !CV_PLN_DEP_LOC_ID type /SCMTMS/S_EM_BO_TOR_STOP-LOG_LOCID
+      !CV_PLN_DEP_LOC_TYPE type /SAPTRX/LOC_ID_TYPE
+      !CV_PLN_DEP_TIMEST type CHAR16
+      !CV_PLN_DEP_TIMEZONE type AD_TZONE
+      !CV_PLN_ARR_LOC_ID type /SCMTMS/S_EM_BO_TOR_STOP-LOG_LOCID
+      !CV_PLN_ARR_LOC_TYPE type /SAPTRX/LOC_ID_TYPE
+      !CV_PLN_ARR_TIMEST type CHAR16
+      !CV_PLN_ARR_TIMEZONE type AD_TZONE
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_STOP_SEQ
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+      !IT_STOP_SEQ type /SCMTMS/T_PLN_STOP_SEQ_D
+    changing
+      !CT_STOP_ID type TT_STOP_ID
+      !CT_ORDINAL_NO type TT_ORDINAL_NO
+      !CT_LOC_TYPE type TT_LOC_TYPE
+      !CT_LOC_ID type TT_LOC_ID
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_DATA_FROM_STOP
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CV_PLN_DEP_LOC_ID type /SCMTMS/S_EM_BO_TOR_STOP-LOG_LOCID
+      !CV_PLN_DEP_LOC_TYPE type /SAPTRX/LOC_ID_TYPE
+      !CV_PLN_DEP_TIMEST type CHAR16
+      !CV_PLN_DEP_TIMEZONE type AD_TZONE
+      !CV_PLN_ARR_LOC_ID type /SCMTMS/S_EM_BO_TOR_STOP-LOG_LOCID
+      !CV_PLN_ARR_LOC_TYPE type /SAPTRX/LOC_ID_TYPE
+      !CV_PLN_ARR_TIMEST type CHAR16
+      !CV_PLN_ARR_TIMEZONE type AD_TZONE
+      !CT_STOP_ID type TT_STOP_ID
+      !CT_ORDINAL_NO type TT_ORDINAL_NO
+      !CT_LOC_TYPE type TT_LOC_TYPE
+      !CT_LOC_ID type TT_LOC_ID
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_CUSTOMIZING_AOT
+    importing
+      !IV_TOR_TYPE type /SCMTMS/TOR_TYPE
+    returning
+      value(RV_AOT) type /SAPTRX/AOTYPE .
+  methods GET_REQUIREMENT_DOC_LIST
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CT_REQ_DOC_LINE_NO type TT_REQ_DOC_LINE_NUMBER
+      !CT_REQ_DOC_NO type TT_REQ_DOC_NUMBER
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_CARRIER_NAME
+    importing
+      !IV_TSPID type BU_ID_NUMBER
+    returning
+      value(RV_CARRIER) type BU_ID_NUMBER
+    raising
+      CX_UDM_MESSAGE .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -282,7 +280,7 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
 
     APPEND VALUE #( appsys     = mo_ef_parameters->get_appsys( )
                     appobjtype = is_app_object-appobjtype
-                    appobjid   = is_app_object-appobjid
+                    appobjid   = |{ is_app_object-appobjid ALPHA = OUT }|
                     trxcod     = iv_trxcod
                     trxid      = iv_trxid
                     action     = iv_action ) TO ct_track_id.
@@ -459,12 +457,15 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
 
         IF ( <ls_text>-text_type = cs_text_type-cont OR <ls_text>-text_type = cs_text_type-mobl ) AND
              <ls_text_content>-text IS NOT INITIAL.
+
+          DATA(lv_tor_id) = |{ <ls_root>-tor_id ALPHA = OUT }|.
+          CONDENSE lv_tor_id.
           APPEND VALUE #( key = <ls_text_content>-key
                    appsys      = mo_ef_parameters->get_appsys( )
                    appobjtype  = is_app_object-appobjtype
                    appobjid    = is_app_object-appobjid
                    trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
-                   trxid       = |{ <ls_root>-tor_id }{ <ls_text_content>-text }| ) TO ct_track_id_data.
+                   trxid       = |{ lv_tor_id }{ <ls_text_content>-text }| ) TO ct_track_id_data.
         ENDIF.
       ENDLOOP.
     ENDIF.
@@ -492,57 +493,12 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-*    IF sy-uname <> 'C5204218'.
     /scmtms/cl_tor_helper_stop=>get_stop_sequence(
       EXPORTING
         it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
         iv_before_image = SWITCH #( iv_old_data WHEN abap_true THEN abap_true ELSE abap_false )
       IMPORTING
         et_stop_seq_d   = DATA(lt_stop_seq) ).
-
-*    ELSE.
-*      DATA lt_stop TYPE /scmtms/t_tor_stop_k.
-**
-*      DATA(lo_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
-*      lo_srvmgr_tor->retrieve_by_association(
-*        EXPORTING
-*          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-*          it_key          = VALUE #( ( key = <ls_tor_root>-node_id ) )
-*          iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
-*          iv_fill_data    = abap_true
-*          iv_before_image = iv_old_data
-*        IMPORTING
-*          et_data         = lt_stop ).
-**
-**      /scmtms/cl_tor_helper_stop=>get_stop_sequence(
-**        EXPORTING
-**          it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
-**          iv_before_image = SWITCH #( iv_old_data WHEN abap_true THEN abap_true ELSE abap_false )
-**          it_stop_succ    = lt_stop_succ
-**        IMPORTING
-**          et_stop_seq_d   = lt_stop_seq ).
-*
-*
-*      FIELD-SYMBOLS <lt_tor_stop_succ> TYPE /scmtms/t_em_bo_tor_stop_succ.
-*
-*      DATA(lr_stop_succ) = mo_ef_parameters->get_appl_table(
-*           SWITCH #( iv_old_data WHEN abap_true
-*                                   THEN /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-stop_successor_before
-*                                 ELSE /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-stop_successor ) ).
-*      ASSIGN lr_stop_succ->* TO <lt_tor_stop_succ>.
-*
-*      DATA(lt_stop_succ) = CORRESPONDING /scmtms/t_tor_stop_succ_k( <lt_tor_stop_succ> MAPPING key = node_id ).
-*
-*      /scmtms/cl_tor_helper_stop=>get_stop_sequence(
-*        EXPORTING
-*          it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
-*          iv_before_image = SWITCH #( iv_old_data WHEN abap_true THEN abap_true ELSE abap_false )
-*          it_stop_succ    = lt_stop_succ
-*          it_stop         = lt_stop
-*        IMPORTING
-*          et_stop_seq_d   = lt_stop_seq ).
-
-*    ENDIF.
 
     get_stop_seq(
       EXPORTING
@@ -774,62 +730,15 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
     INSERT LINES OF <lt_tor_root_req_tu> INTO TABLE <lt_tor_root_req>.
 
     DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
-    lo_tor_srv_mgr->retrieve_by_association(
-      EXPORTING
-        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
-        it_key         = VALUE #( ( key = <ls_tor_root>-node_id ) )
-        iv_association = /scmtms/if_tor_c=>sc_association-root-req_tor
-      IMPORTING
-        et_key_link    = DATA(lt_capa2req_link) ).
-
-*   Get req stop information
-    IF iv_old_data = abap_false.
-      DATA(lr_req_stop) = mo_ef_parameters->get_appl_table( iv_tabledef = /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-req_stop ).
-      ASSIGN lr_req_stop->* TO <lt_req_stop>.
-      IF sy-subrc <> 0.
-        MESSAGE e010(zgtt_sts) INTO lv_dummy.
-        zcl_gtt_sts_tools=>throw_exception( ).
-      ELSE.
-        lt_req_stop = <lt_req_stop>.
-      ENDIF.
-    ELSE.
+    TEST-SEAM lt_capa2req_link.
       lo_tor_srv_mgr->retrieve_by_association(
         EXPORTING
-          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-          it_key          = VALUE #( ( key = <ls_tor_root>-node_id ) )
-          iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor_stop
-          iv_before_image = abap_true
-          iv_fill_data    = abap_true
+          iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+          it_key         = VALUE #( ( key = <ls_tor_root>-node_id ) )
+          iv_association = /scmtms/if_tor_c=>sc_association-root-req_tor
         IMPORTING
-          et_data         = lt_tor_req_stop_before ).
-
-      lt_req_stop = CORRESPONDING #( lt_tor_req_stop_before MAPPING node_id = key parent_node_id = parent_key ).
-    ENDIF.
-
-    /scmtms/cl_tor_helper_stop=>get_stop_sequence(
-      EXPORTING
-        it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
-        iv_before_image = iv_old_data
-      IMPORTING
-        et_stop_seq_d   = DATA(lt_stop_seq) ).
-
-    ASSIGN lt_stop_seq[ root_key = <ls_tor_root>-node_id ] TO FIELD-SYMBOL(<ls_stop_seq>) ##WARN_OK.
-    IF sy-subrc = 0.
-      MOVE-CORRESPONDING <ls_stop_seq>-stop_seq TO lt_fo_stop.
-      LOOP AT lt_fo_stop ASSIGNING FIELD-SYMBOL(<ls_fo_stop>).
-        <ls_fo_stop>-parent_node_id = <ls_tor_root>-node_id.
-        ASSIGN <ls_stop_seq>-stop_map[ tabix = <ls_fo_stop>-seq_num ]-stop_key TO FIELD-SYMBOL(<lv_stop_key>).
-        CHECK sy-subrc = 0.
-        <ls_fo_stop>-node_id = <lv_stop_key>.
-      ENDLOOP.
-    ENDIF.
-
-    zcl_gtt_sts_tools=>get_stop_points(
-      EXPORTING
-        iv_root_id     = <ls_tor_root>-tor_id
-        it_stop        = lt_fo_stop
-       IMPORTING
-        et_stop_points = DATA(lt_stop_points) ).
+          et_key_link    = DATA(lt_capa2req_link) ).
+    END-TEST-SEAM.
 
     LOOP AT lt_capa2req_link ASSIGNING FIELD-SYMBOL(<ls_capa2req_link>).
       ASSIGN <lt_tor_root_req>[ node_id = <ls_capa2req_link>-target_key ] TO FIELD-SYMBOL(<ls_tor_req_id>).
@@ -838,23 +747,8 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
       lv_freight_unit_line_no += 1.
       APPEND lv_freight_unit_line_no TO ct_req_doc_line_no.
 
-      APPEND <ls_tor_req_id>-tor_id TO ct_req_doc_no.
+      APPEND |{ <ls_tor_req_id>-tor_id ALPHA = OUT }| TO ct_req_doc_no.
 
-      LOOP AT lt_fo_stop USING KEY parent_seqnum ASSIGNING <ls_fo_stop>.
-        ASSIGN lt_req_stop[ assgn_stop_key = <ls_fo_stop>-node_id parent_node_id = <ls_tor_req_id>-node_id ] TO FIELD-SYMBOL(<ls_fu_stop>).
-        IF sy-subrc = 0.
-          IF lv_seq_num IS INITIAL.
-            DATA(lv_req_doc_first_stop) = lt_stop_points[ seq_num = <ls_fo_stop>-seq_num ]-stop_id.
-            APPEND |{ lv_req_doc_first_stop ALPHA = OUT }| TO ct_req_doc_first_stop.
-          ENDIF.
-          lv_seq_num = <ls_fo_stop>-seq_num.
-        ENDIF.
-      ENDLOOP.
-      IF lv_seq_num IS NOT INITIAL.
-        DATA(lv_req_doc_last_stop) = lt_stop_points[ seq_num = lv_seq_num ]-stop_id.
-        APPEND |{ lv_req_doc_last_stop ALPHA = OUT }| TO ct_req_doc_last_stop.
-      ENDIF.
-      CLEAR: lv_seq_num.
     ENDLOOP.
 
   ENDMETHOD.

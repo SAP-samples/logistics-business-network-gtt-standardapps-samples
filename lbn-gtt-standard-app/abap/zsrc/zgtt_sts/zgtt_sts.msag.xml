@@ -18,13 +18,13 @@
      <SPRSL>E</SPRSL>
      <ARBGB>ZGTT_STS</ARBGB>
      <MSGNR>001</MSGNR>
-     <TEXT>Provided structure does not contain field &amp;1</TEXT>
+     <TEXT>Provided structure &amp;2 does not contain field &amp;1</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>
      <ARBGB>ZGTT_STS</ARBGB>
      <MSGNR>002</MSGNR>
-     <TEXT>Provided reference is not bound</TEXT>
+     <TEXT>Provided reference &amp;1 is not bound</TEXT>
     </T100>
     <T100>
      <SPRSL>E</SPRSL>

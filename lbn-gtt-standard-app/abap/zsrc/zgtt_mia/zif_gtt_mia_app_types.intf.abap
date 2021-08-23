@@ -61,6 +61,7 @@ INTERFACE zif_gtt_mia_app_types
   TYPES:
     BEGIN OF ts_stops,
       stopid           TYPE tv_stopid,
+      stopid_txt       TYPE tv_stopid,    "formated stopid
       stopcnt          TYPE tv_stopcnt,
       loccat           TYPE tv_loccat,
       loctype          TYPE tv_loctype,
@@ -82,9 +83,10 @@ INTERFACE zif_gtt_mia_app_types
                     WITH EMPTY KEY .
   TYPES:
     BEGIN OF ts_dlv_watch_stops,
-      vbeln  TYPE vbeln_vl,
-      stopid TYPE tv_stopid,
-      loccat TYPE tv_loccat,
+      vbeln      TYPE vbeln_vl,
+      stopid     TYPE tv_stopid,
+      stopid_txt TYPE tv_stopid,    "formated stopid
+      loccat     TYPE tv_loccat,
     END OF ts_dlv_watch_stops .
   TYPES:
     tt_dlv_watch_stops TYPE STANDARD TABLE OF ts_dlv_watch_stops

@@ -1,12 +1,12 @@
-CLASS zcl_gtt_sts_pe_fo_filler DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_sts_pe_filler
-  CREATE PUBLIC .
+class ZCL_GTT_STS_PE_FO_FILLER definition
+  public
+  inheriting from ZCL_GTT_STS_PE_FILLER
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS zif_gtt_sts_pe_filler~get_planned_events
-        REDEFINITION .
+  methods ZIF_GTT_STS_PE_FILLER~GET_PLANNED_EVENTS
+    redefinition .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
