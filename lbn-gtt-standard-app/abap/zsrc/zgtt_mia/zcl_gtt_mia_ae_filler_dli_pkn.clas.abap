@@ -36,7 +36,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ae_filler_dli_pkn IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -183,7 +183,10 @@ CLASS zcl_gtt_mia_ae_filler_dli_pkn IMPLEMENTATION.
 
 
   METHOD zif_gtt_mia_ae_filler~get_event_data.
-    DATA: lv_werks    TYPE werks_d.
+    DATA:
+      lv_werks           TYPE werks_d,
+      lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
+      lv_dlvittrxcod     TYPE /saptrx/trxcod.
 
     DATA(lv_quantity)   = get_packing_quantity(
                             ir_lips = is_events-maintabref
@@ -194,11 +197,28 @@ CLASS zcl_gtt_mia_ae_filler_dli_pkn IMPLEMENTATION.
                             ir_struct_data = is_events-maintabref
                             iv_field_name  = 'WERKS' ).
 
+    lv_dlvittrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_position.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type        = is_events-eventtype
+            iv_app         = 'MIA'
+          IMPORTING
+            ev_dlvittrxcod = lv_tmp_dlvittrxcod.
+
+        IF lv_tmp_dlvittrxcod IS NOT INITIAL.
+          lv_dlvittrxcod = lv_tmp_dlvittrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
+
     ct_trackingheader = VALUE #( BASE ct_trackingheader (
       language    = sy-langu
       trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
                       ir_lips = is_events-maintabref )
-      trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_position
+      trxcod      = lv_dlvittrxcod
       evtcnt      = is_events-eventid
       evtid       = zif_gtt_mia_app_constants=>cs_milestone-dl_packing
       evtdat      = sy-datum

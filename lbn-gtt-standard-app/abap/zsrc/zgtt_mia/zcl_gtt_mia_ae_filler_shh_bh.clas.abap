@@ -37,7 +37,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ae_filler_shh_bh IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BH IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -82,13 +82,34 @@ CLASS zcl_gtt_mia_ae_filler_shh_bh IMPLEMENTATION.
 
   METHOD zif_gtt_mia_ae_filler~get_event_data.
 
+    DATA:
+      lv_tmp_shptrxcod TYPE /saptrx/trxcod,
+      lv_shptrxcod     TYPE /saptrx/trxcod.
+
     DATA(lv_evtcnt) = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
+
+    lv_shptrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_number.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type      = is_events-eventtype
+            iv_app       = 'MIA'
+          IMPORTING
+            ev_shptrxcod = lv_tmp_shptrxcod.
+
+        IF lv_tmp_shptrxcod IS NOT INITIAL.
+          lv_shptrxcod = lv_tmp_shptrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
     ct_trackingheader = VALUE #( BASE ct_trackingheader (
       language    = sy-langu
       trxid       = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
                       ir_vttk = is_events-maintabref )
-      trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_number
+      trxcod      = lv_shptrxcod
       evtcnt      = lv_evtcnt
       evtid       = get_eventid( )
       evtdat      = zcl_gtt_mia_tools=>get_field_of_structure(

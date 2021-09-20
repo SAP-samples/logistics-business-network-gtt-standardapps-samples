@@ -180,7 +180,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -261,7 +261,8 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
 
     TYPES: tt_vttp  TYPE STANDARD TABLE OF vttpvb.
     DATA: lv_count TYPE i VALUE 0,
-          lv_vbeln TYPE vbeln_vl.
+          lv_vbeln TYPE vbeln_vl,
+          lv_abfer TYPE tvtk-abfer.
 
     FIELD-SYMBOLS: <ls_vttk> TYPE vttkvb,
                    <lt_vttp> TYPE tt_vttp.
@@ -270,17 +271,28 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
     ASSIGN ir_vttp->* TO <lt_vttp>.
 
     IF sy-subrc = 0.
+      CLEAR lv_abfer.
+      SELECT SINGLE abfer
+        INTO lv_abfer
+        FROM tvtk
+       WHERE shtyp = <ls_vttk>-shtyp.
+
       LOOP AT <lt_vttp> ASSIGNING FIELD-SYMBOL(<ls_vttp>)
         WHERE tknum = <ls_vttk>-tknum.
 
         ADD 1 TO lv_count.
-        APPEND lv_count TO cs_header-deliv_cnt.
 
         lv_vbeln    = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
                         ir_likp = REF #( <ls_vttp> ) ).
 
-        APPEND lv_vbeln TO cs_header-deliv_no.
+*       For inbound Delivery
+        IF lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-empty_inb_ship OR
+           lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-loaded_inb_ship.
+          APPEND lv_count TO cs_header-deliv_cnt.
+          APPEND lv_vbeln TO cs_header-deliv_no.
+        ENDIF.
       ENDLOOP.
+
     ELSEIF <ls_vttk> IS NOT ASSIGNED.
       MESSAGE e002(zgtt_mia) WITH 'VTTK' INTO DATA(lv_dummy).
       zcl_gtt_mia_tools=>throw_exception( ).
@@ -425,6 +437,7 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
+
 
   METHOD get_forwarding_agent_id_number.
 
@@ -582,10 +595,12 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD zif_gtt_mia_tp_reader~get_app_obj_type_id.
     rv_appobjid   = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
                       ir_vttk = is_app_object-maintabref ).
   ENDMETHOD.
+
 
   METHOD zif_gtt_mia_tp_reader~get_data.
 
@@ -707,10 +722,38 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
     "and for tracking ID type 'RESOURCE' of shipment header,
     "DO NOT enable START DATE and END DATE
 
-    DATA: lv_dummy    TYPE string.
+    DATA:
+      lv_dummy         TYPE string,
+      lv_tmp_shptrxcod TYPE /saptrx/trxcod,
+      lv_tmp_restrxcod TYPE /saptrx/trxcod,
+      lv_shptrxcod     TYPE /saptrx/trxcod,
+      lv_restrxcod     TYPE /saptrx/trxcod.
 
     FIELD-SYMBOLS: <ls_vttk>     TYPE vttkvb,
                    <ls_vttk_old> TYPE vttkvb.
+
+    lv_shptrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_number.
+    lv_restrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_resource.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type      = is_app_object-appobjtype
+            iv_app       = 'MIA'
+          IMPORTING
+            ev_shptrxcod = lv_tmp_shptrxcod
+            ev_restrxcod = lv_tmp_restrxcod.
+
+        IF lv_tmp_shptrxcod IS NOT INITIAL.
+          lv_shptrxcod = lv_tmp_shptrxcod.
+        ENDIF.
+
+        IF lv_tmp_restrxcod IS NOT INITIAL.
+          lv_restrxcod = lv_tmp_restrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
     ASSIGN is_app_object-maintabref->* TO <ls_vttk>.
 
@@ -720,7 +763,7 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
         appsys      = mo_ef_parameters->get_appsys( )
         appobjtype  = is_app_object-appobjtype
         appobjid    = is_app_object-appobjid
-        trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_number
+        trxcod      = lv_shptrxcod
         trxid       = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
                         ir_vttk = is_app_object-maintabref )
         timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
@@ -738,7 +781,7 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
           appsys      = mo_ef_parameters->get_appsys( )
           appobjtype  = is_app_object-appobjtype
           appobjid    = is_app_object-appobjid
-          trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_resource
+          trxcod      = lv_restrxcod
           trxid       = lv_res_tid_new
         ) ).
 
@@ -762,7 +805,7 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
                 appsys      = mo_ef_parameters->get_appsys( )
                 appobjtype  = is_app_object-appobjtype
                 appobjid    = is_app_object-appobjid
-                trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_resource
+                trxcod      = lv_restrxcod
                 trxid       = lv_res_tid_new
               ) ).
             ENDIF.
@@ -773,7 +816,7 @@ CLASS zcl_gtt_mia_tp_reader_shh IMPLEMENTATION.
                 appsys      = mo_ef_parameters->get_appsys( )
                 appobjtype  = is_app_object-appobjtype
                 appobjid    = is_app_object-appobjid
-                trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_resource
+                trxcod      = lv_restrxcod
                 trxid       = lv_res_tid_old
                 action      = zif_gtt_mia_ef_constants=>cs_change_mode-delete
               ) ).

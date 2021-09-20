@@ -70,7 +70,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
 
 
   METHOD get_carrier_reference_document.
@@ -93,6 +93,7 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_formated_sh_number.
 
     rv_tknum  = zcl_gtt_mia_tools=>get_field_of_structure(
@@ -103,6 +104,7 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_formated_sh_stopid.
 *    rv_stopid   = |{ iv_tknum ALPHA = OUT }{ iv_cnt ALPHA = OUT }|.
 *    CONDENSE rv_stopid NO-GAPS.
@@ -111,6 +113,7 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
 
     CONDENSE rv_stopid NO-GAPS.
   ENDMETHOD.
+
 
   METHOD get_next_event_counter.
 
@@ -392,6 +395,7 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_tracking_id_sh_header.
 
     DATA: lv_tknum TYPE vttk-tknum.
@@ -403,6 +407,7 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
     rv_track_id   = |{ lv_tknum ALPHA = OUT }|.
 
   ENDMETHOD.
+
 
   METHOD is_appropriate_type.
 
@@ -419,7 +424,9 @@ CLASS zcl_gtt_mia_sh_tools IMPLEMENTATION.
 
     IF sy-subrc = 0.
       rv_result   = boolc( lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-empty_inb_ship OR
-                           lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-loaded_inb_ship ).
+                           lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-loaded_inb_ship OR
+                           lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-empty_outb_ship OR
+                           lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-loaded_outb_ship ).
     ELSE.
       MESSAGE e057(00) WITH lv_shtyp '' '' 'TVTK'
         INTO DATA(lv_dummy).

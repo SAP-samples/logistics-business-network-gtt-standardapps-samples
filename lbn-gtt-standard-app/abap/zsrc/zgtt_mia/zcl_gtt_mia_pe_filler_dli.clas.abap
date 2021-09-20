@@ -11,57 +11,50 @@ CLASS zcl_gtt_mia_pe_filler_dli DEFINITION
         !io_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters
         !io_bo_reader     TYPE REF TO zif_gtt_mia_tp_reader .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
-    DATA mo_bo_reader TYPE REF TO zif_gtt_mia_tp_reader .
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_MIA_EF_PARAMETERS .
+  data MO_BO_READER type ref to ZIF_GTT_MIA_TP_READER .
 
-    METHODS add_goods_receipt_event
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
-        !iv_milestonenum TYPE /saptrx/seq_num
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS add_packing_event
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
-        !iv_milestonenum TYPE /saptrx/seq_num
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS add_put_away_event
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
-        !iv_milestonenum TYPE /saptrx/seq_num
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS add_shipment_events
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS is_time_of_delivery_changed
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  methods ADD_GOODS_RECEIPT_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+      !IV_MILESTONENUM type /SAPTRX/SEQ_NUM
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_PACKING_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+      !IV_MILESTONENUM type /SAPTRX/SEQ_NUM
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_PUT_AWAY_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+      !IV_MILESTONENUM type /SAPTRX/SEQ_NUM
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_TIME_OF_DELIVERY_CHANGED
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
 
 
   METHOD add_goods_receipt_event.
@@ -152,35 +145,13 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD add_shipment_events.
-
-    DATA: lt_expeventdata  TYPE zif_gtt_mia_ef_types=>tt_expeventdata.
-
-    DATA(lv_vbeln)            = CONV vbeln_vl( zcl_gtt_mia_tools=>get_field_of_structure(
-                                                 ir_struct_data = is_app_objects-maintabref
-                                                 iv_field_name  = 'VBELN' ) ).
-
-    DATA(lo_sh_stops_events)  = zcl_gtt_mia_sh_stops_events=>get_instance_for_delivery(
-                                  iv_vbeln         = lv_vbeln
-                                  iv_appobjid      = is_app_objects-appobjid
-                                  io_ef_parameters = mo_ef_parameters ).
-
-    lo_sh_stops_events->get_planned_events(
-      IMPORTING
-        et_exp_event = lt_expeventdata ).
-
-    ct_expeventdata   = VALUE #( BASE ct_expeventdata
-                                 ( LINES OF lt_expeventdata ) ).
-
-  ENDMETHOD.
-
-
   METHOD constructor.
 
     mo_ef_parameters    = io_ef_parameters.
     mo_bo_reader        = io_bo_reader.
 
   ENDMETHOD.
+
 
   METHOD is_time_of_delivery_changed.
 
@@ -273,12 +244,6 @@ CLASS zcl_gtt_mia_pe_filler_dli IMPLEMENTATION.
 
     " store calculated relevance flags
     lo_relevance->update( ).
-
-    add_shipment_events(
-      EXPORTING
-        is_app_objects  = is_app_objects
-      CHANGING
-        ct_expeventdata = ct_expeventdata ).
 
     add_put_away_event(
       EXPORTING

@@ -66,7 +66,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
 
 
   METHOD fill_idoc_appobj_ctabs.
@@ -195,13 +195,34 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh IMPLEMENTATION.
 
   METHOD fill_idoc_tracking_id.
 
+    DATA:
+      lv_tmp_dlvhdtrxcod TYPE /saptrx/trxcod,
+      lv_dlvhdtrxcod     TYPE /saptrx/trxcod.
+
+    lv_dlvhdtrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_number.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type        = is_aotype-aot_type
+            iv_app         = 'MIA'
+          IMPORTING
+            ev_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
+
+        IF lv_tmp_dlvhdtrxcod IS NOT INITIAL.
+          lv_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
+
     " Delivery Header
     cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
       appsys      = mv_appsys
       appobjtype  = is_aotype-aot_type
       appobjid    = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
                       ir_likp = REF #( is_delivery ) )
-      trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
+      trxcod      = lv_dlvhdtrxcod
       trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
                       ir_likp = REF #( is_delivery ) )
       timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )

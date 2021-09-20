@@ -478,7 +478,11 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
       lr_root_new          TYPE REF TO data,
       lr_root_old          TYPE REF TO data,
       lt_track_id_data_new TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
-      lt_track_id_data_old TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data.
+      lt_track_id_data_old TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
+      lv_tmp_fotrxcod      TYPE /saptrx/trxcod,
+      lv_tmp_restrxcod     TYPE /saptrx/trxcod,
+      lv_fotrxcod          TYPE /saptrx/trxcod,
+      lv_restrxcod         TYPE /saptrx/trxcod.
 
     FIELD-SYMBOLS:
       <lt_item_new>         TYPE /scmtms/t_em_bo_tor_item,
@@ -495,6 +499,28 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
     IF sy-subrc <> 0.
       RETURN.
     ENDIF.
+
+    lv_fotrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_number.
+    lv_restrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type      = is_app_object-appobjtype
+            iv_app       = 'STS'
+          IMPORTING
+            ev_shptrxcod = lv_tmp_fotrxcod
+            ev_restrxcod = lv_tmp_restrxcod.
+
+        IF lv_tmp_fotrxcod IS NOT INITIAL.
+          lv_fotrxcod = lv_tmp_fotrxcod.
+        ENDIF.
+
+        IF lv_tmp_restrxcod IS NOT INITIAL.
+          lv_restrxcod = lv_tmp_restrxcod.
+        ENDIF.
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
     lr_root_new = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_header_new ).
     ASSIGN lr_root_new->* TO <lt_root_new>.
@@ -513,7 +539,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
     add_track_id_data(
       EXPORTING
         is_app_object = is_app_object
-        iv_trxcod     = zif_gtt_sts_constants=>cs_trxcod-fo_number
+        iv_trxcod     = lv_fotrxcod
         iv_trxid      = |{ <ls_root_new>-tor_id ALPHA = OUT }|
       CHANGING
         ct_track_id   = et_track_id_data ).
@@ -590,7 +616,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                     appsys      = mo_ef_parameters->get_appsys( )
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
-                    trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
+                    trxcod      = lv_restrxcod
                     trxid       = |{ lv_tor_id }{ <ls_item_new>-vessel_id }| ) TO lt_track_id_data_new.
           ENDIF.
         ENDIF.
@@ -626,7 +652,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                     appsys      = mo_ef_parameters->get_appsys( )
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
-                    trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
+                    trxcod      = lv_restrxcod
                     trxid       = |{ lv_tor_id }{ <ls_item_old>-vessel_id }| ) TO lt_track_id_data_old.
           ENDIF.
         ENDIF.
@@ -677,6 +703,26 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
       <lt_tor_item> TYPE /scmtms/t_em_bo_tor_item,
       <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
 
+    DATA:
+      lv_tmp_restrxcod TYPE /saptrx/trxcod,
+      lv_restrxcod     TYPE /saptrx/trxcod.
+
+    lv_restrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type      = is_app_object-appobjtype
+            iv_app       = 'STS'
+          IMPORTING
+            ev_restrxcod = lv_tmp_restrxcod.
+
+        IF lv_tmp_restrxcod IS NOT INITIAL.
+          lv_restrxcod = lv_tmp_restrxcod.
+        ENDIF.
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
+
     ASSIGN is_app_object-maintabref->* TO <ls_tor_root>.
     IF sy-subrc = 0.
       DATA(lv_tabledef_tor_item) = SWITCH #( iv_old_data
@@ -700,7 +746,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                     appsys      = mo_ef_parameters->get_appsys( )
                     appobjtype  = is_app_object-appobjtype
                     appobjid    = is_app_object-appobjid
-                    trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
+                    trxcod      = lv_restrxcod
                     trxid       =  |{ lv_tor_id }{ <ls_tor_item>-flight_code }| ) TO ct_track_id_data.
         ENDIF.
       ENDIF.

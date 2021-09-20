@@ -73,7 +73,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ctp_tor_changes IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_CTP_TOR_CHANGES IMPLEMENTATION.
 
 
   METHOD add_delivery_item.
@@ -127,7 +127,6 @@ CLASS zcl_gtt_mia_ctp_tor_changes IMPLEMENTATION.
     mt_tor_stop        = it_tor_stop_sstring.
     mt_tor_stop_addr   = it_tor_stop_addr_sstring.
     mt_tor_stop_before = get_tor_stop_before( ).
-    mt_allowed_fu_type = get_allowed_fu_types( ).
 
     init_deliveries( ).
 
@@ -217,10 +216,8 @@ CLASS zcl_gtt_mia_ctp_tor_changes IMPLEMENTATION.
   METHOD get_dlv_item_based_on_tor_root.
 
     LOOP AT mt_tor_root ASSIGNING FIELD-SYMBOL(<ls_tor_root>)
-      WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
-
-      CHECK line_exists( mt_allowed_fu_type[ table_line = <ls_tor_root>-tor_type ] ) AND
-            ( <ls_tor_root>-base_btd_tco = zif_gtt_mia_ctp_tor_constants=>cv_base_btd_tco_inb_dlv ).
+      WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit
+        AND base_btd_tco = zif_gtt_mia_ctp_tor_constants=>cv_base_btd_tco_inb_dlv.
 
       IF <ls_tor_root>-change_mode = /bobf/if_frw_c=>sc_modify_delete.
         add_delivery_items_by_tor_root(

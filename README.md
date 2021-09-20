@@ -1,5 +1,13 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2109 Release
+ 
+1. "Reference Document No." field is added into the "InboundDeliveryItem" tracked process.
+2. In the inbound delivery item extractor, inbound delivery items no longer observe inbound deliveries.
+3. The actual event "Goods Receipt" in SAP ERP is now tracked by the global track and trace option, and extracted into the "InboundDeliveryItem" tracked process.
+4. The planned events "Departure" , "Arrival", and "Proof of Delivery" are removed from the "InboundDeliveryItem" tracked process.
+
+
 ## What's New in the 2108 Release
 1.	The GTT standard model no longer supports mutual observation between freight orders and freight units. Now only freight units observe freight orders. To achieve this, the following changes are made:</br>
 •	Freight orders no longer observe freight units in the freight order extractor </br>

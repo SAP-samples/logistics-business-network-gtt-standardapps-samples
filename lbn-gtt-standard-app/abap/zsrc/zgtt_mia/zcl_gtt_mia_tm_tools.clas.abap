@@ -57,7 +57,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_tm_tools IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
 
 
   METHOD filter_tor_items_by_tor_cat.
@@ -92,6 +92,7 @@ CLASS zcl_gtt_mia_tm_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_formated_tor_id.
 
     rv_tor_id   = zcl_gtt_mia_tools=>get_field_of_structure(
@@ -102,6 +103,7 @@ CLASS zcl_gtt_mia_tm_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_formated_tor_item.
 
     rv_item_id   = zcl_gtt_mia_tools=>get_field_of_structure(
@@ -109,6 +111,7 @@ CLASS zcl_gtt_mia_tm_tools IMPLEMENTATION.
                     iv_field_name  = 'ITEM_ID' ).
 
   ENDMETHOD.
+
 
   METHOD get_tor_items_for_dlv_items.
 

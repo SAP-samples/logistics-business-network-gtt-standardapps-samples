@@ -109,7 +109,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -208,6 +208,7 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD format_header_location_ids.
     cs_dl_header-lifnr  = zcl_gtt_mia_tools=>get_pretty_location_id(
                             iv_locid   = cs_dl_header-lifnr
@@ -217,6 +218,7 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
                             iv_locid   = cs_dl_header-werks
                             iv_loctype = cs_dl_header-werks_lt ).
   ENDMETHOD.
+
 
   METHOD get_likp_struct_old.
 
@@ -280,10 +282,12 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD zif_gtt_mia_tp_reader~get_app_obj_type_id.
     rv_appobjid   = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
                         ir_likp = is_app_object-maintabref ).
   ENDMETHOD.
+
 
   METHOD zif_gtt_mia_tp_reader~get_data.
 
@@ -377,11 +381,32 @@ CLASS zcl_gtt_mia_tp_reader_dlh IMPLEMENTATION.
     " and for tracking ID type 'RESOURCE' of shipment header,
     " DO NOT enable START DATE and END DATE
 
+    DATA:
+      lv_tmp_dlvhdtrxcod TYPE /saptrx/trxcod,
+      lv_dlvhdtrxcod     TYPE /saptrx/trxcod.
+
+    lv_dlvhdtrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_number.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type        = is_app_object-appobjtype
+            iv_app         = 'MIA'
+          IMPORTING
+            ev_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
+
+        IF lv_tmp_dlvhdtrxcod IS NOT INITIAL.
+          lv_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
+
     et_track_id_data = VALUE #( BASE et_track_id_data (
         appsys      = mo_ef_parameters->get_appsys( )
         appobjtype  = is_app_object-appobjtype
         appobjid    = is_app_object-appobjid
-        trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
+        trxcod      = lv_dlvhdtrxcod
         trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
                         ir_likp = is_app_object-maintabref )
         timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )

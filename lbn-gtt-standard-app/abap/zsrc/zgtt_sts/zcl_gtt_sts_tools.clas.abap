@@ -325,6 +325,26 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
 
     CONSTANTS: cs_mtr_truck TYPE string VALUE '31'.
 
+    DATA:
+      lv_tmp_restrxcod TYPE /saptrx/trxcod,
+      lv_restrxcod     TYPE /saptrx/trxcod.
+
+    lv_restrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type      = is_app_object-appobjtype
+            iv_app       = 'STS'
+          IMPORTING
+            ev_restrxcod = lv_tmp_restrxcod.
+
+        IF lv_tmp_restrxcod IS NOT INITIAL.
+          lv_restrxcod = lv_tmp_restrxcod.
+        ENDIF.
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
+
     LOOP AT it_item ASSIGNING FIELD-SYMBOL(<ls_item>).
 
       IF <ls_item>-platenumber IS ASSIGNED AND <ls_item>-res_id IS ASSIGNED AND <ls_item>-node_id IS ASSIGNED AND
@@ -337,7 +357,7 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
                   appsys      = iv_appsys
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
-                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
+                  trxcod      = lv_restrxcod
                   trxid       = |{ lv_tor_id }{ <ls_item>-res_id }| ) TO ct_track_id_data.
         ENDIF.
 
@@ -351,7 +371,7 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
                   appsys      = iv_appsys
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
-                  trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
+                  trxcod      = lv_restrxcod
                   trxid       = |{ lv_tor_id }{ <ls_item>-platenumber }| ) TO ct_track_id_data.
         ENDIF.
       ENDIF.

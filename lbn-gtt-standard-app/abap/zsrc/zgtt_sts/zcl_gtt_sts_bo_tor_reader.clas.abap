@@ -435,11 +435,32 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
   METHOD get_container_mobile_track_id.
 
     FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lv_tmp_restrxcod TYPE /saptrx/trxcod,
+      lv_restrxcod     TYPE /saptrx/trxcod.
+
     ASSIGN is_app_object-maintabref->* TO <ls_root>.
     IF sy-subrc <> 0.
       MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
+
+    lv_restrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type      = is_app_object-appobjtype
+            iv_app       = 'STS'
+          IMPORTING
+            ev_restrxcod = lv_tmp_restrxcod.
+
+        IF lv_tmp_restrxcod IS NOT INITIAL.
+          lv_restrxcod = lv_tmp_restrxcod.
+        ENDIF.
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
     get_data_from_text_collection(
       EXPORTING
@@ -464,7 +485,7 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
                    appsys      = mo_ef_parameters->get_appsys( )
                    appobjtype  = is_app_object-appobjtype
                    appobjid    = is_app_object-appobjid
-                   trxcod      = zif_gtt_sts_constants=>cs_trxcod-fo_resource
+                   trxcod      = lv_restrxcod
                    trxid       = |{ lv_tor_id }{ <ls_text_content>-text }| ) TO ct_track_id_data.
         ENDIF.
       ENDLOOP.

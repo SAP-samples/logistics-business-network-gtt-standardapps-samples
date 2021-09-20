@@ -570,8 +570,13 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
   METHOD zif_gtt_sts_actual_event~process_actual_event.
 
-    DATA: ls_trackingheader TYPE /saptrx/bapi_evm_header.
     FIELD-SYMBOLS: <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+    DATA:
+      ls_trackingheader TYPE /saptrx/bapi_evm_header,
+      lv_tmp_fotrxcod   TYPE /saptrx/trxcod,
+      lv_tmp_futrxcod   TYPE /saptrx/trxcod,
+      lv_fotrxcod       TYPE /saptrx/trxcod,
+      lv_futrxcod       TYPE /saptrx/trxcod.
 
     get_execution(
       EXPORTING
@@ -607,6 +612,33 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
         WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
           ls_trackingheader-trxcod = zif_gtt_sts_constants=>cs_trxcod-fu_number.
       ENDCASE.
+
+      TRY.
+          CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+            EXPORTING
+              iv_type      = <ls_event>-eventtype
+              iv_app       = 'STS'
+            IMPORTING
+              ev_shptrxcod = lv_tmp_fotrxcod
+              ev_futrxcod  = lv_tmp_futrxcod.
+
+          CASE <ls_tor_root>-tor_cat.
+            WHEN /scmtms/if_tor_const=>sc_tor_category-active.
+              IF lv_tmp_fotrxcod IS NOT INITIAL.
+                ls_trackingheader-trxcod = lv_tmp_fotrxcod.
+              ENDIF.
+            WHEN /scmtms/if_tor_const=>sc_tor_category-booking.
+              IF lv_tmp_fotrxcod IS NOT INITIAL.
+                ls_trackingheader-trxcod = lv_tmp_fotrxcod.
+              ENDIF.
+            WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
+              IF lv_tmp_futrxcod IS NOT INITIAL.
+                ls_trackingheader-trxcod = lv_tmp_futrxcod.
+              ENDIF.
+          ENDCASE.
+
+        CATCH cx_sy_dyn_call_illegal_func.
+      ENDTRY.
 
       GET TIME STAMP FIELD DATA(lv_timestamp).
       ls_trackingheader-evttst = lv_timestamp.

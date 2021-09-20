@@ -105,6 +105,8 @@ INTERFACE zif_gtt_mia_app_constants
     BEGIN OF cs_abfer,
       loaded_inb_ship TYPE abfer VALUE '2',
       empty_inb_ship  TYPE abfer VALUE '4',
+      loaded_outb_ship TYPE abfer VALUE '1', "Loaded outbound shipment
+      empty_outb_ship  type abfer VALUE '3', "Empty outbound shipment
     END OF cs_abfer .
   CONSTANTS:
     BEGIN OF cs_base_btd_tco,

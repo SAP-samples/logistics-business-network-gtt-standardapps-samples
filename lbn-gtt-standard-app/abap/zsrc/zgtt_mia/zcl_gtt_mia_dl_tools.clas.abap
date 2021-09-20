@@ -112,7 +112,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
 
   METHOD convert_quantity_into_pounits.
@@ -221,6 +221,7 @@ CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_formated_dlv_item.
 
     rv_posnr  = zcl_gtt_mia_tools=>get_field_of_structure(
@@ -230,6 +231,7 @@ CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
     rv_posnr   = |{ rv_posnr ALPHA = IN }|.
 
   ENDMETHOD.
+
 
   METHOD get_formated_dlv_number.
 
@@ -241,19 +243,21 @@ CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_formated_po_item.
     DATA(lv_ebeln)  = CONV ebeln( zcl_gtt_mia_tools=>get_field_of_structure(
                                     ir_struct_data = ir_lips
                                     iv_field_name  = 'VGBEL' ) ).
 
-    DATA(lv_ebelp)  = CONV char5( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_vgpos)  = CONV vgpos( zcl_gtt_mia_tools=>get_field_of_structure(
                                     ir_struct_data = ir_lips
                                     iv_field_name  = 'VGPOS' ) ).
 
-    rv_po_item  = |{ lv_ebeln ALPHA = OUT }{ lv_ebelp }|.
+    rv_po_item  = |{ lv_ebeln ALPHA = OUT }{ lv_vgpos+1(5) }|.
 
     CONDENSE rv_po_item NO-GAPS.
   ENDMETHOD.
+
 
   METHOD get_door_description.
 
@@ -350,6 +354,7 @@ CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_tracking_id_dl_header.
 
     DATA: lv_vbeln TYPE lips-vbeln.
@@ -361,6 +366,7 @@ CLASS zcl_gtt_mia_dl_tools IMPLEMENTATION.
     rv_track_id   = |{ lv_vbeln ALPHA = OUT }|.
 
   ENDMETHOD.
+
 
   METHOD get_tracking_id_dl_item.
 

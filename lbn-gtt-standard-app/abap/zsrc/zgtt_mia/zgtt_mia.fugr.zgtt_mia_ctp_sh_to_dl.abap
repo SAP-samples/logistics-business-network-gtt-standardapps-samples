@@ -13,13 +13,6 @@ FUNCTION zgtt_mia_ctp_sh_to_dl.
 
       lo_head->send_idoc_data( ).
 
-      " Delivery item
-      DATA(lo_item) = zcl_gtt_mia_ctp_snd_sh_to_dli=>get_instance( ).
-
-      lo_item->prepare_idoc_data( io_ship_data  = lo_ship ).
-
-      lo_item->send_idoc_data(  ).
-
     CATCH cx_udm_message INTO DATA(lo_udm_message).
       zcl_gtt_mia_tools=>log_exception(
         EXPORTING

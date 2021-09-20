@@ -129,7 +129,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
     send_deletion_idoc( lt_tor_root_for_deletion ).
 
-    " F.O./F.B./F.U. to DLV CrossTP update
+    " F.O./F.B./F.U. to Inbound DLV CrossTP update
     CALL FUNCTION 'ZGTT_MIA_CTP_TOR_TO_DL'
       EXPORTING
         it_tor_root_sstring        = it_tor_root_sstring
@@ -138,6 +138,19 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
         it_tor_item_before_sstring = it_item_before_sstring
         it_tor_stop_sstring        = it_stop_sstring
         it_tor_stop_addr_sstring   = it_stop_addr_sstring.
+
+    " F.O./F.B./F.U. to Outbound DLV CrossTP update
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_CTP_TOR_TO_DL'
+          EXPORTING
+            it_tor_root_sstring        = it_tor_root_sstring
+            it_tor_root_before_sstring = it_tor_root_before_sstring
+            it_tor_item_sstring        = it_item_sstring
+            it_tor_item_before_sstring = it_item_before_sstring
+            it_tor_stop_sstring        = it_stop_sstring
+            it_tor_stop_addr_sstring   = it_stop_addr_sstring.
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
     add_required_freight_unit(
       CHANGING

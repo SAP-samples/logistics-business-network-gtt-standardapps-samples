@@ -336,7 +336,9 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       lr_item_old          TYPE REF TO data,
       lr_root_old          TYPE REF TO data,
       lt_track_id_data_new TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
-      lt_track_id_data_old TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data.
+      lt_track_id_data_old TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
+      lv_tmp_fotrxcod      TYPE /saptrx/trxcod,
+      lv_fotrxcod          TYPE /saptrx/trxcod.
 
     FIELD-SYMBOLS:
       <lt_item_new>         TYPE /scmtms/t_em_bo_tor_item,
@@ -355,10 +357,26 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
+    lv_fotrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_number.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type      = is_app_object-appobjtype
+            iv_app       = 'STS'
+          IMPORTING
+            ev_shptrxcod = lv_tmp_fotrxcod.
+        IF lv_tmp_fotrxcod IS NOT INITIAL.
+          lv_fotrxcod = lv_tmp_fotrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
+
     add_track_id_data(
       EXPORTING
         is_app_object = is_app_object
-        iv_trxcod     = zif_gtt_sts_constants=>cs_trxcod-fo_number
+        iv_trxcod     = lv_fotrxcod
         iv_trxid      = |{ <ls_root_new>-tor_id  ALPHA = OUT }|
       CHANGING
         ct_track_id   = et_track_id_data ).

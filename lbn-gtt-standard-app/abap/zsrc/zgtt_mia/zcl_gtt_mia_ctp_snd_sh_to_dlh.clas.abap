@@ -106,7 +106,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
 
   METHOD fill_idoc_appobj_ctabs.
@@ -355,11 +355,39 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh IMPLEMENTATION.
     "another tip is that: for tracking ID type 'SHIPMENT_ORDER' of delivery header,
     "and for tracking ID type 'RESOURCE' of shipment header,
     "DO NOT enable START DATE and END DATE
-    DATA: lt_tracking_id TYPE /saptrx/bapi_trk_trkid_tab.
+    DATA:
+      lt_tracking_id     TYPE /saptrx/bapi_trk_trkid_tab,
+      lv_tmp_shptrxcod   TYPE /saptrx/trxcod,
+      lv_shptrxcod       TYPE /saptrx/trxcod,
+      lv_tmp_dlvhdtrxcod TYPE /saptrx/trxcod,
+      lv_dlvhdtrxcod     TYPE /saptrx/trxcod.
+
+    lv_shptrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_number.
+    lv_dlvhdtrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_number.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type        = is_aotype-aot_type
+            iv_app         = 'MIA'
+          IMPORTING
+            ev_shptrxcod   = lv_tmp_shptrxcod
+            ev_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
+
+        IF lv_tmp_shptrxcod IS NOT INITIAL.
+          lv_shptrxcod = lv_tmp_shptrxcod.
+        ENDIF.
+
+        IF lv_tmp_dlvhdtrxcod IS NOT INITIAL.
+          lv_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
     " Delivery Header
     lt_tracking_id    = VALUE #( (
-      trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
+      trxcod      = lv_dlvhdtrxcod
       trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
                       ir_likp = REF #( is_likp ) )
       timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
@@ -370,7 +398,7 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh IMPLEMENTATION.
       IF <ls_likp_dlt>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert OR
          <ls_likp_dlt>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
         lt_tracking_id    = VALUE #( BASE lt_tracking_id (
-          trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-sh_number
+          trxcod      = lv_shptrxcod
           trxid       = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
                           ir_vttk = REF #( <ls_likp_dlt> ) )              "<ls_likp_dlt>-tknum
           action      = COND #( WHEN <ls_likp_dlt>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete

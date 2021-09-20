@@ -162,7 +162,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -295,12 +295,14 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD fill_item_location_types.
 
     cs_dl_item-lifnr_lt   = zif_gtt_mia_ef_constants=>cs_loc_types-supplier.
     cs_dl_item-werks_lt   = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
 
   ENDMETHOD.
+
 
   METHOD format_item_location_ids.
     cs_dl_item-lifnr  = zcl_gtt_mia_tools=>get_pretty_location_id(
@@ -311,6 +313,7 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
                           iv_locid   = cs_dl_item-werks
                           iv_loctype = cs_dl_item-werks_lt ).
   ENDMETHOD.
+
 
   METHOD get_likp_struct_old.
 
@@ -369,6 +372,7 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
     ENDIF.
 
   ENDMETHOD.
+
 
   METHOD get_vbpa_table_old.
 
@@ -439,10 +443,12 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD zif_gtt_mia_tp_reader~get_app_obj_type_id.
     rv_appobjid   = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
                       ir_lips = is_app_object-maintabref ).
   ENDMETHOD.
+
 
   METHOD zif_gtt_mia_tp_reader~get_data.
 
@@ -563,8 +569,29 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
 
     FIELD-SYMBOLS: <ls_lips>  TYPE lipsvb.
 
+    DATA:
+      lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
+      lv_dlvittrxcod     TYPE /saptrx/trxcod.
+
     " Actual Business Time zone
     DATA(lv_tzone)  = zcl_gtt_mia_tools=>get_system_time_zone( ).
+
+    lv_dlvittrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_position.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type        = is_app_object-appobjtype
+            iv_app         = 'MIA'
+          IMPORTING
+            ev_dlvittrxcod = lv_tmp_dlvittrxcod.
+
+        IF lv_tmp_dlvittrxcod IS NOT INITIAL.
+          lv_dlvittrxcod = lv_tmp_dlvittrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
     ASSIGN is_app_object-maintabref->* TO <ls_lips>.
 
@@ -573,25 +600,12 @@ CLASS zcl_gtt_mia_tp_reader_dli IMPLEMENTATION.
           appsys      = mo_ef_parameters->get_appsys( )
           appobjtype  = is_app_object-appobjtype
           appobjid    = is_app_object-appobjid
-          trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_position
+          trxcod      = lv_dlvittrxcod
           trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
                           ir_lips = is_app_object-maintabref )
           timzon      = lv_tzone
           msrid       = space
         ) ).
-
-      IF <ls_lips>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert.
-        et_track_id_data = VALUE #( BASE et_track_id_data (
-            appsys      = mo_ef_parameters->get_appsys( )
-            appobjtype  = is_app_object-appobjtype
-            appobjid    = is_app_object-appobjid
-            trxcod      = zif_gtt_mia_app_constants=>cs_trxcod-dl_number
-            trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
-                            ir_likp = is_app_object-mastertabref )
-            timzon      = lv_tzone
-            msrid       = space
-          ) ).
-      ENDIF.
     ELSE.
       MESSAGE e002(zgtt_mia) WITH 'LIPS' INTO DATA(lv_dummy).
       zcl_gtt_mia_tools=>throw_exception( ).
