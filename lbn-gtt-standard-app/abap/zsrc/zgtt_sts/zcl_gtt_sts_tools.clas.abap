@@ -135,6 +135,11 @@ public section.
       !IV_TRMODCOD type /SCMTMS/TRMODCODE
     returning
       value(RV_TRMODCOD) type /SCMTMS/TRMODCODE .
+  class-methods GET_LOCATION_TYPE
+    importing
+      !IV_LOCNO type /SAPAPO/LOCNO
+    returning
+      value(RV_LOCTYPE) type /SAPTRX/LOC_ID_TYPE .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -636,6 +641,44 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
         m_msgv2 = sy-msgv2
         m_msgv3 = sy-msgv3
         m_msgv4 = sy-msgv4.
+
+  ENDMETHOD.
+
+
+  METHOD get_location_type.
+
+    DATA:
+      lv_loctype    TYPE /sapapo/c_loctype.
+
+    CLEAR:rv_loctype.
+
+    CALL FUNCTION '/SAPAPO/DM_LOC_GET_EXTLOC'
+      EXPORTING
+        iv_locno       = iv_locno
+      IMPORTING
+        ev_loctype     = lv_loctype
+      EXCEPTIONS
+        not_qualified  = 1
+        no_location    = 2
+        not_unique     = 3
+        logsys_initial = 4
+        OTHERS         = 5.
+    IF sy-subrc = 0.
+
+      CASE lv_loctype.
+        WHEN '1003'."Shipping Point
+          rv_loctype = zif_gtt_sts_constants=>cs_location_type-shippingpoint.
+        WHEN '1010'."Customer
+          rv_loctype = zif_gtt_sts_constants=>cs_location_type-customer.
+        WHEN '1011'."Supplier
+          rv_loctype = zif_gtt_sts_constants=>cs_location_type-supplier.
+        WHEN '1021'."Business Partner
+          rv_loctype = zif_gtt_sts_constants=>cs_location_type-bp.
+        WHEN OTHERS."Logistic Location
+          rv_loctype = zif_gtt_sts_constants=>cs_location_type-logistic.
+      ENDCASE.
+
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

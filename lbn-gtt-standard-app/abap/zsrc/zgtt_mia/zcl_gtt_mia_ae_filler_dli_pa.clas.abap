@@ -100,8 +100,7 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PA IMPLEMENTATION.
       lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
       lv_dlvittrxcod     TYPE /saptrx/trxcod.
 
-    DATA(lv_difference) =  get_put_away_quantity_diff(
-                             is_events = is_events ).
+    DATA(lv_pa_quantity)  = get_put_away_quantity( ir_data = is_events-maintabref ).
 
     lv_dlvittrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_position.
 
@@ -120,9 +119,9 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PA IMPLEMENTATION.
       CATCH cx_sy_dyn_call_illegal_func.
     ENDTRY.
 
-    lv_werks            = zcl_gtt_mia_tools=>get_field_of_structure(
-                            ir_struct_data = is_events-maintabref
-                            iv_field_name  = 'WERKS' ).
+    lv_werks = zcl_gtt_mia_tools=>get_field_of_structure(
+      ir_struct_data = is_events-maintabref
+      iv_field_name  = 'WERKS' ).
 
     ct_trackingheader = VALUE #( BASE ct_trackingheader (
       language    = sy-langu
@@ -152,7 +151,13 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PA IMPLEMENTATION.
     ct_trackparameters  = VALUE #( BASE ct_trackparameters (
       evtcnt      = is_events-eventid
       param_name  = zif_gtt_mia_app_constants=>cs_event_param-quantity
-      param_value = zcl_gtt_mia_tools=>get_pretty_value( iv_value = lv_difference )
+      param_value = zcl_gtt_mia_tools=>get_pretty_value( iv_value = lv_pa_quantity )
+    ) ).
+
+    ct_trackparameters  = VALUE #( BASE ct_trackparameters (
+      evtcnt      = is_events-eventid
+      param_name  = zif_gtt_mia_app_constants=>cs_event_param-full_volume_mode
+      param_value = abap_true
     ) ).
 
   ENDMETHOD.

@@ -1,22 +1,38 @@
-CLASS zcl_gtt_mia_ae_filler_dlh_gr DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_AE_FILLER_DLH_GR definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_gtt_mia_ae_filler .
+  interfaces ZIF_GTT_MIA_AE_FILLER .
 
-    METHODS constructor
-      IMPORTING
-        !io_ae_parameters TYPE REF TO zif_gtt_mia_ae_parameters .
+  types:
+    lt_ekbe_t TYPE SORTED TABLE OF ekbe
+                 WITH UNIQUE KEY table_line .
+  types:
+    lt_ekbz_t TYPE SORTED TABLE OF ekbz
+                   WITH UNIQUE KEY table_line .
+
+  methods CONSTRUCTOR
+    importing
+      !IO_AE_PARAMETERS type ref to ZIF_GTT_MIA_AE_PARAMETERS .
+  methods GET_FULL_QUANTITY_FOR_GR
+    importing
+      !IS_LIPS type LIPS
+      !IS_MSEG type MSEG
+    returning
+      value(RV_QUANTITY) type MENGE_D
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
 private section.
 
   types:
     BEGIN OF ts_dl_item_id,
-        vbeln TYPE vbeln_vl,
-        posnr TYPE posnr_vl,
-      END OF ts_dl_item_id .
+      vbeln TYPE vbeln_vl,
+      posnr TYPE posnr_vl,
+      mseg  TYPE mseg,
+    END OF ts_dl_item_id .
   types:
     tt_vbeln    TYPE STANDARD TABLE OF vbeln_vl .
   types:
@@ -25,12 +41,14 @@ private section.
     tt_lips  TYPE STANDARD TABLE OF lips .
 
   data MO_AE_PARAMETERS type ref to ZIF_GTT_MIA_AE_PARAMETERS .
+  data MV_ARCHIVED type BOOLE_D .
 
   methods GET_DELIVERY_IDS
     importing
       !IR_MD_POS type ref to DATA
     exporting
       !ET_VBELN type TT_VBELN
+      !ET_VBELP type TT_POS
     raising
       CX_UDM_MESSAGE .
   methods IS_APPROPRIATE_DEFINITION
@@ -80,6 +98,40 @@ private section.
       !IT_VBELN type TT_VBELN
     exporting
       !ET_LIPS type TT_LIPS .
+  methods GET_PO_HEADER
+    importing
+      !I_EBELN type EBELN
+    exporting
+      !ES_EKKO type EKKO
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_PO_ITEM
+    importing
+      !I_EBELN type EBELN
+      !I_EBELP type EBELP
+      !IS_EKKO type EKKO
+    exporting
+      !ES_EKPO type EKPO
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_PO_ITEM_HISTORY
+    importing
+      !I_EBELN type EBELN
+      !I_EBELP type EBELP
+      !IS_EKKO type EKKO
+      !IS_EKPO type EKPO
+    exporting
+      !ET_EKBE type ZCL_GTT_MIA_AE_FILLER_DLH_GR=>LT_EKBE_T
+      !ET_EKBZ type ZCL_GTT_MIA_AE_FILLER_DLH_GR=>LT_EKBZ_T
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_GOODS_RECEIPT_QUANTITY
+    importing
+      !IR_GOODS_RECEIPT type ref to DATA
+    returning
+      value(RV_MENGE) type MENGE_D
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -100,7 +152,7 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
 
     FIELD-SYMBOLS: <lt_mseg>    TYPE zif_gtt_mia_app_types=>tt_mseg.
 
-    CLEAR: et_vbeln[].
+    CLEAR: et_vbeln[],et_vbelp[].
 
     ASSIGN ir_md_pos->* TO <lt_mseg>.
 
@@ -111,6 +163,11 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
         IF NOT line_exists( et_vbeln[ table_line = <ls_mseg>-vbeln_im ] ).
           APPEND <ls_mseg>-vbeln_im TO et_vbeln.
         ENDIF.
+        et_vbelp  = VALUE #( BASE et_vbelp (
+         vbeln = <ls_mseg>-vbeln_im
+         posnr = <ls_mseg>-vbelp_im
+         mseg  = <ls_mseg>
+       ) ).
       ENDLOOP.
     ELSE.
       MESSAGE e002(zgtt_mia) WITH 'MSEG' INTO DATA(lv_dummy).
@@ -283,14 +340,15 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
 
     DATA:
       lt_vbeln           TYPE tt_vbeln,
+      lt_pos             TYPE tt_pos,
       lt_lips            TYPE tt_lips,
       lv_tmp_dlvhdtrxcod TYPE /saptrx/trxcod,
       lv_dlvhdtrxcod     TYPE /saptrx/trxcod,
       lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
       lv_dlvittrxcod     TYPE /saptrx/trxcod.
 
-    DATA(lr_md_pos)   = mo_ae_parameters->get_appl_table(
-                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_segment ).
+    DATA(lr_md_pos) = mo_ae_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_segment ).
 
     DATA(lv_reversal) = is_reveral_document( ir_md_pos = lr_md_pos ).
 
@@ -321,7 +379,8 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
       EXPORTING
         ir_md_pos = lr_md_pos
       IMPORTING
-        et_vbeln  = lt_vbeln ).
+        et_vbeln  = lt_vbeln
+        et_vbelp  = lt_pos ).
 
     get_items_by_delivery_ids(
       EXPORTING
@@ -363,7 +422,16 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
       IF  zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = REF #( <ls_lips> ) ) = abap_false.
         CONTINUE.
       ENDIF.
+      LOOP AT lt_pos INTO DATA(ls_pos) WHERE vbeln = <ls_lips>-vbeln
+                                              AND posnr = <ls_lips>-posnr.
+        EXIT.
+      ENDLOOP.
+
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
       lv_evtcnt = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
+      DATA(lv_quantity) = get_full_quantity_for_gr( is_lips = <ls_lips> is_mseg = ls_pos-mseg ).
 
       ct_trackingheader = VALUE #( BASE ct_trackingheader (
         language    = sy-langu
@@ -384,8 +452,8 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
 
       ct_trackparameters  = VALUE #( BASE ct_trackparameters (
         evtcnt      = lv_evtcnt
-        param_name  = zif_gtt_mia_app_constants=>cs_event_param-reversal
-        param_value = lv_reversal
+        param_name  = zif_gtt_mia_app_constants=>cs_event_param-quantity
+        param_value = zcl_gtt_mia_tools=>get_pretty_value( iv_value = lv_quantity )
       ) ).
     ENDLOOP.
 
@@ -404,6 +472,321 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
         WHERE vbeln = it_vbeln-table_line.
 
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_full_quantity_for_gr.
+
+    DATA: lv_ebeln TYPE ekpo-ebeln,
+          lv_ebelp TYPE ekpo-ebelp,
+          ls_ekko  TYPE ekko,
+          ls_ekpo  TYPE ekpo.
+
+    DATA: lt_ekbe TYPE zcl_gtt_mia_ae_filler_dlh_gr=>lt_ekbe_t,
+          lt_ekbz TYPE zcl_gtt_mia_ae_filler_dlh_gr=>lt_ekbz_t.
+
+    DATA: lt_vbfa           TYPE STANDARD TABLE OF vbfa,
+          lv_total_quantity TYPE menge_d VALUE 0.
+
+    DATA: lt_vbeln TYPE STANDARD TABLE OF mblnr.
+
+    CALL FUNCTION 'READ_VBFA'
+      EXPORTING
+        i_vbelv         = is_lips-vbeln
+        i_posnv         = is_lips-posnr
+        i_vbtyp_v       = '7'
+        i_vbtyp_n       = 'R'
+*       I_FKTYP         =
+      TABLES
+        e_vbfa          = lt_vbfa
+      EXCEPTIONS
+        no_record_found = 1
+        OTHERS          = 2.
+    IF sy-subrc <> 0.
+      CLEAR lt_vbfa.
+    ENDIF.
+
+
+    LOOP AT lt_vbfa INTO DATA(ls_vbfa).
+      APPEND ls_vbfa-vbeln TO lt_vbeln.
+    ENDLOOP.
+
+    lv_ebeln = CONV ebeln( is_lips-vgbel ).
+    lv_ebelp = CONV ebelp( is_lips-vgpos ).
+
+    IF lv_ebeln IS NOT INITIAL AND lv_ebelp IS NOT INITIAL.
+      get_po_header(
+        EXPORTING
+          i_ebeln = lv_ebeln
+        IMPORTING
+          es_ekko = ls_ekko
+      ).
+
+      get_po_item(
+        EXPORTING
+          i_ebeln = lv_ebeln
+          i_ebelp = lv_ebelp
+          is_ekko = ls_ekko
+        IMPORTING
+          es_ekpo = ls_ekpo
+      ).
+
+      get_po_item_history(
+        EXPORTING
+          i_ebeln = lv_ebeln
+          i_ebelp = lv_ebelp
+          is_ekko = ls_ekko
+          is_ekpo = ls_ekpo
+        IMPORTING
+          et_ekbe = lt_ekbe
+      ).
+
+      LOOP AT lt_ekbe INTO DATA(ls_ekbe) WHERE vgabe NE '7'.
+        IF NOT line_exists( lt_vbeln[ table_line = ls_ekbe-belnr ] ).
+          CONTINUE.
+        ENDIF.
+        IF ls_ekbe-shkzg EQ 'H'.
+          ls_ekbe-menge = ls_ekbe-menge * ( -1 ).
+        ENDIF.
+        IF ls_ekpo-bstyp NE 'K'.
+* no quantities for blanket items, service items with no SRV-based IR
+* and items with an invoicing plan
+          IF ls_ekbe-vgabe EQ '9'
+                 OR   ls_ekpo-pstyp EQ '1'
+                 OR ( ls_ekpo-pstyp EQ '9' AND ls_ekpo-lebre IS INITIAL )
+                 OR   ls_ekpo-fplnr IS NOT INITIAL.
+            CONTINUE.
+          ENDIF.
+        ENDIF.
+        lv_total_quantity = lv_total_quantity + ls_ekbe-menge.
+      ENDLOOP.
+
+      lv_total_quantity = lv_total_quantity * ls_ekpo-umrez / ls_ekpo-umren.
+
+    ENDIF.
+
+    DATA(lv_diff) = get_goods_receipt_quantity( REF #( is_mseg ) ).
+
+    rv_quantity = lv_total_quantity + lv_diff.
+    rv_quantity = rv_quantity * is_lips-umvkn / is_lips-umvkz.
+
+  ENDMETHOD.
+
+
+  METHOD get_goods_receipt_quantity.
+    DATA: lv_dummy    TYPE char100.
+
+    FIELD-SYMBOLS: <ls_goods_receipt> TYPE any,
+                   <lv_quantity>      TYPE any,
+                   <lv_sign>          TYPE any.
+
+    ASSIGN ir_goods_receipt->* TO <ls_goods_receipt>.
+
+    IF <ls_goods_receipt> IS ASSIGNED.
+      ASSIGN COMPONENT 'MENGE' OF STRUCTURE <ls_goods_receipt> TO <lv_quantity>.
+      ASSIGN COMPONENT 'SHKZG' OF STRUCTURE <ls_goods_receipt> TO <lv_sign>.
+
+      IF <lv_quantity> IS ASSIGNED.
+        rv_menge    = COND #( WHEN <lv_sign> = 'H'
+                                THEN - <lv_quantity>
+                                ELSE <lv_quantity> ).
+      ELSE.
+        MESSAGE e001(zgtt_mia) WITH 'MENGE' 'Goods Receipt' INTO lv_dummy ##NO_TEXT.
+        zcl_gtt_mia_tools=>throw_exception( ).
+      ENDIF.
+    ELSE.
+      MESSAGE e002(zgtt_mia) WITH 'Goods Receipt' INTO lv_dummy ##NO_TEXT.
+      zcl_gtt_mia_tools=>throw_exception( ).
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_po_header.
+    DATA lv_bstyp TYPE bstyp.
+
+    CLEAR es_ekko.
+    CALL FUNCTION 'ME_EKKO_SINGLE_READ'
+      EXPORTING
+        pi_ebeln         = i_ebeln
+      IMPORTING
+        po_ekko          = es_ekko
+      EXCEPTIONS
+        no_records_found = 1
+        OTHERS           = 2.
+    IF sy-subrc GT 0.
+* archive integration                                       "v_1624571
+      IF cl_mmpur_archive=>if_mmpur_archive~get_archive_handle( i_ebeln )
+        GT 0.
+        DO 3 TIMES.
+          CASE sy-index.
+            WHEN 1.
+              lv_bstyp = 'F'.
+            WHEN 2.
+              lv_bstyp = 'K'.
+            WHEN 3.
+              lv_bstyp = 'L'.
+          ENDCASE.
+          TRY.
+              cl_mmpur_archive=>if_mmpur_archive~get_archived_pd(
+                EXPORTING
+                  im_ebeln = i_ebeln
+                  im_bstyp = lv_bstyp
+                IMPORTING
+                  ex_ekko  = es_ekko ).
+            CATCH cx_mmpur_no_authority.
+              CLEAR es_ekko.
+            CATCH cx_mmpur_root.
+              CLEAR es_ekko.
+          ENDTRY.
+          CHECK es_ekko IS NOT INITIAL.
+          mv_archived = abap_true.
+          EXIT.
+        ENDDO.
+        IF es_ekko IS INITIAL.
+          MESSAGE e005(zgtt_mia) WITH 'EKKO' i_ebeln INTO DATA(lv_dummy).
+          zcl_gtt_mia_tools=>throw_exception( ).
+        ENDIF.
+      ENDIF.                                                "^_1624571
+    ENDIF.
+
+
+
+  ENDMETHOD.
+
+
+  METHOD get_po_item.
+    DATA lt_items TYPE STANDARD TABLE OF ekpo.
+    CLEAR es_ekpo.
+
+    CALL FUNCTION 'ME_EKPO_READ_WITH_EBELN'
+      EXPORTING
+        pi_ebeln             = i_ebeln
+      TABLES
+        pto_ekpo             = lt_items
+      EXCEPTIONS
+        err_no_records_found = 1
+        OTHERS               = 2.
+    IF sy-subrc GT 0.
+      IF mv_archived EQ abap_true.                          "v_1624571
+        TRY.
+            cl_mmpur_archive=>if_mmpur_archive~get_archived_pd(
+              EXPORTING
+                im_ebeln = i_ebeln
+                im_bstyp = is_ekko-bstyp
+              IMPORTING
+                ex_ekpo  = lt_items ).
+          CATCH cx_mmpur_no_authority.
+            CLEAR lt_items.
+          CATCH cx_mmpur_root.
+            CLEAR lt_items.
+        ENDTRY.
+      ENDIF.
+      IF lines( lt_items ) EQ 0.
+        MESSAGE e005(zgtt_mia) WITH 'EKPO' |{ i_ebeln }{ i_ebelp }|
+         INTO DATA(lv_dummy).
+        zcl_gtt_mia_tools=>throw_exception( ).
+      ENDIF.                                                "^_1624571
+    ENDIF.
+    READ TABLE lt_items WITH KEY ebeln = i_ebeln
+                                 ebelp = i_ebelp
+                        INTO es_ekpo.
+    IF sy-subrc NE 0.
+      MESSAGE e005(zgtt_mia) WITH 'EKPO' |{ i_ebeln }{ i_ebelp }|
+          INTO lv_dummy.
+      zcl_gtt_mia_tools=>throw_exception( ).
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_po_item_history.
+
+    DATA:
+      lt_ekbe  TYPE STANDARD TABLE OF ekbe,
+      lt_ekbes TYPE STANDARD TABLE OF ekbes,
+      lt_ekbz  TYPE STANDARD TABLE OF ekbz,
+      lt_ekbez TYPE STANDARD TABLE OF ekbez,
+      ls_ekbe  TYPE ekbe,
+      ls_ekbz  TYPE ekbz.
+    FIELD-SYMBOLS: <ekbe> TYPE ekbe,
+                   <ekbz> TYPE ekbz.
+    DATA: lo_po_history_diff TYPE REF TO cl_po_history_with_diff_inv. "EhP6 DInv
+
+    IF mv_archived EQ abap_false.                           "1624571
+      CALL FUNCTION 'ME_READ_HISTORY'
+        EXPORTING
+          ebeln  = i_ebeln
+          ebelp  = i_ebelp
+          webre  = is_ekpo-webre
+          vrtkz  = is_ekpo-vrtkz
+        TABLES
+          xekbe  = lt_ekbe
+          xekbes = lt_ekbes
+          xekbez = lt_ekbez
+          xekbz  = lt_ekbz.
+    ELSE.                                                   "v_"1624571
+      TRY.
+          cl_mmpur_archive=>if_mmpur_archive~get_archived_pd(
+            EXPORTING
+              im_ebeln = i_ebeln
+              im_bstyp = is_ekko-bstyp
+            IMPORTING
+              ex_ekbe  = lt_ekbe
+              ex_ekbz  = lt_ekbz ).
+        CATCH cx_mmpur_no_authority.
+          CLEAR: lt_ekbe, lt_ekbz.
+        CATCH cx_mmpur_root.
+          CLEAR: lt_ekbe, lt_ekbz.
+      ENDTRY.
+    ENDIF.                                                  "^_1624571
+
+*-----------------------EhP6 DInv--Start---------------------
+    IF cl_ops_switch_check=>mm_sfws_dinv_01( ) = abap_true AND
+       is_ekpo-diff_invoice EQ cl_mmpur_constants=>diff_invoice_2.
+
+      lo_po_history_diff = cl_po_history_with_diff_inv=>get_instance( ).
+
+      CALL METHOD lo_po_history_diff->add_diff_inv_to_po_history
+        CHANGING
+          ct_ekbe = lt_ekbe.
+    ENDIF.
+*-----------------------EhP6 DInv--End---------------------
+    LOOP AT lt_ekbe ASSIGNING <ekbe>.
+      CHECK <ekbe>-ebelp EQ i_ebelp.                        "1624571
+      ls_ekbe = <ekbe>.
+      INSERT ls_ekbe INTO TABLE et_ekbe.
+    ENDLOOP.
+    LOOP AT lt_ekbz ASSIGNING <ekbz>.
+      CHECK <ekbz>-ebelp EQ i_ebelp.                        "1624571
+      ls_ekbz = <ekbz>.
+      INSERT ls_ekbz INTO TABLE et_ekbz.
+    ENDLOOP.
+
+    CLEAR: lt_ekbe, lt_ekbz.
+    CALL FUNCTION 'MR_READ_PRELIMINARY_HISTORY'
+      EXPORTING
+        i_bukrs = is_ekko-bukrs
+        i_ebeln = i_ebeln
+        i_ebelp = i_ebelp
+      TABLES
+        t_ekbe  = lt_ekbe
+        t_ekbz  = lt_ekbz.
+
+    LOOP AT lt_ekbe ASSIGNING <ekbe>.
+      MOVE-CORRESPONDING <ekbe> TO ls_ekbe.
+      ls_ekbe-vgabe = cl_mmpur_constants=>vgabe_p.
+      ls_ekbe-bewtp = cl_mmpur_constants=>bewtp_t.
+      INSERT ls_ekbe INTO TABLE et_ekbe.
+      CLEAR ls_ekbe.
+    ENDLOOP.
+
+    LOOP AT lt_ekbz ASSIGNING <ekbz>.
+      MOVE-CORRESPONDING <ekbz> TO ls_ekbz.
+      ls_ekbz-vgabe = cl_mmpur_constants=>vgabe_p.
+      ls_ekbz-bewtp = cl_mmpur_constants=>bewtp_t.
+      INSERT ls_ekbz INTO TABLE et_ekbz.
+      CLEAR ls_ekbz.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

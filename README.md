@@ -1,5 +1,13 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2111 Release
+
+1. Retrieve the location types of the freight orders, freight bookings, freight units and actual events from location master data in SAP S/4HANA instead of hard coding them as “LogisticLocation”. 
+2. Remove the inboundDeliveryTPs table from the LE-TRA inbound shipment. 
+3. Send the inbound delivery number to the shipper reference document table of the LE-TRA inbound shipment. 
+4. For the events "Putaway" and "Goods Receipt" of an inbound delivery,  the extraction mode of their quantity is changed from "Delta" to "Full".
+
+
 ## What's New in the 2109 Release
  
 1. "Reference Document No." field is added into the "InboundDeliveryItem" tracked process.

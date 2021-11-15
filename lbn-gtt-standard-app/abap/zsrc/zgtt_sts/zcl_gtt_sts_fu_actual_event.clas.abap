@@ -71,7 +71,9 @@ CLASS ZCL_GTT_STS_FU_ACTUAL_EVENT IMPLEMENTATION.
     DATA:
       ls_trackingheader TYPE /saptrx/bapi_evm_header,
       ls_tracklocation  TYPE /saptrx/bapi_evm_locationid,
-      lv_stop_category  TYPE /scmtms/tor_category.
+      lv_stop_category  TYPE /scmtms/tor_category,
+      lv_loctype        TYPE /saptrx/loc_id_type,
+      lv_locno          TYPE /sapapo/locno.
 
     FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
 
@@ -96,7 +98,8 @@ CLASS ZCL_GTT_STS_FU_ACTUAL_EVENT IMPLEMENTATION.
     DATA(lt_capa_stop) = get_capa_stop( it_all_appl_tables ).
     DATA(lt_capa_root) = get_capa_root( it_all_appl_tables ).
 
-    ls_tracklocation-loccod = zif_gtt_sts_actual_event~cs_location_type-logistic.
+    lv_locno = is_execinfo-ext_loc_id.
+    ls_tracklocation-loccod = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
     ls_tracklocation-locid1 = is_execinfo-ext_loc_id.
 
     LOOP AT lt_stop ASSIGNING FIELD-SYMBOL(<ls_stop>) USING KEY parent_seqnum WHERE parent_node_id = <ls_root>-node_id.

@@ -754,7 +754,8 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       lv_stop_id              TYPE string,
       lt_stop_id              TYPE SORTED TABLE OF string WITH UNIQUE KEY table_line,
       lt_tor_capa_stop_before TYPE /scmtms/t_tor_stop_k,
-      lt_capa_stop            TYPE /scmtms/t_em_bo_tor_stop.
+      lt_capa_stop            TYPE /scmtms/t_em_bo_tor_stop,
+      lv_loctype              TYPE /saptrx/loc_id_type.
 
     FIELD-SYMBOLS:
       <ls_tor_root>  TYPE /scmtms/s_em_bo_tor_root,
@@ -828,13 +829,14 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       CHECK NOT line_exists( lt_stop_id[ table_line = lv_stop_id ] ).
       lv_stop_num += 1.
 
-      APPEND lv_stop_id                                   TO ct_stop_id.
-      APPEND lv_stop_num                                  TO ct_ordinal_no.
-      APPEND zif_gtt_sts_constants=>cs_location_type-logistic TO ct_loc_type.
-      APPEND <ls_stop_seq>-log_locid                      TO ct_loc_id.
+      lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_seq>-log_locid ).
+      APPEND lv_stop_id               TO ct_stop_id.
+      APPEND lv_stop_num              TO ct_ordinal_no.
+      APPEND lv_loctype               TO ct_loc_type.
+      APPEND <ls_stop_seq>-log_locid  TO ct_loc_id.
 
       INSERT lv_stop_id INTO TABLE lt_stop_id.
-
+      CLEAR lv_loctype.
     ENDLOOP.
 
   ENDMETHOD.

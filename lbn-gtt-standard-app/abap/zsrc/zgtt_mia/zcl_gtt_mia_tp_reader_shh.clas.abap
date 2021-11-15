@@ -42,8 +42,8 @@ CLASS zcl_gtt_mia_tp_reader_shh DEFINITION
         arrival_locid     TYPE zif_gtt_mia_app_types=>tv_locid,
         arrival_loctype   TYPE zif_gtt_mia_app_types=>tv_loctype,
         tdlnr             TYPE vttkvb-tdlnr,
-        deliv_cnt         TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_deliv_cnt WITH EMPTY KEY,
-        deliv_no          TYPE STANDARD TABLE OF vbeln WITH EMPTY KEY,
+*        deliv_cnt         TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_deliv_cnt WITH EMPTY KEY,
+*        deliv_no          TYPE STANDARD TABLE OF vbeln WITH EMPTY KEY,
         trobj_res_id      TYPE tt_trobj_res_id,
         trobj_res_val     TYPE tt_trobj_res_val,
         resrc_cnt         TYPE tt_resrc_cnt,
@@ -54,6 +54,8 @@ CLASS zcl_gtt_mia_tp_reader_shh DEFINITION
         stpid_stopcnt     TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_stopcnt WITH EMPTY KEY,
         stpid_loctype     TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_loctype WITH EMPTY KEY,
         stpid_locid       TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_locid WITH EMPTY KEY,
+        shpdoc_ref_typ    TYPE STANDARD TABLE OF /scmtms/btd_type_code WITH EMPTY KEY,
+        shpdoc_ref_val    TYPE STANDARD TABLE OF vbeln WITH EMPTY KEY,
       END OF ts_sh_header .
 
     DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
@@ -75,8 +77,8 @@ CLASS zcl_gtt_mia_tp_reader_shh DEFINITION
         arrival_locid     TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_LOC_ID',
         arrival_loctype   TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_LOC_TYPE',
         tdlnr             TYPE /saptrx/paramname VALUE 'YN_SHP_SA_ERP_ID',
-        deliv_cnt         TYPE /saptrx/paramname VALUE 'YN_SHP_HDR_DLV_LINE_COUNT',
-        deliv_no          TYPE /saptrx/paramname VALUE 'YN_SHP_HDR_DLV_NO',
+*        deliv_cnt         TYPE /saptrx/paramname VALUE 'YN_SHP_HDR_DLV_LINE_COUNT',
+*        deliv_no          TYPE /saptrx/paramname VALUE 'YN_SHP_HDR_DLV_NO',
         trobj_res_id      TYPE /saptrx/paramname VALUE 'YN_SHP_TRACKED_RESOURCE_ID',
         trobj_res_val     TYPE /saptrx/paramname VALUE 'YN_SHP_TRACKED_RESOURCE_VALUE',
         resrc_cnt         TYPE /saptrx/paramname VALUE 'YN_SHP_RESOURCE_TP_LINE_COUNT',
@@ -87,6 +89,8 @@ CLASS zcl_gtt_mia_tp_reader_shh DEFINITION
         stpid_stopcnt     TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_ORD_NO',
         stpid_loctype     TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_LOC_TYPE',
         stpid_locid       TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_LOC_ID',
+        shpdoc_ref_typ    TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPER_REF_TYPE',
+        shpdoc_ref_val    TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPER_REF_VALUE',
       END OF cs_mapping .
 
     METHODS fill_header_from_vttk
@@ -261,8 +265,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
     TYPES: tt_vttp  TYPE STANDARD TABLE OF vttpvb.
     DATA: lv_count TYPE i VALUE 0,
-          lv_vbeln TYPE vbeln_vl,
-          lv_abfer TYPE tvtk-abfer.
+          lv_vbeln TYPE vbeln_vl.
 
     FIELD-SYMBOLS: <ls_vttk> TYPE vttkvb,
                    <lt_vttp> TYPE tt_vttp.
@@ -271,25 +274,23 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
     ASSIGN ir_vttp->* TO <lt_vttp>.
 
     IF sy-subrc = 0.
-      CLEAR lv_abfer.
-      SELECT SINGLE abfer
-        INTO lv_abfer
-        FROM tvtk
-       WHERE shtyp = <ls_vttk>-shtyp.
 
       LOOP AT <lt_vttp> ASSIGNING FIELD-SYMBOL(<ls_vttp>)
         WHERE tknum = <ls_vttk>-tknum.
 
-        ADD 1 TO lv_count.
-
         lv_vbeln    = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
                         ir_likp = REF #( <ls_vttp> ) ).
 
-*       For inbound Delivery
-        IF lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-empty_inb_ship OR
-           lv_abfer = zif_gtt_mia_app_constants=>cs_abfer-loaded_inb_ship.
-          APPEND lv_count TO cs_header-deliv_cnt.
-          APPEND lv_vbeln TO cs_header-deliv_no.
+*       For inbound Delivery,add shipper reference document
+        IF <ls_vttk>-abfer = zif_gtt_mia_app_constants=>cs_abfer-empty_inb_ship OR
+           <ls_vttk>-abfer = zif_gtt_mia_app_constants=>cs_abfer-loaded_inb_ship.
+          APPEND zif_gtt_mia_app_constants=>cs_base_btd_tco-inb_dlv TO cs_header-shpdoc_ref_typ.
+          APPEND lv_vbeln TO cs_header-shpdoc_ref_val.
+
+*       For outbound Delivery,add shipper reference document
+        ELSE.
+          APPEND zif_gtt_mia_app_constants=>cs_base_btd_tco-outb_dlv TO cs_header-shpdoc_ref_typ.
+          APPEND lv_vbeln TO cs_header-shpdoc_ref_val.
         ENDIF.
       ENDLOOP.
 
@@ -474,11 +475,13 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
            ( is_vttk-vsart = '01' OR
              is_vttk-vsart = '05' OR
              is_vttk-vsart = '15' )
-        THEN |{ is_vttk-tknum }{ is_vttk-exti1 }|
+        THEN |{ is_vttk-tknum ALPHA = OUT }{ is_vttk-exti1 }|
       WHEN is_vttk-signi IS NOT INITIAL AND
            is_vttk-vsart = '04'
-        THEN |{ is_vttk-tknum }{ is_vttk-signi }|
+        THEN |{ is_vttk-tknum ALPHA = OUT }{ is_vttk-signi }|
     ).
+
+    CONDENSE rv_tracking_id NO-GAPS.
 
   ENDMETHOD.
 
@@ -688,7 +691,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
     CASE iv_parameter.
       WHEN zif_gtt_mia_ef_constants=>cs_parameter_id-key_field.
-        rv_result   = boolc( iv_field_name = cs_mapping-deliv_cnt     OR
+        rv_result   = boolc( "iv_field_name = cs_mapping-deliv_cnt     OR
                              iv_field_name = cs_mapping-trobj_res_val OR
                              iv_field_name = cs_mapping-resrc_cnt     OR
                              iv_field_name = cs_mapping-crdoc_ref_val OR

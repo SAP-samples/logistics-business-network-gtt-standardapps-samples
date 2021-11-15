@@ -684,7 +684,7 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
       IF sy-subrc = 0.
         IF <ls_stop_first>-log_locid IS NOT INITIAL.
           cv_pln_dep_loc_id   = <ls_stop_first>-log_locid.
-          cv_pln_dep_loc_type = zif_gtt_sts_constants=>cs_location_type-logistic.
+          cv_pln_dep_loc_type = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_first>-log_locid ).
         ENDIF.
         cv_pln_dep_timest   = COND #( WHEN <ls_stop_first>-plan_trans_time IS NOT INITIAL
                                         THEN |0{ <ls_stop_first>-plan_trans_time }| ELSE '' ).
@@ -694,7 +694,7 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
       IF sy-subrc = 0.
         IF <ls_stop_last>-log_locid IS NOT INITIAL.
           cv_pln_arr_loc_id   = <ls_stop_last>-log_locid.
-          cv_pln_arr_loc_type = zif_gtt_sts_constants=>cs_location_type-logistic.
+          cv_pln_arr_loc_type = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_last>-log_locid ).
         ENDIF.
         cv_pln_arr_timest   = COND #( WHEN <ls_stop_last>-plan_trans_time IS NOT INITIAL
                                         THEN |0{ <ls_stop_last>-plan_trans_time }| ELSE '' ).
@@ -777,8 +777,10 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
 
   METHOD get_stop_seq.
 
-    DATA lv_stop_num(4) TYPE n.
     FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+    DATA:
+      lv_stop_num(4) TYPE n,
+      lv_loctype     TYPE /saptrx/loc_id_type.
 
     ASSIGN ir_data->* TO <ls_tor_root>.
     IF sy-subrc <> 0.
@@ -795,10 +797,14 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
         CHECK zcl_gtt_sts_tools=>is_odd( <ls_stop_seq>-seq_num ).
         lv_stop_num += 1.
         CHECK <ls_stop_seq>-log_locid IS NOT INITIAL.
-        APPEND |{ lv_tor_id }{ lv_stop_num }|               TO ct_stop_id.
-        APPEND lv_stop_num                                  TO ct_ordinal_no.
-        APPEND zif_gtt_sts_constants=>cs_location_type-logistic TO ct_loc_type.
-        APPEND <ls_stop_seq>-log_locid                      TO ct_loc_id.
+
+        lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_seq>-log_locid ).
+
+        APPEND |{ lv_tor_id }{ lv_stop_num }|  TO ct_stop_id.
+        APPEND lv_stop_num                     TO ct_ordinal_no.
+        APPEND lv_loctype                      TO ct_loc_type.
+        APPEND <ls_stop_seq>-log_locid         TO ct_loc_id.
+        CLEAR:lv_loctype.
       ENDLOOP.
     ENDIF.
 
@@ -807,10 +813,11 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
 
     ASSIGN <lt_stop_seq>[ lv_stop_count ] TO <ls_stop_seq>.
     IF sy-subrc = 0 AND <ls_stop_seq>-log_locid IS NOT INITIAL.
-      APPEND |{ lv_tor_id }{ lv_stop_num }|               TO ct_stop_id.
-      APPEND lv_stop_num                                  TO ct_ordinal_no.
-      APPEND zif_gtt_sts_constants=>cs_location_type-logistic TO ct_loc_type.
-      APPEND <ls_stop_seq>-log_locid                      TO ct_loc_id.
+      lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_seq>-log_locid ).
+      APPEND |{ lv_tor_id }{ lv_stop_num }| TO ct_stop_id.
+      APPEND lv_stop_num                    TO ct_ordinal_no.
+      APPEND lv_loctype                     TO ct_loc_type.
+      APPEND <ls_stop_seq>-log_locid        TO ct_loc_id.
     ENDIF.
 
     IF ct_ordinal_no IS INITIAL.

@@ -111,15 +111,6 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
   METHOD /scmtms/if_send_tor_data~call_event_mgr.
 
-    DATA(lo_send_delivery_idoc) = NEW  zcl_gtt_sts_send_delivery_idoc(
-                                          it_tor_root_sstring        = it_tor_root_sstring
-                                          it_tor_root_before_sstring = it_tor_root_before_sstring
-                                          it_tor_item_sstring        = it_item_sstring
-                                          it_tor_item_before_sstring = it_item_before_sstring
-                                          it_tor_stop_addr_sstring   = it_stop_addr_sstring
-                                          it_tor_stop_sstring        = it_stop_sstring ).
-    lo_send_delivery_idoc->send_delivery_idoc( ).
-
     get_tor_root_for_deletion(
       EXPORTING
         it_tor_root_sstring        = it_tor_root_sstring
@@ -997,12 +988,16 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
         <ls_tor_root_sstring>-tsp IS INITIAL AND <ls_tor_root_before_sstring>-tsp IS NOT INITIAL ).
 
       DATA(lv_execution_status_changed) = xsdbool(
-        ( <ls_tor_root_sstring>-execution <> /scmtms/if_tor_status_c=>sc_root-execution-v_in_execution        AND
-          <ls_tor_root_sstring>-execution <> /scmtms/if_tor_status_c=>sc_root-execution-v_ready_for_execution AND
-          <ls_tor_root_sstring>-execution <> /scmtms/if_tor_status_c=>sc_root-execution-v_executed ) AND
+        ( <ls_tor_root_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_relevant         OR
+          <ls_tor_root_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_started          OR
+          <ls_tor_root_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_cancelled            OR
+          <ls_tor_root_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_ready_for_execution ) AND
         ( <ls_tor_root_before_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_in_execution        OR
+          <ls_tor_root_before_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_executed            OR
+          <ls_tor_root_before_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_interrupted         OR
           <ls_tor_root_before_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_ready_for_execution OR
-          <ls_tor_root_before_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_executed ) ).
+          <ls_tor_root_before_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_loading_in_process  OR
+          <ls_tor_root_before_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_capa_plan_finished  ) ).
 
       DATA(lv_lifecycle_status_changed) = xsdbool(
         ( <ls_tor_root_sstring>-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process AND

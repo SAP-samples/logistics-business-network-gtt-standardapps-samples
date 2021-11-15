@@ -38,7 +38,11 @@ INTERFACE zif_gtt_sts_constants
     END OF cs_milestone .
   CONSTANTS:
     BEGIN OF cs_location_type,
-      logistic TYPE string VALUE 'LogisticLocation',
+      logistic      TYPE string VALUE 'LogisticLocation',
+      shippingpoint TYPE string VALUE 'ShippingPoint',
+      customer      TYPE string VALUE 'Customer',
+      supplier      TYPE string VALUE 'Supplier',
+      bp            TYPE string VALUE 'BusinessPartner',
     END OF cs_location_type .
   CONSTANTS:
     BEGIN OF cs_lifecycle_status,

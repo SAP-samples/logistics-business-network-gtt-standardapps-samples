@@ -167,9 +167,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                               seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
-                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
+*                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*      CHECK sy-subrc = 0.
       TEST-SEAM coupling_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
           EXPORTING
@@ -213,9 +213,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       evt_exp_tzone        = lv_tz
       locid1               = <ls_stop>-log_locid
       locid2               = ls_stop_points->stop_id
-      loctype              = zif_gtt_sts_constants=>cs_location_type-logistic
-      country              = ls_loc_addr->country_code
-      city                 = ls_loc_addr->city_name ) TO ct_expeventdata.
+      loctype              = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid ) ) TO ct_expeventdata.
+*      country              = ls_loc_addr->country_code
+*      city                 = ls_loc_addr->city_name ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
     ENDLOOP.
@@ -245,10 +245,10 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                               seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
-                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
-
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
+*                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*
+*      CHECK sy-subrc = 0.
       TEST-SEAM decoupling_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
           EXPORTING
@@ -292,9 +292,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       evt_exp_tzone        = lv_tz
       locid1               = <ls_stop>-log_locid
       locid2               = ls_stop_points->stop_id
-      loctype              = zif_gtt_sts_constants=>cs_location_type-logistic
-      country              = ls_loc_addr->country_code
-      city                 = ls_loc_addr->city_name ) TO ct_expeventdata.
+      loctype              = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid ) ) TO ct_expeventdata.
+*      country              = ls_loc_addr->country_code
+*      city                 = ls_loc_addr->city_name ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
     ENDLOOP.
@@ -380,8 +380,8 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                                                              seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr WITH KEY root_key = <ls_stop>-log_loc_uuid.
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*      CHECK sy-subrc = 0.
 
       TEST-SEAM load_end_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
@@ -416,9 +416,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
         evt_exp_tzone    = lv_tz
         locid1           = <ls_stop>-log_locid
         locid2           = ls_stop_points->stop_id
-        loctype          = zif_gtt_sts_constants=>cs_location_type-logistic
-        country          = ls_loc_addr->country_code
-        city             = ls_loc_addr->city_name
+        loctype          = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid )
+*        country          = ls_loc_addr->country_code
+*        city             = ls_loc_addr->city_name
         itemident        = <ls_stop>-node_id ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
@@ -449,10 +449,10 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                               seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
-                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
-
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
+*                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*
+*      CHECK sy-subrc = 0.
       TEST-SEAM load_start_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
           EXPORTING
@@ -488,9 +488,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       evt_exp_tzone     = lv_tz
       locid1            = <ls_stop>-log_locid
       locid2            = ls_stop_points->stop_id
-      loctype           = zif_gtt_sts_constants=>cs_location_type-logistic
-      country           = ls_loc_addr->country_code
-      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
+      loctype           = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid ) ) TO ct_expeventdata.
+*      country           = ls_loc_addr->country_code
+*      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
     ENDLOOP.
@@ -519,8 +519,8 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                                                              seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr WITH KEY root_key = <ls_stop>-log_loc_uuid.
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*      CHECK sy-subrc = 0.
 
       TEST-SEAM pod_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
@@ -556,9 +556,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
         evt_exp_tzone    = lv_tz
         locid1           = <ls_stop>-log_locid
         locid2           = ls_stop_points->stop_id
-        loctype          = zif_gtt_sts_constants=>cs_location_type-logistic
-        country          = ls_loc_addr->country_code
-        city             = ls_loc_addr->city_name ) TO ct_expeventdata.
+        loctype          = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid ) ) TO ct_expeventdata.
+*        country          = ls_loc_addr->country_code
+*        city             = ls_loc_addr->city_name ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
     ENDLOOP.
@@ -587,9 +587,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                               seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
-                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
+*                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*      CHECK sy-subrc = 0.
 
       TEST-SEAM shp_arrival_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
@@ -625,9 +625,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       evt_exp_tzone     = lv_tz
       locid1            = <ls_stop>-log_locid
       locid2            = ls_stop_points->stop_id
-      loctype           = zif_gtt_sts_constants=>cs_location_type-logistic
-      country           = ls_loc_addr->country_code
-      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
+      loctype           = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid ) ) TO ct_expeventdata.
+*      country           = ls_loc_addr->country_code
+*      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
     ENDLOOP.
@@ -656,10 +656,10 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                               seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
-                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
-
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
+*                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*
+*      CHECK sy-subrc = 0.
       TEST-SEAM shp_dep_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
           EXPORTING
@@ -683,6 +683,7 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
         CHANGING
           cv_timestamp = lv_exp_datetime ).
 
+      mv_milestonecnt += 1.
       APPEND VALUE #(
       appsys            = mo_ef_parameters->get_appsys(  )
       appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
@@ -693,9 +694,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       evt_exp_tzone     = lv_tz
       locid1            = <ls_stop>-log_locid
       locid2            = ls_stop_points->stop_id
-      loctype           = zif_gtt_sts_constants=>cs_location_type-logistic
-      country           = ls_loc_addr->country_code
-      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
+      loctype           = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid ) ) TO ct_expeventdata.
+*      country           = ls_loc_addr->country_code
+*      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
     ENDLOOP.
@@ -725,9 +726,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                               seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
-                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
+*                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*      CHECK sy-subrc = 0.
 
       TEST-SEAM unload_end_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
@@ -764,9 +765,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       evt_exp_tzone     = lv_tz
       locid1            = <ls_stop>-log_locid
       locid2            = ls_stop_points->stop_id
-      loctype           = zif_gtt_sts_constants=>cs_location_type-logistic
-      country           = ls_loc_addr->country_code
-      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
+      loctype           = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid ) ) TO ct_expeventdata.
+*      country           = ls_loc_addr->country_code
+*      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
     ENDLOOP.
@@ -796,9 +797,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
                                               seq_num   = <ls_stop>-seq_num.
       CHECK sy-subrc = 0.
 
-      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
-                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
-      CHECK sy-subrc = 0.
+*      READ TABLE it_loc_addr REFERENCE INTO ls_loc_addr
+*                                     WITH KEY root_key = <ls_stop>-log_loc_uuid.
+*      CHECK sy-subrc = 0.
       TEST-SEAM unload_start_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
           EXPORTING
@@ -834,9 +835,9 @@ CLASS ZCL_GTT_STS_PE_FILLER IMPLEMENTATION.
       evt_exp_tzone     = lv_tz
       locid1            = <ls_stop>-log_locid
       locid2            = ls_stop_points->stop_id
-      loctype           = zif_gtt_sts_constants=>cs_location_type-logistic
-      country           = ls_loc_addr->country_code
-      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
+      loctype           = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop>-log_locid ) ) TO ct_expeventdata.
+*      country           = ls_loc_addr->country_code
+*      city              = ls_loc_addr->city_name ) TO ct_expeventdata.
 
       CLEAR: lt_loc_root, ls_loc_root.
     ENDLOOP.

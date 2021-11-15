@@ -393,7 +393,9 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
     DATA:
       lt_execinfo_tr TYPE /scmtms/t_tor_exec_tr_k,
-      lv_timezone    TYPE /scmtms/tzone.
+      lv_timezone    TYPE /scmtms/tzone,
+      lv_locno       TYPE /sapapo/locno,
+      lv_loctype     TYPE /saptrx/loc_id_type.
 
     DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
     TEST-SEAM lt_execinfo_tr.
@@ -438,13 +440,16 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
     ENDIF.
 
     IF is_execinfo-ref_event_code IS NOT INITIAL.
+      lv_locno = cs_tracklocation-locid1.
+      lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
+
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_milestone
                       param_value = is_execinfo-ref_event_code ) INTO TABLE ct_trackparameters.
 
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_loctype
-                      param_value = zif_gtt_sts_ef_constants=>cv_logistic_location ) INTO TABLE ct_trackparameters.
+                      param_value = lv_loctype ) INTO TABLE ct_trackparameters.
 
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_locid1
@@ -504,7 +509,9 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
     DATA:
       ls_trackingheader TYPE /saptrx/bapi_evm_header,
-      ls_tracklocation  TYPE /saptrx/bapi_evm_locationid.
+      ls_tracklocation  TYPE /saptrx/bapi_evm_locationid,
+      lv_loctype        TYPE /saptrx/loc_id_type,
+      lv_locno          TYPE /sapapo/locno.
 
     FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
 
@@ -541,7 +548,8 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       IMPORTING
         et_stop_points = DATA(lt_stop_points) ).
 
-    ls_tracklocation-loccod = zif_gtt_sts_actual_event~cs_location_type-logistic.
+    lv_locno = is_execinfo-ext_loc_id.
+    ls_tracklocation-loccod = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
     ls_tracklocation-locid1 = is_execinfo-ext_loc_id.
 
     ASSIGN lt_stop_points[ log_locid = is_execinfo-ext_loc_id ]-stop_id TO FIELD-SYMBOL(<lv_stop_id>) ##WARN_OK.

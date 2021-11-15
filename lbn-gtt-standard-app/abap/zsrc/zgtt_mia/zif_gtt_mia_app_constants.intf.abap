@@ -57,10 +57,11 @@ INTERFACE zif_gtt_mia_app_constants
     END OF cs_milestone .
   CONSTANTS:
     BEGIN OF cs_event_param,
-      quantity      TYPE /saptrx/paramname VALUE 'QUANTITY',
-      reversal      TYPE /saptrx/paramname VALUE 'REVERSAL_INDICATOR',
-      location_id   TYPE /saptrx/paramname VALUE 'LOCATION_ID',
-      location_type TYPE /saptrx/paramname VALUE 'LOCATION_TYPE',
+      quantity         TYPE /saptrx/paramname VALUE 'QUANTITY',
+      full_volume_mode TYPE /saptrx/paramname VALUE 'FULL_VOLUME_MODE',
+      reversal         TYPE /saptrx/paramname VALUE 'REVERSAL_INDICATOR',
+      location_id      TYPE /saptrx/paramname VALUE 'LOCATION_ID',
+      location_type    TYPE /saptrx/paramname VALUE 'LOCATION_TYPE',
     END OF cs_event_param .
   CONSTANTS:
     BEGIN OF cs_bstae,    "delete?
@@ -103,14 +104,15 @@ INTERFACE zif_gtt_mia_app_constants
     END OF cs_vbtyp .
   CONSTANTS:
     BEGIN OF cs_abfer,
-      loaded_inb_ship TYPE abfer VALUE '2',
-      empty_inb_ship  TYPE abfer VALUE '4',
+      loaded_inb_ship  TYPE abfer VALUE '2',
+      empty_inb_ship   TYPE abfer VALUE '4',
       loaded_outb_ship TYPE abfer VALUE '1', "Loaded outbound shipment
-      empty_outb_ship  type abfer VALUE '3', "Empty outbound shipment
+      empty_outb_ship  TYPE abfer VALUE '3', "Empty outbound shipment
     END OF cs_abfer .
   CONSTANTS:
     BEGIN OF cs_base_btd_tco,
-      inb_dlv TYPE /scmtms/base_btd_tco VALUE '58',
+      inb_dlv  TYPE /scmtms/base_btd_tco VALUE '58',
+      outb_dlv TYPE /scmtms/base_btd_tco VALUE '73',
     END OF cs_base_btd_tco .
   CONSTANTS:
     BEGIN OF cs_start_evtcnt,
