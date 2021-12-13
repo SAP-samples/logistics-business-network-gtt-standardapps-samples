@@ -165,7 +165,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_tools IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_TOOLS IMPLEMENTATION.
 
 
   METHOD are_fields_different.
@@ -343,6 +343,7 @@ CLASS zcl_gtt_mia_tools IMPLEMENTATION.
 
   ENDMETHOD.
 
+
   METHOD get_max_sequence_id.
     CLEAR: rv_milestonenum.
 
@@ -353,19 +354,20 @@ CLASS zcl_gtt_mia_tools IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
 
+
   METHOD get_next_sequence_id.
     rv_milestonenum   = get_max_sequence_id(
                           it_expeventdata = it_expeventdata ) + 1.
   ENDMETHOD.
 
+
   METHOD get_pretty_location_id.
     rv_locid  = SWITCH #( iv_loctype
-                          WHEN zif_gtt_mia_ef_constants=>cs_loc_types-customer
-                            THEN |{ iv_locid ALPHA = OUT }|
-                          WHEN zif_gtt_mia_ef_constants=>cs_loc_types-supplier
+                          WHEN zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner
                             THEN |{ iv_locid ALPHA = OUT }|
                             ELSE iv_locid ).
   ENDMETHOD.
+
 
   METHOD get_pretty_value.
 

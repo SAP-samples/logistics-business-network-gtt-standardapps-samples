@@ -87,6 +87,8 @@ CLASS ZCL_GTT_MIA_CTP_TOR_CHANGES IMPLEMENTATION.
     ls_delivery_item-item_id      = is_tor_item-item_id.
     ls_delivery_item-quantity     = is_tor_item-qua_pcs_val.
     ls_delivery_item-quantityuom  = is_tor_item-qua_pcs_uni.
+    ls_delivery_item-product_id   = is_tor_item-product_id.
+    ls_delivery_item-product_descr = is_tor_item-item_descr.
     ls_delivery_item-change_mode  = iv_change_mode.
 
     INSERT ls_delivery_item INTO TABLE ct_delivery_item.

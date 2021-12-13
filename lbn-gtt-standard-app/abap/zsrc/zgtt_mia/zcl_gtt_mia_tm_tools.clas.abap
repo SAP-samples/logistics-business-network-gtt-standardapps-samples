@@ -119,12 +119,13 @@ CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
           lo_message  TYPE REF TO /bobf/if_frw_message,
           lt_altkey   TYPE /scmtms/t_base_document_w_item,
           lt_selparam TYPE /bobf/t_frw_query_selparam,
-          lt_key      TYPE /bobf/t_frw_key.
+          lt_key      TYPE /bobf/t_frw_key,
+          lt_result   TYPE /bobf/t_frw_keyindex.
 
     CLEAR: et_key[], et_fu_item[].
 
-    lo_srv_mgr    = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
-                      /scmtms/if_tor_c=>sc_bo_key ).
+    lo_srv_mgr = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
+      /scmtms/if_tor_c=>sc_bo_key ).
 
     lt_altkey     = VALUE #(
       FOR ls_lips IN it_lips
@@ -147,7 +148,8 @@ CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
             iv_altkey_key = /scmtms/if_tor_c=>sc_alternative_key-item_tr-base_document
             it_key        = lt_altkey
           IMPORTING
-            et_key        = et_key ).
+            et_key        = et_key
+            et_result     = lt_result ).
 
         lo_srv_mgr->query(
           EXPORTING
@@ -159,6 +161,11 @@ CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
 
         et_key  = VALUE #( BASE et_key
                            ( LINES OF lt_key ) ).
+
+        et_key  = VALUE #( BASE et_key
+                          FOR ls_result IN lt_result
+                             ( key      = ls_result-key ) ) .
+
 
         DELETE et_key WHERE key IS INITIAL.
 
@@ -176,11 +183,11 @@ CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
         IF et_fu_item IS REQUESTED.
           lo_srv_mgr->retrieve(
             EXPORTING
-              iv_node_key   = /scmtms/if_tor_c=>sc_node-item_tr
-              it_key        = et_key
-              iv_fill_data  = abap_true
+              iv_node_key  = /scmtms/if_tor_c=>sc_node-item_tr
+              it_key       = et_key
+              iv_fill_data = abap_true
             IMPORTING
-              et_data       = et_fu_item ).
+              et_data      = et_fu_item ).
         ENDIF.
 
       CATCH /bobf/cx_frw_contrct_violation.

@@ -389,34 +389,6 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
         et_lips  = lt_lips
     ).
 
-    " Goods receipt for header
-    LOOP AT lt_vbeln ASSIGNING FIELD-SYMBOL(<lv_vbeln>).
-      DATA(lv_evtcnt) = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
-
-      ct_trackingheader = VALUE #( BASE ct_trackingheader (
-        language    = sy-langu
-        trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
-                        ir_likp = NEW likp( vbeln = <lv_vbeln> ) )
-        trxcod      = lv_dlvhdtrxcod
-        evtcnt      = lv_evtcnt
-        evtid       = zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt
-        evtdat      = sy-datum
-        evttim      = sy-uzeit
-        evtzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
-      ) ).
-
-      ct_eventid_map  = VALUE #( BASE ct_eventid_map (
-        eventid     = is_events-eventid
-        evtcnt      = lv_evtcnt
-      ) ).
-
-      ct_trackparameters  = VALUE #( BASE ct_trackparameters (
-        evtcnt      = lv_evtcnt
-        param_name  = zif_gtt_mia_app_constants=>cs_event_param-reversal
-        param_value = lv_reversal
-      ) ).
-    ENDLOOP.
-
     " Goods receipt for Item
     LOOP AT lt_lips ASSIGNING FIELD-SYMBOL(<ls_lips>).
       IF  zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = REF #( <ls_lips> ) ) = abap_false.
@@ -430,7 +402,7 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
       IF sy-subrc <> 0.
         CONTINUE.
       ENDIF.
-      lv_evtcnt = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
+      DATA(lv_evtcnt) = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
       DATA(lv_quantity) = get_full_quantity_for_gr( is_lips = <ls_lips> is_mseg = ls_pos-mseg ).
 
       ct_trackingheader = VALUE #( BASE ct_trackingheader (
@@ -455,6 +427,17 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
         param_name  = zif_gtt_mia_app_constants=>cs_event_param-quantity
         param_value = zcl_gtt_mia_tools=>get_pretty_value( iv_value = lv_quantity )
       ) ).
+
+      ct_tracklocation  = VALUE #( BASE ct_tracklocation (
+        evtcnt      = lv_evtcnt
+        locid1  = zcl_gtt_mia_tools=>get_pretty_location_id(
+                              iv_locid   = <ls_lips>-werks
+                              iv_loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant )
+        locid2 = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                        ir_lips = NEW lips( vbeln = <ls_lips>-vbeln posnr = <ls_lips>-posnr  ) )
+      ) ).
+
+
     ENDLOOP.
 
 

@@ -10,10 +10,10 @@ CLASS zcl_gtt_mia_tp_reader_dlh DEFINITION
       IMPORTING
         !io_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    TYPES:
-      BEGIN OF ts_dl_header,
+  types:
+    BEGIN OF ts_dl_header,
         vbeln     TYPE likp-vbeln,
         lifnr     TYPE likp-lifnr,
         lifnr_lt  TYPE /saptrx/loc_id_type,
@@ -39,8 +39,8 @@ CLASS zcl_gtt_mia_tp_reader_dlh DEFINITION
         lifex     TYPE likp-lifex,
       END OF ts_dl_header .
 
-    CONSTANTS:
-      BEGIN OF cs_mapping,
+  constants:
+    BEGIN OF cs_mapping,
         " Header section
         vbeln     TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
         lifnr     TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_ID',
@@ -66,45 +66,52 @@ CLASS zcl_gtt_mia_tp_reader_dlh DEFINITION
         fu_relev  TYPE /saptrx/paramname VALUE 'YN_DL_FU_RELEVANT',
         lifex     TYPE /saptrx/paramname VALUE 'YN_DL_ASN_NUMBER',
       END OF cs_mapping .
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_MIA_EF_PARAMETERS .
 
-    METHODS fill_header_from_likp_struct
-      IMPORTING
-        !ir_likp      TYPE REF TO data
-      CHANGING
-        !cs_dl_header TYPE ts_dl_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_from_lips_table
-      IMPORTING
-        !ir_lips_new  TYPE REF TO data
-        !ir_lips_old  TYPE REF TO data OPTIONAL
-        !iv_vbeln     TYPE vbeln_vl
-      CHANGING
-        !cs_dl_header TYPE ts_dl_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_location_types
-      CHANGING
-        !cs_dl_header TYPE ts_dl_header.
-    METHODS format_header_location_ids
-      CHANGING
-        !cs_dl_header TYPE ts_dl_header.
-    METHODS get_likp_struct_old
-      IMPORTING
-        !is_app_object TYPE trxas_appobj_ctab_wa
-        !iv_vbeln      TYPE vbeln_vl
-      RETURNING
-        VALUE(rr_likp) TYPE REF TO data
-      RAISING
-        cx_udm_message .
-    METHODS is_object_changed
-      IMPORTING
-        !is_app_object   TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  methods FILL_HEADER_FROM_LIKP_STRUCT
+    importing
+      !IR_LIKP type ref to DATA
+    changing
+      !CS_DL_HEADER type TS_DL_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_FROM_LIPS_TABLE
+    importing
+      !IR_LIPS_NEW type ref to DATA
+      !IR_LIPS_OLD type ref to DATA optional
+      !IV_VBELN type VBELN_VL
+    changing
+      !CS_DL_HEADER type TS_DL_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_LOCATION_TYPES
+    changing
+      !CS_DL_HEADER type TS_DL_HEADER .
+  methods FORMAT_HEADER_LOCATION_IDS
+    changing
+      !CS_DL_HEADER type TS_DL_HEADER .
+  methods GET_LIKP_STRUCT_OLD
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IV_VBELN type VBELN_VL
+    returning
+      value(RR_LIKP) type ref to DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_OBJECT_CHANGED
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_DELIVERY_ITEM_TRACKING
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    changing
+      !CT_TRACK_ID_DATA type ZIF_GTT_MIA_EF_TYPES=>TT_TRACK_ID_DATA
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -200,7 +207,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
   METHOD fill_header_location_types.
 
-    cs_dl_header-lifnr_lt   = zif_gtt_mia_ef_constants=>cs_loc_types-supplier.
+    cs_dl_header-lifnr_lt   = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
 
     IF cs_dl_header-werks IS NOT INITIAL.
       cs_dl_header-werks_lt = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
@@ -386,6 +393,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
       lv_dlvhdtrxcod     TYPE /saptrx/trxcod.
 
     lv_dlvhdtrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_number.
+    CLEAR et_track_id_data.
 
     TRY.
         CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
@@ -402,7 +410,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
       CATCH cx_sy_dyn_call_illegal_func.
     ENDTRY.
 
-    et_track_id_data = VALUE #( BASE et_track_id_data (
+    et_track_id_data = VALUE #( (
         appsys      = mo_ef_parameters->get_appsys( )
         appobjtype  = is_app_object-appobjtype
         appobjid    = is_app_object-appobjid
@@ -412,6 +420,73 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
         timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
         msrid       = space
       ) ).
+
+    add_delivery_item_tracking(
+      EXPORTING
+        is_app_object    = is_app_object
+      CHANGING
+        ct_track_id_data = et_track_id_data
+    ).
+
+  ENDMETHOD.
+
+
+  METHOD ADD_DELIVERY_ITEM_TRACKING.
+    DATA:
+      lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
+      lv_dlvittrxcod     TYPE /saptrx/trxcod,
+      lr_lips_new        TYPE REF TO data.
+
+    FIELD-SYMBOLS:
+      <lt_lips_new> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
+      <ls_lips>     TYPE lipsvb.
+
+    lv_dlvittrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_position.
+
+    TRY.
+        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
+          EXPORTING
+            iv_type        = is_app_object-appobjtype
+            iv_app         = 'MIA'
+          IMPORTING
+            ev_dlvittrxcod = lv_tmp_dlvittrxcod.
+
+        IF lv_tmp_dlvittrxcod IS NOT INITIAL.
+          lv_dlvittrxcod = lv_tmp_dlvittrxcod.
+        ENDIF.
+
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
+
+
+    lr_lips_new = mo_ef_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new ).
+    ASSIGN lr_lips_new->* TO <lt_lips_new>.
+    " prepare positions list
+    IF <lt_lips_new> IS ASSIGNED.
+      " collect NEW records with appropriate item type
+      LOOP AT <lt_lips_new> ASSIGNING <ls_lips>
+        WHERE updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert OR
+              updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+
+        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
+             ir_struct = REF #( <ls_lips> ) ) = abap_true.
+          ct_track_id_data = VALUE #( BASE ct_track_id_data (
+                    appsys      = mo_ef_parameters->get_appsys( )
+                    appobjtype  = is_app_object-appobjtype
+                    appobjid    = is_app_object-appobjid
+                    trxcod      = lv_dlvittrxcod
+                    trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                                    ir_lips = NEW lips( vbeln = <ls_lips>-vbeln posnr = <ls_lips>-posnr ) )
+                    timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
+                    action      = COND #( WHEN <ls_lips>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete
+                                          THEN zif_gtt_mia_ef_constants=>cs_change_mode-delete )
+                    msrid       = space
+                  ) ).
+        ENDIF.
+      ENDLOOP.
+
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

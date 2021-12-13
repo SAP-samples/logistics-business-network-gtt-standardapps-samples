@@ -21,54 +21,57 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dli DEFINITION
         REDEFINITION .
     METHODS get_object_type
         REDEFINITION .
-  PRIVATE SECTION.
+PRIVATE SECTION.
 
-    CONSTANTS:
-      BEGIN OF cs_mapping,
-        vbeln          TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
-        posnr          TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY_ITEM',
-        fu_lineNo      TYPE /saptrx/paramname VALUE 'YN_DL_FU_LINE_COUNT',
-        fu_freightUnit TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO',
-        fu_ItemNumber  TYPE /saptrx/paramname VALUE 'YN_DL_FU_ITEM_NO',
-        fu_quantity    TYPE /saptrx/paramname VALUE 'YN_DL_FU_QUANTITY',
-        fu_quantityUoM TYPE /saptrx/paramname VALUE 'YN_DL_FU_UNITS',
-      END OF cs_mapping .
+  CONSTANTS:
+    BEGIN OF cs_mapping,
+      vbeln             TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
+      posnr             TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY_ITEM',
+      fu_lineno         TYPE /saptrx/paramname VALUE 'YN_DL_FU_LINE_COUNT',
+      fu_freightunit    TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO',
+      fu_itemnumber     TYPE /saptrx/paramname VALUE 'YN_DL_FU_ITEM_NO',
+      fu_quantity       TYPE /saptrx/paramname VALUE 'YN_DL_FU_QUANTITY',
+      fu_quantityuom    TYPE /saptrx/paramname VALUE 'YN_DL_FU_UNITS',
+      fu_product_id     TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT',
+      fu_product_descr  TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT_DESCR',
+    END OF cs_mapping .
 
-    METHODS fill_idoc_appobj_ctabs
-      IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
-        !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
-      CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
-      RAISING
-        cx_udm_message .
-    METHODS fill_idoc_control_data
-      IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
-        !is_likp      TYPE zif_gtt_mia_app_types=>ts_likpvb
-        !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
-        !it_fu_list   TYPE zif_gtt_mia_ctp_types=>tt_fu_list
-      CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
-      RAISING
-        cx_udm_message .
-    METHODS fill_idoc_exp_event
-      IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
-        !is_likp      TYPE zif_gtt_mia_app_types=>ts_likpvb
-        !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
-      CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
-      RAISING
-        cx_udm_message .
-    METHODS fill_idoc_tracking_id
-      IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
-        !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
-      CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
-      RAISING
-        cx_udm_message .
+  METHODS fill_idoc_appobj_ctabs
+    IMPORTING
+      !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+      !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
+    CHANGING
+      !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+    RAISING
+      cx_udm_message .
+  METHODS fill_idoc_control_data
+    IMPORTING
+      !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+      !is_likp      TYPE zif_gtt_mia_app_types=>ts_likpvb
+      !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
+      !it_fu_list   TYPE zif_gtt_mia_ctp_types=>tt_fu_list
+    CHANGING
+      !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+    RAISING
+      cx_udm_message .
+  METHODS fill_idoc_exp_event
+    IMPORTING
+      !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+      !is_likp      TYPE zif_gtt_mia_app_types=>ts_likpvb
+      !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
+    CHANGING
+      !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+    RAISING
+      cx_udm_message .
+  METHODS fill_idoc_tracking_id
+    IMPORTING
+      !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+      !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
+      !it_fu_list   TYPE zif_gtt_mia_ctp_types=>tt_fu_list
+    CHANGING
+      !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+    RAISING
+      cx_udm_message .
 ENDCLASS.
 
 
@@ -130,19 +133,19 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
       lt_control  = VALUE #( BASE lt_control
         (
           paramindex  = lv_count
-          paramname   = cs_mapping-fu_lineNo
+          paramname   = cs_mapping-fu_lineno
           value       = zcl_gtt_mia_tools=>get_pretty_value(
                           iv_value = lv_count )
         )
         (
           paramindex  = lv_count
-          paramname   = cs_mapping-fu_freightUnit
+          paramname   = cs_mapping-fu_freightunit
           value       = zcl_gtt_mia_tm_tools=>get_formated_tor_id(
                           ir_data = REF #( <ls_fu_list> ) )
         )
         (
           paramindex  = lv_count
-          paramname   = cs_mapping-fu_ItemNumber
+          paramname   = cs_mapping-fu_itemnumber
           value       = zcl_gtt_mia_tm_tools=>get_formated_tor_item(
                           ir_data = REF #( <ls_fu_list> ) )
         )
@@ -154,9 +157,21 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
         )
         (
           paramindex  = lv_count
-          paramname   = cs_mapping-fu_quantityUoM
+          paramname   = cs_mapping-fu_quantityuom
           value       = zcl_gtt_mia_tools=>get_pretty_value(
                           iv_value = <ls_fu_list>-quantityuom )
+        )
+        (
+          paramindex  = lv_count
+          paramname   = cs_mapping-fu_product_id
+          value       = zcl_gtt_mia_tools=>get_pretty_value(
+                          iv_value = <ls_fu_list>-product_id )
+        )
+        (
+          paramindex  = lv_count
+          paramname   = cs_mapping-fu_product_descr
+          value       = zcl_gtt_mia_tools=>get_pretty_value(
+                          iv_value = <ls_fu_list>-product_descr )
         )
       ).
     ENDLOOP.
@@ -165,7 +180,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
     IF sy-subcs <> 0.
       lt_control  = VALUE #( BASE lt_control (
           paramindex = 1
-          paramname  = cs_mapping-fu_lineNo
+          paramname  = cs_mapping-fu_lineno
           value      = ''
       ) ).
     ENDIF.
@@ -248,9 +263,21 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
 
     DATA:
       lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
-      lv_dlvittrxcod     TYPE /saptrx/trxcod.
+      lv_dlvittrxcod     TYPE /saptrx/trxcod,
+      lv_tmp_futrxcod    TYPE /saptrx/trxcod,
+      lv_futrxcod        TYPE /saptrx/trxcod.
+
+    DATA:
+      lt_tracking_id TYPE /saptrx/bapi_trk_trkid_tab,
+      lt_fu_id       TYPE zif_gtt_mia_ctp_types=>tt_fu_id.
+
+    DATA:
+      ls_fu_create TYPE zif_gtt_mia_ctp_types=>ts_fu_list,
+      ls_fu_update TYPE zif_gtt_mia_ctp_types=>ts_fu_list,
+      ls_fu_delete TYPE zif_gtt_mia_ctp_types=>ts_fu_list.
 
     lv_dlvittrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_position.
+    lv_futrxcod    = zif_gtt_mia_app_constants=>cs_trxcod-fu_number.
 
     TRY.
         CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
@@ -258,16 +285,20 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
             iv_type        = is_aotype-aot_type
             iv_app         = 'MIA'
           IMPORTING
-            ev_dlvittrxcod = lv_tmp_dlvittrxcod.
+            ev_dlvittrxcod = lv_tmp_dlvittrxcod
+            ev_futrxcod    = lv_tmp_futrxcod.
 
         IF lv_tmp_dlvittrxcod IS NOT INITIAL.
           lv_dlvittrxcod = lv_tmp_dlvittrxcod.
+        ENDIF.
+        IF lv_tmp_futrxcod IS NOT INITIAL.
+          lv_futrxcod = lv_tmp_futrxcod.
         ENDIF.
 
       CATCH cx_sy_dyn_call_illegal_func.
     ENDTRY.
 
-    " Delivery Header
+    " Delivery Item
     cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
       appsys      = mv_appsys
       appobjtype  = is_aotype-aot_type
@@ -278,6 +309,50 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
                       ir_lips = REF #( is_lips ) )
       timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
     ) ).
+
+    lt_fu_id =  CORRESPONDING #( it_fu_list ).
+    SORT lt_fu_id BY tor_id.
+    DELETE ADJACENT DUPLICATES FROM lt_fu_id COMPARING tor_id.
+    " Freight unit
+    LOOP AT lt_fu_id  ASSIGNING FIELD-SYMBOL(<ls_fu_id>).
+
+      CLEAR:ls_fu_create,ls_fu_update,ls_fu_delete.
+      READ TABLE it_fu_list INTO ls_fu_create WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_create.
+      READ TABLE it_fu_list INTO ls_fu_update WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_update.
+      READ TABLE it_fu_list INTO ls_fu_delete WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_delete.
+
+      IF ls_fu_create IS NOT INITIAL AND
+         ls_fu_update IS INITIAL AND
+         ls_fu_delete IS INITIAL.
+        lt_tracking_id    = VALUE #( BASE lt_tracking_id (
+          trxcod      = lv_futrxcod
+          trxid       = zcl_gtt_mia_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
+        ) ).
+
+      ENDIF.
+
+      IF ls_fu_delete IS NOT INITIAL AND
+         ls_fu_update IS INITIAL AND
+         ls_fu_create IS INITIAL.
+        lt_tracking_id    = VALUE #( BASE lt_tracking_id (
+          trxcod      = lv_futrxcod
+          trxid       = zcl_gtt_mia_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
+          action      = zif_gtt_mia_ef_constants=>cs_change_mode-delete
+        ) ).
+
+      ENDIF.
+    ENDLOOP.
+
+*    " Fill general data
+    LOOP AT lt_tracking_id ASSIGNING FIELD-SYMBOL(<ls_tracking_id>).
+      <ls_tracking_id>-appsys     = mv_appsys.
+      <ls_tracking_id>-appobjtype = is_aotype-aot_type.
+      <ls_tracking_id>-appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+        ir_lips = REF #( is_lips ) ).
+    ENDLOOP.
+
+    cs_idoc_data-tracking_id = VALUE #( BASE cs_idoc_data-tracking_id
+                                        ( LINES OF lt_tracking_id ) ).
 
   ENDMETHOD.
 
@@ -365,6 +440,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
           EXPORTING
             is_aotype    = <ls_aotype>
             is_lips      = <ls_dlv_fu>-lips
+            it_fu_list   = <ls_dlv_fu>-fu_list
           CHANGING
             cs_idoc_data = ls_idoc_data ).
       ENDLOOP.

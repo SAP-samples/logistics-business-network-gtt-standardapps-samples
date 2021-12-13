@@ -29,7 +29,7 @@ FUNCTION zgtt_mia_ctp_tor_to_dl.
 
       ASSIGN lr_delivery_chng->* TO <lt_delivery_chng>.
 
-      IF <lt_delivery_chng> IS ASSIGNED.
+      IF <lt_delivery_chng> IS ASSIGNED AND <lt_delivery_chng> IS NOT INITIAL.
 
         " *** prepare and send DLV Header IDOC ***
         DATA(lo_dl_head_data) = NEW zcl_gtt_mia_ctp_dat_tor_to_dlh(

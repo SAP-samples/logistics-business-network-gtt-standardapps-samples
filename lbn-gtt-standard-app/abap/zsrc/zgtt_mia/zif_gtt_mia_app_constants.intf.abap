@@ -41,6 +41,7 @@ INTERFACE zif_gtt_mia_app_constants
       dl_position TYPE /saptrx/trxcod VALUE 'FT1_IN_DELIVERY_ITEM',
       sh_number   TYPE /saptrx/trxcod VALUE 'FT1_SHIPMENT',
       sh_resource TYPE /saptrx/trxcod VALUE 'FT1_RESOURCE',
+      fu_number   TYPE /saptrx/trxcod VALUE 'FT1_FREIGHT_UNIT',
     END OF cs_trxcod .
   CONSTANTS:
     BEGIN OF cs_milestone,
@@ -48,6 +49,8 @@ INTERFACE zif_gtt_mia_app_constants
       dl_packing       TYPE /saptrx/appl_event_tag VALUE 'PACKING',
       dl_goods_receipt TYPE /saptrx/appl_event_tag VALUE 'GOODS_RECEIPT',
       dl_pod           TYPE /saptrx/appl_event_tag VALUE 'SHP_POD',
+      dl_comp_by_fu    TYPE /saptrx/appl_event_tag VALUE 'DLV_ITM_COMP_BY_FU',
+      fu_completed     TYPE /saptrx/appl_event_tag VALUE 'FU_COMPLETED',
       sh_check_in      TYPE /saptrx/appl_event_tag VALUE 'CHECK_IN',
       sh_load_start    TYPE /saptrx/appl_event_tag VALUE 'LOAD_BEGIN',
       sh_load_end      TYPE /saptrx/appl_event_tag VALUE 'LOAD_END',

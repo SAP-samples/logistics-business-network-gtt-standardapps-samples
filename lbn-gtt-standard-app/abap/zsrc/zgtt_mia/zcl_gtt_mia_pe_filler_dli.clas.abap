@@ -50,6 +50,37 @@ private section.
       value(RV_RESULT) type ABAP_BOOL
     raising
       CX_UDM_MESSAGE .
+  methods GET_GR_EVENT_MATCHKEY
+    importing
+      !IR_STRUCT_DATA type ref to DATA
+    returning
+      value(RV_MATCHKEY) type CHAR50
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_FU_RELEVANT
+    importing
+      !IR_STRUCT_DATA type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_GR_EVENT_WO_MATCHKEY
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+      !IV_MILESTONENUM type /SAPTRX/SEQ_NUM
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_FU_COMPLETED_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -79,6 +110,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
         locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
                               iv_locid   = lv_werks
                               iv_loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant )
+        locid2            = get_gr_event_matchkey( ir_struct_data = is_app_objects-maintabref )
         loctype           = zif_gtt_mia_ef_constants=>cs_loc_types-plant
         milestonenum      = iv_milestonenum
       ) ).
@@ -235,9 +267,9 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
 
   METHOD zif_gtt_mia_pe_filler~get_planed_events.
 
-    DATA(lo_relevance)  = NEW zcl_gtt_mia_event_rel_dl_it(
-                            io_ef_parameters = mo_ef_parameters
-                            is_app_objects   = is_app_objects ).
+    DATA(lo_relevance) = NEW zcl_gtt_mia_event_rel_dl_it(
+      io_ef_parameters = mo_ef_parameters
+      is_app_objects   = is_app_objects ).
 
     " initiate relevance flags
     lo_relevance->initiate( ).
@@ -271,6 +303,126 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
                             it_expeventdata = ct_expeventdata )
       CHANGING
         ct_expeventdata = ct_expeventdata ).
+
+    IF is_fu_relevant( ir_struct_data = is_app_objects-maintabref ) = abap_true.
+      add_fu_completed_event(
+        EXPORTING
+          is_app_objects  = is_app_objects
+          io_relevance    = lo_relevance
+        CHANGING
+          ct_expeventdata = ct_expeventdata ).
+    ELSE.
+      add_gr_event_wo_matchkey(
+        EXPORTING
+          is_app_objects  = is_app_objects
+          io_relevance    = lo_relevance
+          iv_milestonenum = zcl_gtt_mia_tools=>get_next_sequence_id(
+                              it_expeventdata = ct_expeventdata )
+        CHANGING
+          ct_expeventdata = ct_expeventdata ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD add_fu_completed_event.
+
+    DATA: lr_struct_data TYPE REF TO data,
+          lt_fu_item     TYPE /scmtms/t_tor_item_tr_k.
+    DATA: lt_torid TYPE zif_gtt_mia_ctp_types=>tt_fu_id,
+          ls_torid TYPE zif_gtt_mia_ctp_types=>ts_fu_id.
+
+    lr_struct_data = is_app_objects-maintabref.
+    zcl_gtt_mia_tm_tools=>get_tor_items_for_dlv_items(
+      EXPORTING
+        it_lips    = VALUE #( ( vbeln = zcl_gtt_mia_tools=>get_field_of_structure(
+                                  ir_struct_data = lr_struct_data
+                                  iv_field_name  = 'VBELN' )
+                                posnr = zcl_gtt_mia_tools=>get_field_of_structure(
+                                  ir_struct_data = lr_struct_data
+                                  iv_field_name  = 'POSNR' ) ) )
+        iv_tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit
+      IMPORTING
+        et_fu_item = lt_fu_item ).
+
+    LOOP AT lt_fu_item ASSIGNING FIELD-SYMBOL(<ls_fu_item>).
+      lt_torid  = VALUE #( BASE lt_torid (
+         tor_id = zcl_gtt_mia_tm_tools=>get_tor_root_tor_id(
+                            iv_key = <ls_fu_item>-parent_key )
+      ) ).
+
+    ENDLOOP.
+
+    SORT lt_torid BY tor_id.
+    DELETE ADJACENT DUPLICATES FROM lt_torid  COMPARING tor_id.
+
+    IF lt_torid IS NOT INITIAL.
+      LOOP AT lt_torid INTO ls_torid.
+        ct_expeventdata = VALUE #( BASE ct_expeventdata (
+               appsys            = mo_ef_parameters->get_appsys(  )
+               appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
+               language          = sy-langu
+               appobjid          = is_app_objects-appobjid
+               milestone         = zif_gtt_mia_app_constants=>cs_milestone-fu_completed
+               evt_exp_tzone     = zcl_gtt_mia_tools=>get_system_time_zone( )
+               evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
+                                     ir_data = is_app_objects-mastertabref )
+               locid2            = zcl_gtt_mia_tm_tools=>get_formated_tor_id( ir_data = REF #( ls_torid )  )
+               milestonenum      = zcl_gtt_mia_tools=>get_next_sequence_id(
+                                   it_expeventdata = ct_expeventdata )
+             ) ).
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD add_gr_event_wo_matchkey.
+
+    IF io_relevance->is_enabled(
+             iv_milestone   = zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt ) = abap_true.
+      ct_expeventdata = VALUE #( BASE ct_expeventdata (
+              appsys            = mo_ef_parameters->get_appsys(  )
+              appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
+              language          = sy-langu
+              appobjid          = is_app_objects-appobjid
+              milestone         = zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt
+              evt_exp_tzone     = zcl_gtt_mia_tools=>get_system_time_zone( )
+              evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
+                                    ir_data = is_app_objects-mastertabref )
+              milestonenum      = iv_milestonenum
+            ) ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_gr_event_matchkey.
+
+    DATA(lv_vbeln) = zcl_gtt_mia_tools=>get_field_of_structure(
+      ir_struct_data = ir_struct_data
+      iv_field_name  = 'VBELN' ).
+
+    DATA(lv_posnr) = zcl_gtt_mia_tools=>get_field_of_structure(
+      ir_struct_data = ir_struct_data
+      iv_field_name  = 'POSNR' ).
+
+    rv_matchkey = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+      ir_lips = NEW lips( vbeln = lv_vbeln posnr = lv_posnr ) ).
+  ENDMETHOD.
+
+
+  METHOD is_fu_relevant.
+
+    DATA: lt_lips TYPE zif_gtt_mia_app_types=>tt_lipsvb_key.
+    rv_result = zcl_gtt_mia_tm_tools=>is_fu_relevant(
+      it_lips = VALUE #( BASE lt_lips (
+        vbeln             = zcl_gtt_mia_tools=>get_field_of_structure(
+                                  ir_struct_data = ir_struct_data
+                                  iv_field_name  = 'VBELN' )
+        posnr             = zcl_gtt_mia_tools=>get_field_of_structure(
+                                  ir_struct_data = ir_struct_data
+                                  iv_field_name  = 'POSNR' )
+      ) ) ).
 
   ENDMETHOD.
 ENDCLASS.

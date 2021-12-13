@@ -11,40 +11,63 @@ CLASS zcl_gtt_mia_pe_filler_dlh DEFINITION
         !io_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters
         !io_bo_reader     TYPE REF TO zif_gtt_mia_tp_reader .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
-    DATA mo_bo_reader TYPE REF TO zif_gtt_mia_tp_reader .
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_MIA_EF_PARAMETERS .
+  data MO_BO_READER type ref to ZIF_GTT_MIA_TP_READER .
 
-    METHODS add_goods_receipt_event
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
-        !iv_milestonenum TYPE /saptrx/seq_num
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS add_shipment_events
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_mia_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-
-    METHODS is_time_of_delivery_changed
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  methods ADD_GR_EVENT_WITH_MATCK_KEY
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IR_LIPS_DATA type ref to DATA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_GOODS_RECEIPT_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+      !IV_MILESTONENUM type /SAPTRX/SEQ_NUM
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_SHIPMENT_EVENTS
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_ITEM_COMPLETED_BY_FU_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IR_LIPS_DATA type ref to DATA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_MIA_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_TIME_OF_DELIVERY_CHANGED
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_FU_RELEVANT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IR_LIPS_DATA type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_pe_filler_dlh IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
 
 
   METHOD add_goods_receipt_event.
@@ -97,6 +120,7 @@ CLASS zcl_gtt_mia_pe_filler_dlh IMPLEMENTATION.
     mo_bo_reader        = io_bo_reader.
 
   ENDMETHOD.
+
 
   METHOD is_time_of_delivery_changed.
 
@@ -173,9 +197,11 @@ CLASS zcl_gtt_mia_pe_filler_dlh IMPLEMENTATION.
 
   METHOD zif_gtt_mia_pe_filler~get_planed_events.
 
-    DATA(lo_relevance)  = NEW zcl_gtt_mia_event_rel_dl_hd(
-                            io_ef_parameters = mo_ef_parameters
-                            is_app_objects   = is_app_objects ).
+    DATA: lr_lips_data TYPE REF TO data.
+
+    DATA(lo_relevance) = NEW zcl_gtt_mia_event_rel_dl_hd(
+      io_ef_parameters = mo_ef_parameters
+      is_app_objects   = is_app_objects ).
 
     " initiate relevance flags
     lo_relevance->initiate( ).
@@ -183,20 +209,152 @@ CLASS zcl_gtt_mia_pe_filler_dlh IMPLEMENTATION.
     " store calculated relevance flags
     lo_relevance->update( ).
 
-    add_shipment_events(
-      EXPORTING
-        is_app_objects  = is_app_objects
-      CHANGING
-        ct_expeventdata = ct_expeventdata ).
+    lr_lips_data = mo_ef_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new ).
 
-    add_goods_receipt_event(
+    add_gr_event_with_matck_key(
       EXPORTING
         is_app_objects  = is_app_objects
-        io_relevance    = lo_relevance
-        iv_milestonenum = zcl_gtt_mia_tools=>get_next_sequence_id(
-                            it_expeventdata = ct_expeventdata )
+        ir_lips_data    = lr_lips_data
       CHANGING
-        ct_expeventdata = ct_expeventdata ).
+        ct_expeventdata = ct_expeventdata
+    ).
+    IF is_fu_relevant( is_app_objects = is_app_objects
+                       ir_lips_data   = lr_lips_data ) = abap_true.
+
+      add_item_completed_by_fu_event(
+        EXPORTING
+          is_app_objects  = is_app_objects
+          ir_lips_data    = lr_lips_data
+        CHANGING
+          ct_expeventdata = ct_expeventdata
+      ).
+
+    ELSE.
+
+      add_shipment_events(
+        EXPORTING
+          is_app_objects  = is_app_objects
+        CHANGING
+          ct_expeventdata = ct_expeventdata ).
+
+      add_goods_receipt_event(
+        EXPORTING
+          is_app_objects  = is_app_objects
+          io_relevance    = lo_relevance
+          iv_milestonenum = zcl_gtt_mia_tools=>get_next_sequence_id(
+                              it_expeventdata = ct_expeventdata )
+        CHANGING
+          ct_expeventdata = ct_expeventdata ).
+
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD add_gr_event_with_matck_key.
+    DATA: lv_vbeln     TYPE vbeln_vl.
+    FIELD-SYMBOLS: <lt_lips_fs> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
+                   <ls_lips>    TYPE lipsvb.
+
+    ASSIGN ir_lips_data->* TO <lt_lips_fs>.
+
+    lv_vbeln = zcl_gtt_mia_tools=>get_field_of_structure(
+      ir_struct_data = is_app_objects-maintabref
+      iv_field_name  = 'VBELN' ).
+    IF <lt_lips_fs> IS ASSIGNED.
+      LOOP AT <lt_lips_fs> ASSIGNING <ls_lips>
+        WHERE vbeln = lv_vbeln AND updkz <> zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
+             ir_struct = REF #( <ls_lips> ) ) = abap_true.
+          ct_expeventdata = VALUE #( BASE ct_expeventdata (
+                  appsys            = mo_ef_parameters->get_appsys(  )
+                  appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
+                  language          = sy-langu
+                  appobjid          = is_app_objects-appobjid
+                  milestone         = zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt
+                  evt_exp_tzone     = zcl_gtt_mia_tools=>get_system_time_zone( )
+                  evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
+                                        ir_data = is_app_objects-maintabref )
+                  locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
+                                        iv_locid   = <ls_lips>-werks
+                                        iv_loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant )
+                  locid2            = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item( ir_lips = REF #( <ls_lips> ) )
+                  milestonenum      = zcl_gtt_mia_tools=>get_next_sequence_id(
+                                      it_expeventdata = ct_expeventdata )
+                ) ).
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD add_item_completed_by_fu_event.
+
+    DATA: lv_vbeln     TYPE vbeln_vl.
+    FIELD-SYMBOLS: <lt_lips_fs> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
+                   <ls_lips>    TYPE lipsvb.
+
+    ASSIGN ir_lips_data->* TO <lt_lips_fs>.
+
+    lv_vbeln = zcl_gtt_mia_tools=>get_field_of_structure(
+      ir_struct_data = is_app_objects-maintabref
+      iv_field_name  = 'VBELN' ).
+    IF <lt_lips_fs> IS ASSIGNED.
+      LOOP AT <lt_lips_fs> ASSIGNING <ls_lips>
+        WHERE vbeln = lv_vbeln AND updkz <> zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+
+        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
+             ir_struct = REF #( <ls_lips> ) ) = abap_true.
+          ct_expeventdata = VALUE #( BASE ct_expeventdata (
+                  appsys            = mo_ef_parameters->get_appsys(  )
+                  appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
+                  language          = sy-langu
+                  appobjid          = is_app_objects-appobjid
+                  milestone         = zif_gtt_mia_app_constants=>cs_milestone-dl_comp_by_fu
+                  evt_exp_tzone     = zcl_gtt_mia_tools=>get_system_time_zone( )
+                  evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
+                                        ir_data = is_app_objects-maintabref )
+                  locid2            = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item( ir_lips = REF #( <ls_lips> ) )
+                  milestonenum      = zcl_gtt_mia_tools=>get_next_sequence_id(
+                                      it_expeventdata = ct_expeventdata )
+                ) ).
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD is_fu_relevant.
+
+    DATA: lv_is_fu_rel TYPE abap_bool VALUE abap_false,
+          lv_vbeln     TYPE vbeln_vl,
+          lt_lips      TYPE zif_gtt_mia_app_types=>tt_lipsvb.
+
+    FIELD-SYMBOLS: <lt_lips_fs> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
+                   <ls_lips>    TYPE lipsvb.
+
+    ASSIGN ir_lips_data->* TO <lt_lips_fs>.
+
+    lv_vbeln = zcl_gtt_mia_tools=>get_field_of_structure(
+      ir_struct_data = is_app_objects-maintabref
+      iv_field_name  = 'VBELN' ).
+    IF <lt_lips_fs> IS ASSIGNED.
+      " collect NEW records with appropriate item type
+      LOOP AT <lt_lips_fs> ASSIGNING <ls_lips>
+        WHERE vbeln = lv_vbeln AND updkz <> zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+
+        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
+             ir_struct = REF #( <ls_lips> ) ) = abap_true.
+          APPEND <ls_lips> TO lt_lips.
+        ENDIF.
+      ENDLOOP.
+      IF lt_lips IS NOT INITIAL.
+        lv_is_fu_rel = zcl_gtt_mia_tm_tools=>is_fu_relevant(
+          it_lips = CORRESPONDING #( lt_lips ) ).
+      ENDIF.
+    ENDIF.
+    rv_result = lv_is_fu_rel.
 
   ENDMETHOD.
 ENDCLASS.

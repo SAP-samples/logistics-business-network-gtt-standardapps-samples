@@ -39,7 +39,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ctp_dat_tor_to_dli IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_CTP_DAT_TOR_TO_DLI IMPLEMENTATION.
 
 
   METHOD constructor.
@@ -78,7 +78,10 @@ CLASS zcl_gtt_mia_ctp_dat_tor_to_dli IMPLEMENTATION.
         tor_id        = <ls_delivery_chng>-tor_id
         item_id       = <ls_delivery_chng>-item_id
         quantity      = <ls_delivery_chng>-quantity
-        quantityUoM   = <ls_delivery_chng>-quantityUoM
+        quantityuom   = <ls_delivery_chng>-quantityuom
+        product_id    = <ls_delivery_chng>-product_id
+        product_descr = <ls_delivery_chng>-product_descr
+        change_mode   = <ls_delivery_chng>-change_mode
       ) ).
 
       UNASSIGN <ls_delivery_item>.
@@ -152,6 +155,8 @@ CLASS zcl_gtt_mia_ctp_dat_tor_to_dli IMPLEMENTATION.
           item_id   = <ls_fu_item>-item_id
           quantity     = <ls_fu_item>-qua_pcs_val
           quantityuom  = <ls_fu_item>-qua_pcs_uni
+          product_id   = <ls_fu_item>-product_id
+          product_descr = <ls_fu_item>-item_descr
         ) ).
       ENDLOOP.
 

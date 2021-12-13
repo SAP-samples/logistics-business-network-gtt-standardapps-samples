@@ -10,12 +10,12 @@ CLASS zcl_gtt_mia_tp_reader_dli DEFINITION
       IMPORTING
         !io_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    TYPES tv_posnr_txt TYPE char6 .
-    TYPES tv_po_item TYPE char20 .
-    TYPES:
-      BEGIN OF ts_dl_item,
+  types TV_POSNR_TXT type CHAR6 .
+  types TV_PO_ITEM type CHAR20 .
+  types:
+    BEGIN OF ts_dl_item,
         " Header section
         vbeln     TYPE lips-vbeln,
         posnr     TYPE tv_posnr_txt,
@@ -54,8 +54,8 @@ CLASS zcl_gtt_mia_tp_reader_dli DEFINITION
         po_item   TYPE tv_po_item,
       END OF ts_dl_item .
 
-    CONSTANTS:
-      BEGIN OF cs_mapping,
+  constants:
+    BEGIN OF cs_mapping,
         " Header section
         vbeln     TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
         posnr     TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY_ITEM',
@@ -93,71 +93,71 @@ CLASS zcl_gtt_mia_tp_reader_dli DEFINITION
         inco2_l   TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_LOCATION',
         po_item   TYPE /saptrx/paramname VALUE 'YN_DL_ASSOC_POITEM_NO',
       END OF cs_mapping .
-    CONSTANTS cv_posnr_empty TYPE posnr_vl VALUE '000000' ##NO_TEXT.
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
+  constants CV_POSNR_EMPTY type POSNR_VL value '000000' ##NO_TEXT.
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_MIA_EF_PARAMETERS .
 
-    METHODS fill_item_from_likp_struct
-      IMPORTING
-        !ir_likp    TYPE REF TO data
-      CHANGING
-        !cs_dl_item TYPE ts_dl_item
-      RAISING
-        cx_udm_message .
-    METHODS fill_item_from_lips_struct
-      IMPORTING
-        !ir_lips    TYPE REF TO data
-      CHANGING
-        !cs_dl_item TYPE ts_dl_item
-      RAISING
-        cx_udm_message .
-    METHODS fill_item_from_vbpa_table
-      IMPORTING
-        !ir_vbpa    TYPE REF TO data
-        !iv_vbeln   TYPE vbeln_vl
-        !iv_posnr   TYPE posnr_vl
-      CHANGING
-        !cs_dl_item TYPE ts_dl_item
-      RAISING
-        cx_udm_message .
-    METHODS fill_item_location_types
-      CHANGING
-        !cs_dl_item TYPE ts_dl_item.
-    METHODS format_item_location_ids
-      CHANGING
-        !cs_dl_item TYPE ts_dl_item.
-    METHODS get_likp_struct_old
-      IMPORTING
-        !is_app_object TYPE trxas_appobj_ctab_wa
-        !iv_vbeln      TYPE vbeln_vl
-      RETURNING
-        VALUE(rr_likp) TYPE REF TO data
-      RAISING
-        cx_udm_message .
-    METHODS get_lips_struct_old
-      IMPORTING
-        !is_app_object TYPE trxas_appobj_ctab_wa
-        !iv_vbeln      TYPE vbeln_vl
-        !iv_posnr      TYPE posnr_vl
-      RETURNING
-        VALUE(rr_lips) TYPE REF TO data
-      RAISING
-        cx_udm_message .
-    METHODS get_vbpa_table_old
-      IMPORTING
-        !is_app_object TYPE trxas_appobj_ctab_wa
-        !iv_vbeln      TYPE vbeln_vl
-        !iv_posnr      TYPE posnr_vl
-      RETURNING
-        VALUE(rr_vbpa) TYPE REF TO data
-      RAISING
-        cx_udm_message .
-    METHODS is_object_changed
-      IMPORTING
-        !is_app_object   TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  methods FILL_ITEM_FROM_LIKP_STRUCT
+    importing
+      !IR_LIKP type ref to DATA
+    changing
+      !CS_DL_ITEM type TS_DL_ITEM
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_ITEM_FROM_LIPS_STRUCT
+    importing
+      !IR_LIPS type ref to DATA
+    changing
+      !CS_DL_ITEM type TS_DL_ITEM
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_ITEM_FROM_VBPA_TABLE
+    importing
+      !IR_VBPA type ref to DATA
+      !IV_VBELN type VBELN_VL
+      !IV_POSNR type POSNR_VL
+    changing
+      !CS_DL_ITEM type TS_DL_ITEM
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_ITEM_LOCATION_TYPES
+    changing
+      !CS_DL_ITEM type TS_DL_ITEM .
+  methods FORMAT_ITEM_LOCATION_IDS
+    changing
+      !CS_DL_ITEM type TS_DL_ITEM .
+  methods GET_LIKP_STRUCT_OLD
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IV_VBELN type VBELN_VL
+    returning
+      value(RR_LIKP) type ref to DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_LIPS_STRUCT_OLD
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IV_VBELN type VBELN_VL
+      !IV_POSNR type POSNR_VL
+    returning
+      value(RR_LIPS) type ref to DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_VBPA_TABLE_OLD
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IV_VBELN type VBELN_VL
+      !IV_POSNR type POSNR_VL
+    returning
+      value(RR_VBPA) type ref to DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_OBJECT_CHANGED
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -298,7 +298,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
   METHOD fill_item_location_types.
 
-    cs_dl_item-lifnr_lt   = zif_gtt_mia_ef_constants=>cs_loc_types-supplier.
+    cs_dl_item-lifnr_lt   = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
     cs_dl_item-werks_lt   = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
 
   ENDMETHOD.
@@ -571,12 +571,17 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
     DATA:
       lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
-      lv_dlvittrxcod     TYPE /saptrx/trxcod.
+      lv_tmp_dlvhdtrxcod TYPE /saptrx/trxcod,
+      lv_dlvittrxcod     TYPE /saptrx/trxcod,
+      lv_dlvhdtrxcod     TYPE /saptrx/trxcod.
 
     " Actual Business Time zone
+
     DATA(lv_tzone)  = zcl_gtt_mia_tools=>get_system_time_zone( ).
 
     lv_dlvittrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_position.
+    lv_dlvhdtrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_number.
+    CLEAR et_track_id_data.
 
     TRY.
         CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
@@ -584,10 +589,15 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
             iv_type        = is_app_object-appobjtype
             iv_app         = 'MIA'
           IMPORTING
-            ev_dlvittrxcod = lv_tmp_dlvittrxcod.
+            ev_dlvittrxcod = lv_tmp_dlvittrxcod
+            ev_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
 
         IF lv_tmp_dlvittrxcod IS NOT INITIAL.
           lv_dlvittrxcod = lv_tmp_dlvittrxcod.
+        ENDIF.
+
+        IF lv_tmp_dlvhdtrxcod IS NOT INITIAL.
+          lv_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
         ENDIF.
 
       CATCH cx_sy_dyn_call_illegal_func.
@@ -606,6 +616,18 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
           timzon      = lv_tzone
           msrid       = space
         ) ).
+      IF <ls_lips>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert.
+        et_track_id_data  = VALUE #( BASE et_track_id_data (
+          appsys      = mo_ef_parameters->get_appsys( )
+          appobjtype  = is_app_object-appobjtype
+          appobjid    = is_app_object-appobjid
+          trxcod      = lv_dlvhdtrxcod
+          trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                          ir_likp = is_app_object-mastertabref )
+          timzon      = lv_tzone
+          msrid       = space
+        ) ).
+      ENDIF.
     ELSE.
       MESSAGE e002(zgtt_mia) WITH 'LIPS' INTO DATA(lv_dummy).
       zcl_gtt_mia_tools=>throw_exception( ).

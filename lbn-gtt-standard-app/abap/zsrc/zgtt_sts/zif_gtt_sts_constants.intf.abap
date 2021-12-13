@@ -43,6 +43,7 @@ INTERFACE zif_gtt_sts_constants
       customer      TYPE string VALUE 'Customer',
       supplier      TYPE string VALUE 'Supplier',
       bp            TYPE string VALUE 'BusinessPartner',
+      plant         TYPE string VALUE 'Plant',
     END OF cs_location_type .
   CONSTANTS:
     BEGIN OF cs_lifecycle_status,

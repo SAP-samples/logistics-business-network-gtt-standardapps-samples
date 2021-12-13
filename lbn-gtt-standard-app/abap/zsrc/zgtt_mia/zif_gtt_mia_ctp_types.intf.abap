@@ -4,13 +4,23 @@ INTERFACE zif_gtt_mia_ctp_types
 
   TYPES:
     BEGIN OF ts_fu_list,
-      tor_id      TYPE /scmtms/tor_id,
-      item_id     TYPE /scmtms/item_id,
-      quantity    TYPE menge_d,
-      quantityUoM TYPE meins,
+      tor_id        TYPE /scmtms/tor_id,
+      item_id       TYPE /scmtms/item_id,
+      quantity      TYPE menge_d,
+      quantityuom   TYPE meins,
+      product_id    TYPE /scmtms/product_id,
+      product_descr TYPE /scmtms/item_description,
+      change_mode   TYPE /bobf/conf_change_mode,
     END OF ts_fu_list .
   TYPES:
+    BEGIN OF ts_fu_id,
+      tor_id TYPE /scmtms/tor_id,
+    END OF ts_fu_id .
+  TYPES:
     tt_fu_list  TYPE STANDARD TABLE OF ts_fu_list
+                       WITH EMPTY KEY .
+  TYPES:
+    tt_fu_id  TYPE STANDARD TABLE OF ts_fu_id
                        WITH EMPTY KEY .
   TYPES:
     BEGIN OF ts_delivery_item,
@@ -36,13 +46,15 @@ INTERFACE zif_gtt_mia_ctp_types
     tt_delivery TYPE STANDARD TABLE OF ts_delivery .
   TYPES:
     BEGIN OF ts_delivery_chng,
-      vbeln       TYPE vbeln_vl,
-      posnr       TYPE posnr_vl,
-      tor_id      TYPE /scmtms/tor_id,
-      item_id     TYPE /scmtms/item_id,
-      quantity    TYPE /scmtms/qua_pcs_val,
-      quantityUoM TYPE /scmtms/qua_pcs_uni,
-      change_mode TYPE /bobf/conf_change_mode,
+      vbeln         TYPE vbeln_vl,
+      posnr         TYPE posnr_vl,
+      tor_id        TYPE /scmtms/tor_id,
+      item_id       TYPE /scmtms/item_id,
+      quantity      TYPE /scmtms/qua_pcs_val,
+      quantityuom   TYPE /scmtms/qua_pcs_uni,
+      product_id    TYPE /scmtms/product_id,
+      product_descr TYPE /scmtms/item_description,
+      change_mode   TYPE /bobf/conf_change_mode,
     END OF ts_delivery_chng .
   TYPES:
     tt_delivery_chng TYPE SORTED TABLE OF ts_delivery_chng

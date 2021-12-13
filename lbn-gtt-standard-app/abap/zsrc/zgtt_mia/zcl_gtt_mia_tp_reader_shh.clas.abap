@@ -737,6 +737,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
     lv_shptrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_number.
     lv_restrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_resource.
+    CLEAR et_track_id_data.
 
     TRY.
         CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'

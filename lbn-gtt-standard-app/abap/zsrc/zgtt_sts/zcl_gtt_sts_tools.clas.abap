@@ -652,20 +652,21 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
 
     CLEAR:rv_loctype.
 
-    CALL FUNCTION '/SAPAPO/DM_LOC_GET_EXTLOC'
+    CALL FUNCTION '/SAPAPO/LOC_LOCID_GET_LOCATION'
       EXPORTING
-        iv_locno       = iv_locno
+        iv_locno           = iv_locno
       IMPORTING
-        ev_loctype     = lv_loctype
+        ev_loctype         = lv_loctype
       EXCEPTIONS
-        not_qualified  = 1
-        no_location    = 2
-        not_unique     = 3
-        logsys_initial = 4
-        OTHERS         = 5.
+        location_not_found = 1
+        not_qualified      = 2
+        OTHERS             = 3.
+
     IF sy-subrc = 0.
 
       CASE lv_loctype.
+        WHEN '1001'."Plant
+          rv_loctype = zif_gtt_sts_constants=>cs_location_type-plant.
         WHEN '1003'."Shipping Point
           rv_loctype = zif_gtt_sts_constants=>cs_location_type-shippingpoint.
         WHEN '1010'."Customer

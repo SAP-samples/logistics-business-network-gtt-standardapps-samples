@@ -188,13 +188,13 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
     LOOP AT lt_vttsvb INTO ls_vttsvb WHERE tknum = iv_tknum
                                        AND updkz <> 'D'.
       IF ls_vttsvb-kunna IS NOT INITIAL.
-        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-customer.
+        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
         lv_srclocid   = ls_vttsvb-kunna.
       ELSEIF ls_vttsvb-vstel IS NOT INITIAL.
         lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-shippingpoint.
         lv_srclocid   = ls_vttsvb-vstel.
       ELSEIF ls_vttsvb-lifna IS NOT INITIAL.
-        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-supplier.
+        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
         lv_srclocid   = ls_vttsvb-lifna.
       ELSEIF ls_vttsvb-werka IS NOT INITIAL.
         lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
@@ -210,13 +210,13 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
       ENDIF.
 
       IF ls_vttsvb-kunnz IS NOT INITIAL.
-        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-customer.
+        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
         lv_deslocid   = ls_vttsvb-kunnz.
       ELSEIF ls_vttsvb-vstez IS NOT INITIAL.
         lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-shippingpoint.
         lv_deslocid   = ls_vttsvb-vstez.
       ELSEIF ls_vttsvb-lifnz IS NOT INITIAL.
-        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-supplier.
+        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
         lv_deslocid   = ls_vttsvb-lifnz.
       ELSEIF ls_vttsvb-werkz IS NOT INITIAL.
         lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
