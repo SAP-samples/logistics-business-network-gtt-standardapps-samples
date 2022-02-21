@@ -1,9 +1,9 @@
-CLASS zcl_gtt_mia_ae_filler_shh_dep DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_mia_ae_filler_shh_bs
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_AE_FILLER_SHH_DEP definition
+  public
+  inheriting from ZCL_GTT_MIA_AE_FILLER_SHH_BS
+  create public .
 
-  PUBLIC SECTION.
+public section.
   PROTECTED SECTION.
 
     METHODS get_date_field
@@ -21,38 +21,38 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ae_filler_shh_dep IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_AE_FILLER_SHH_DEP IMPLEMENTATION.
 
 
-  METHOD get_date_field.
+  METHOD GET_DATE_FIELD.
 
     rv_field    = 'DATBG'.
 
   ENDMETHOD.
 
 
-  METHOD get_eventid.
+  METHOD GET_EVENTID.
 
-    rv_eventid  = zif_gtt_mia_app_constants=>cs_milestone-sh_departure.
+    rv_eventid  = zif_gtt_ef_constants=>cs_milestone-sh_departure.
 
   ENDMETHOD.
 
 
-  METHOD get_location_category.
+  METHOD GET_LOCATION_CATEGORY.
 
     rv_loccat   = zif_gtt_mia_app_constants=>cs_loccat-departure.
 
   ENDMETHOD.
 
 
-  METHOD get_time_field.
+  METHOD GET_TIME_FIELD.
 
     rv_field    = 'UATBG'.
 
   ENDMETHOD.
 
 
-  METHOD is_location_required.
+  METHOD IS_LOCATION_REQUIRED.
 
     rv_result   = abap_false.
 

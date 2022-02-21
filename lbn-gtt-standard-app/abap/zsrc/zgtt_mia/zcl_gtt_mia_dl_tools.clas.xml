@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_DL_TOOLS</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Inbound delivery data tools</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

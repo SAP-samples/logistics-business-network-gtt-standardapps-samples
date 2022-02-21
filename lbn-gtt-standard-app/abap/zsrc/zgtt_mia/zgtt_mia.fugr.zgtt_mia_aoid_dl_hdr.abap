@@ -12,7 +12,7 @@ FUNCTION zgtt_mia_aoid_dl_hdr.
 *"     REFERENCE(E_APPOBJID) TYPE  /SAPTRX/AOID
 *"----------------------------------------------------------------------
   TRY.
-      e_appobjid = zcl_gtt_mia_ef_performer=>get_app_obj_type_id(
+      e_appobjid = zcl_gtt_ef_performer=>get_app_obj_type_id(
         EXPORTING
           is_definition         = VALUE #( maintab = zif_gtt_mia_app_constants=>cs_tabledef-dl_header_new )
           io_tp_factory         = NEW zcl_gtt_mia_tp_factory_dlh( )

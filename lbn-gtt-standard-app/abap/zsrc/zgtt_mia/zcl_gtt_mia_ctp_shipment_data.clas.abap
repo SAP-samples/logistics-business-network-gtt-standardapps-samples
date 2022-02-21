@@ -1,68 +1,68 @@
-CLASS zcl_gtt_mia_ctp_shipment_data DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_CTP_SHIPMENT_DATA definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      BEGIN OF ts_likpdl,
+  types:
+    BEGIN OF ts_likpdl,
         tknum TYPE vttk-tknum,
         vbeln TYPE likp-vbeln,
         updkz TYPE likpvb-updkz,
       END OF ts_likpdl .
-    TYPES:
-      BEGIN OF ts_vbfaex,
+  types:
+    BEGIN OF ts_vbfaex,
         tknum TYPE vttk-tknum.
         INCLUDE TYPE vbfavb.
     TYPES: END OF ts_vbfaex .
-    TYPES:
-      BEGIN OF ts_likpex,
+  types:
+    BEGIN OF ts_likpex,
         tknum TYPE vttk-tknum.
         INCLUDE TYPE likp.
     TYPES: END OF ts_likpex .
-    TYPES:
-      BEGIN OF ts_stops,
+  types:
+    BEGIN OF ts_stops,
         tknum    TYPE vttk-tknum,
         stops    TYPE zif_gtt_mia_app_types=>tt_stops,
         watching TYPE zif_gtt_mia_app_types=>tt_dlv_watch_stops,
       END OF ts_stops .
-    TYPES ts_vttkvb TYPE vttkvb .
-    TYPES ts_lips TYPE lips .
-    TYPES ts_ee_rel TYPE zgtt_mia_ee_rel.
-    TYPES:
-      tt_vttkvb_srt TYPE SORTED TABLE OF ts_vttkvb
+  types TS_VTTKVB type VTTKVB .
+  types TS_LIPS type LIPS .
+  types TS_EE_REL type ZGTT_MIA_EE_REL .
+  types:
+    tt_vttkvb_srt TYPE SORTED TABLE OF ts_vttkvb
                              WITH UNIQUE KEY tknum .
-    TYPES:
-      tt_vttpvb_srt TYPE SORTED TABLE OF vttpvb
+  types:
+    tt_vttpvb_srt TYPE SORTED TABLE OF vttpvb
                              WITH NON-UNIQUE KEY tknum tpnum .
-    TYPES:
-      tt_vttsvb_srt TYPE SORTED TABLE OF vttsvb
+  types:
+    tt_vttsvb_srt TYPE SORTED TABLE OF vttsvb
                              WITH NON-UNIQUE KEY tknum tsnum .
-    TYPES:
-      tt_vtspvb_srt TYPE SORTED TABLE OF vtspvb
+  types:
+    tt_vtspvb_srt TYPE SORTED TABLE OF vtspvb
                              WITH UNIQUE KEY tknum tsnum tpnum
                              WITH NON-UNIQUE SORTED KEY vtts
                                COMPONENTS tknum tsnum .
-    TYPES:
-      tt_vbfaex_srt TYPE SORTED TABLE OF ts_vbfaex
+  types:
+    tt_vbfaex_srt TYPE SORTED TABLE OF ts_vbfaex
                              WITH NON-UNIQUE KEY tknum vbelv vbeln .
-    TYPES:
-      tt_likpex_srt TYPE SORTED TABLE OF ts_likpex
+  types:
+    tt_likpex_srt TYPE SORTED TABLE OF ts_likpex
                              WITH UNIQUE KEY tknum vbeln .
-    TYPES:
-      tt_likpdl_srt TYPE SORTED TABLE OF ts_likpdl
+  types:
+    tt_likpdl_srt TYPE SORTED TABLE OF ts_likpdl
                              WITH UNIQUE KEY vbeln tknum .
-    TYPES:
-      tt_lips_srt   TYPE SORTED TABLE OF ts_lips
+  types:
+    tt_lips_srt   TYPE SORTED TABLE OF ts_lips
                              WITH UNIQUE KEY vbeln posnr .
-    TYPES:
-      tt_stops_srt  TYPE SORTED TABLE OF ts_stops
+  types:
+    tt_stops_srt  TYPE SORTED TABLE OF ts_stops
                              WITH UNIQUE KEY tknum .
-    TYPES:
-      tt_ee_rel_srt TYPE SORTED TABLE OF ts_ee_rel
+  types:
+    tt_ee_rel_srt TYPE SORTED TABLE OF ts_ee_rel
                              WITH UNIQUE KEY appobjid .
-    TYPES:
-      BEGIN OF MESH ts_shipment_merge,
+  types:
+    BEGIN OF MESH ts_shipment_merge,
         vttk     TYPE tt_vttkvb_srt
                  ASSOCIATION vttp TO vttp ON tknum = tknum
                  ASSOCIATION vttp_dlt TO vttp_dlt ON tknum = tknum,
@@ -89,17 +89,17 @@ CLASS zcl_gtt_mia_ctp_shipment_data DEFINITION
         ee_rel   TYPE tt_ee_rel_srt,
       END OF MESH ts_shipment_merge .
 
-    METHODS constructor
-      IMPORTING
-        !is_shipment TYPE cxshipment
-      RAISING
-        cx_udm_message .
-    METHODS get_data
-      RETURNING
-        VALUE(rr_ship) TYPE REF TO data .
-    METHODS get_stops
-      RETURNING
-        VALUE(rr_stops) TYPE REF TO data .
+  methods CONSTRUCTOR
+    importing
+      !IS_SHIPMENT type CXSHIPMENT
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_DATA
+    returning
+      value(RR_SHIP) type ref to DATA .
+  methods GET_STOPS
+    returning
+      value(RR_STOPS) type ref to DATA .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -265,8 +265,8 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
                    <ls_vtts> TYPE vttsvb.
 
     LOOP AT is_ship-vttp_dlt ASSIGNING <ls_vttp>
-      WHERE updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert
-         OR updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+      WHERE updkz = zif_gtt_ef_constants=>cs_change_mode-insert
+         OR updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
 
       IF NOT line_exists( et_likp_delta[ KEY primary_key
                                          COMPONENTS tknum = <ls_vttp>-tknum
@@ -277,8 +277,8 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
     ENDLOOP.
 
     LOOP AT is_ship-vtsp_dlt ASSIGNING <ls_vtsp>
-      WHERE updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert
-         OR updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+      WHERE updkz = zif_gtt_ef_constants=>cs_change_mode-insert
+         OR updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
       ASSIGN is_ship-vtsp_dlt\vttp[ <ls_vtsp> ] TO <ls_vttp>.
 
       IF sy-subcs = 0.
@@ -404,13 +404,13 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
 
     LOOP AT is_ship-vttp_dlt ASSIGNING FIELD-SYMBOL(<ls_vttp_dlt>).
       " DELETED
-      IF <ls_vttp_dlt>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+      IF <ls_vttp_dlt>-updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
         DELETE et_vbfa
           WHERE vbeln = <ls_vttp_dlt>-tknum
             AND vbelv = <ls_vttp_dlt>-vbeln.
 
         " ADDED
-      ELSEIF <ls_vttp_dlt>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert AND
+      ELSEIF <ls_vttp_dlt>-updkz = zif_gtt_ef_constants=>cs_change_mode-insert AND
              NOT line_exists( et_vbfa[ KEY primary_key
                                        COMPONENTS tknum = <ls_vttp_dlt>-tknum
                                                   vbeln = <ls_vttp_dlt>-tknum
@@ -451,7 +451,7 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
     et_vtsp_full  = is_shipment-new_vtsp[].
 
     LOOP AT is_shipment-old_vtsp ASSIGNING <ls_vtsp>
-      WHERE updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+      WHERE updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
 
       et_vtsp_full  = VALUE #( BASE et_vtsp_full
                                ( <ls_vtsp> ) ).
@@ -459,8 +459,8 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
 
     LOOP AT et_vtsp_full ASSIGNING <ls_vtsp>
       WHERE tknum IN it_tknum
-        AND ( updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert
-           OR updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete ).
+        AND ( updkz = zif_gtt_ef_constants=>cs_change_mode-insert
+           OR updkz = zif_gtt_ef_constants=>cs_change_mode-delete ).
 
       et_vtsp_delta   = VALUE #( BASE et_vtsp_delta
                                  ( <ls_vtsp> ) ).
@@ -485,7 +485,7 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
 
     " add deleted shipments
     LOOP AT is_shipment-old_vttk ASSIGNING FIELD-SYMBOL(<ls_vttk_old>)
-      WHERE updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+      WHERE updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
 
       IF zcl_gtt_mia_sh_tools=>is_appropriate_type(
            ir_vttk = REF #( <ls_vttk_old> ) ) = abap_true.
@@ -506,7 +506,7 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
     et_vttp_full  = is_shipment-new_vttp[].
 
     LOOP AT is_shipment-old_vttp ASSIGNING <ls_vttp>
-      WHERE updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+      WHERE updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
 
       et_vttp_full  = VALUE #( BASE et_vttp_full
                                ( <ls_vttp> ) ).
@@ -514,8 +514,8 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
 
     LOOP AT et_vttp_full ASSIGNING <ls_vttp>
       WHERE tknum IN it_tknum
-        AND ( updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert
-           OR updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete ).
+        AND ( updkz = zif_gtt_ef_constants=>cs_change_mode-insert
+           OR updkz = zif_gtt_ef_constants=>cs_change_mode-delete ).
 
       et_vttp_delta   = VALUE #( BASE et_vttp_delta
                                  ( <ls_vttp> ) ).
@@ -532,7 +532,7 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
     et_vtts_full  = is_shipment-new_vtts[].
 
     LOOP AT is_shipment-old_vtts ASSIGNING <ls_vtts>
-      WHERE updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+      WHERE updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
 
       et_vtts_full  = VALUE #( BASE et_vtts_full
                                ( <ls_vtts> ) ).
@@ -670,8 +670,8 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
         <ls_stops>-watching = VALUE #( BASE <ls_stops>-watching
                                        ( LINES OF lt_watching ) ).
       ELSE.
-        MESSAGE e005(zgtt_mia) WITH |{ <ls_vbfa>-tknum }| 'STOPS' INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        MESSAGE e005(zgtt) WITH |{ <ls_vbfa>-tknum }| 'STOPS' INTO DATA(lv_dummy).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ENDLOOP.
 
@@ -689,11 +689,11 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
 
   METHOD is_vtts_changed.
 
-    IF is_vtts-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert OR
-       is_vtts-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+    IF is_vtts-updkz = zif_gtt_ef_constants=>cs_change_mode-insert OR
+       is_vtts-updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
       rv_result   = abap_true.
-    ELSEIF ( is_vtts-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-update OR
-             is_vtts-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-undefined ).
+    ELSEIF ( is_vtts-updkz = zif_gtt_ef_constants=>cs_change_mode-update OR
+             is_vtts-updkz = zif_gtt_ef_constants=>cs_change_mode-undefined ).
 
       READ TABLE is_shipment-old_vtts ASSIGNING FIELD-SYMBOL(<ls_vtts_old>)
         WITH KEY tknum = is_vtts-tknum

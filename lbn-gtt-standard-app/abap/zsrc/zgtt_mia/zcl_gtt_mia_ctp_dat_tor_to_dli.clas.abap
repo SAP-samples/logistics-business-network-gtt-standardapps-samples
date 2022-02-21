@@ -1,17 +1,17 @@
-CLASS zcl_gtt_mia_ctp_dat_tor_to_dli DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_CTP_DAT_TOR_TO_DLI definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS constructor
-      IMPORTING
-        !it_delivery_chng TYPE zif_gtt_mia_ctp_types=>tt_delivery_chng
-      RAISING
-        cx_udm_message .
-    METHODS get_delivery_items
-      RETURNING
-        VALUE(rr_delivery_item) TYPE REF TO data .
+  methods CONSTRUCTOR
+    importing
+      !IT_DELIVERY_CHNG type ZIF_GTT_MIA_CTP_TYPES=>TT_DELIVERY_CHNG
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_DELIVERY_ITEMS
+    returning
+      value(RR_DELIVERY_ITEM) type ref to DATA .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -149,10 +149,19 @@ CLASS ZCL_GTT_MIA_CTP_DAT_TOR_TO_DLI IMPLEMENTATION.
           et_fu_item = lt_fu_item ).
 
       LOOP AT lt_fu_item ASSIGNING FIELD-SYMBOL(<ls_fu_item>).
+        zcl_gtt_mia_tm_tools=>get_tor_root(
+          EXPORTING
+            iv_key = <ls_fu_item>-parent_key
+          IMPORTING
+            es_tor = DATA(ls_tor_data)
+        ).
+        IF ls_tor_data IS INITIAL OR ls_tor_data-lifecycle = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_canceled.
+          CONTINUE.
+        ENDIF.
+*        CATCH cx_udm_message.
         <ls_delivery_item>-fu_list  = VALUE #( BASE <ls_delivery_item>-fu_list (
-          tor_id  = zcl_gtt_mia_tm_tools=>get_tor_root_tor_id(
-                              iv_key = <ls_fu_item>-parent_key )
-          item_id   = <ls_fu_item>-item_id
+          tor_id        = ls_tor_data-tor_id
+          item_id       = <ls_fu_item>-item_id
           quantity     = <ls_fu_item>-qua_pcs_val
           quantityuom  = <ls_fu_item>-qua_pcs_uni
           product_id   = <ls_fu_item>-product_id

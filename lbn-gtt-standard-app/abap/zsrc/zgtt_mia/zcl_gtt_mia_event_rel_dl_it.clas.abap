@@ -1,43 +1,41 @@
-CLASS zcl_gtt_mia_event_rel_dl_it DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_mia_event_rel_dl_main
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_EVENT_REL_DL_IT definition
+  public
+  inheriting from ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+  create public .
 
-  PUBLIC SECTION.
-  PROTECTED SECTION.
+public section.
+protected section.
 
-    METHODS get_field_name
-      REDEFINITION .
-
-    METHODS get_object_status
-      REDEFINITION .
-
-    METHODS get_old_appobjid
-      REDEFINITION.
+  methods GET_FIELD_NAME
+    redefinition .
+  methods GET_OBJECT_STATUS
+    redefinition .
+  methods GET_OLD_APPOBJID
+    redefinition .
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_event_rel_dl_it IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_EVENT_REL_DL_IT IMPLEMENTATION.
 
 
-  METHOD get_field_name.
+  METHOD GET_FIELD_NAME.
 
     CASE iv_milestone.
-      WHEN zif_gtt_mia_app_constants=>cs_milestone-dl_put_away.
+      WHEN zif_gtt_ef_constants=>cs_milestone-dl_put_away.
         rv_field_name   = 'KOSTA'.
-      WHEN zif_gtt_mia_app_constants=>cs_milestone-dl_packing.
+      WHEN zif_gtt_ef_constants=>cs_milestone-dl_packing.
         rv_field_name   = 'PKSTA'.
-      WHEN zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt.
+      WHEN zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt.
         rv_field_name   = 'WBSTA'.
-      WHEN zif_gtt_mia_app_constants=>cs_milestone-dl_pod.
+      WHEN zif_gtt_ef_constants=>cs_milestone-dl_pod.
         rv_field_name   = COND #( WHEN iv_internal = abap_true
                                     THEN 'PDSTK'
                                     ELSE 'PDSTA' ).
       WHEN OTHERS.
-        MESSAGE e009(zgtt_mia) WITH iv_milestone INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        MESSAGE e009(zgtt) WITH iv_milestone INTO DATA(lv_dummy).
+        zcl_gtt_tools=>throw_exception( ).
     ENDCASE.
 
     IF iv_internal = abap_true.
@@ -47,7 +45,7 @@ CLASS zcl_gtt_mia_event_rel_dl_it IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_object_status.
+  METHOD GET_OBJECT_STATUS.
 
     TYPES: tt_vbup  TYPE STANDARD TABLE OF vbupvb.
 
@@ -59,11 +57,11 @@ CLASS zcl_gtt_mia_event_rel_dl_it IMPLEMENTATION.
 
     DATA(lv_fname)  = get_field_name( iv_milestone = iv_milestone ).
 
-    DATA(lv_vbeln)  = zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_vbeln)  = zcl_gtt_tools=>get_field_of_structure(
                         ir_struct_data = ms_app_objects-maintabref
                         iv_field_name  = 'VBELN' ).
 
-    DATA(lv_posnr)  = zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_posnr)  = zcl_gtt_tools=>get_field_of_structure(
                         ir_struct_data = ms_app_objects-maintabref
                         iv_field_name  = 'POSNR' ).
 
@@ -84,31 +82,32 @@ CLASS zcl_gtt_mia_event_rel_dl_it IMPLEMENTATION.
         IF <lv_value> IS ASSIGNED.
           rv_value  = <lv_value>.
         ELSE.
-          MESSAGE e001(zgtt_mia) WITH lv_fname 'VBUP' INTO lv_dummy.
-          zcl_gtt_mia_tools=>throw_exception( ).
+          MESSAGE e001(zgtt) WITH lv_fname 'VBUP' INTO lv_dummy.
+          zcl_gtt_tools=>throw_exception( ).
         ENDIF.
       ELSE.
-        MESSAGE e005(zgtt_mia)
+        MESSAGE e005(zgtt)
           WITH 'VBUP' |{ lv_vbeln }-{ lv_posnr }|
           INTO lv_dummy.
-        zcl_gtt_mia_tools=>throw_exception( ).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VBUP' INTO lv_dummy.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VBUP' INTO lv_dummy.
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
-  METHOD get_old_appobjid.
+
+  METHOD GET_OLD_APPOBJID.
     DATA: lv_vbeln TYPE lips-vbeln,
           lv_posnr TYPE lips-posnr.
 
-    lv_vbeln  = zcl_gtt_mia_tools=>get_field_of_structure(
+    lv_vbeln  = zcl_gtt_tools=>get_field_of_structure(
                   ir_struct_data = ms_app_objects-maintabref
                   iv_field_name  = 'VBELN' ).
 
-    lv_posnr  = zcl_gtt_mia_tools=>get_field_of_structure(
+    lv_posnr  = zcl_gtt_tools=>get_field_of_structure(
                   ir_struct_data = ms_app_objects-maintabref
                   iv_field_name  = 'POSNR' ).
 

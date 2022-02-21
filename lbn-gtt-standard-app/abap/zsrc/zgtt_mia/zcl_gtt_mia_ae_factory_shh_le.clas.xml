@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_AE_FACTORY_SHH_LE</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Actual Event factory for Loading End</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

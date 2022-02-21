@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_INTF" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOINTERF>
+    <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Constants for SOF</DESCRIPT>
+    <EXPOSURE>2</EXPOSURE>
+    <STATE>1</STATE>
+    <UNICODE>X</UNICODE>
+   </VSEOINTERF>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+     <CMPNAME>CS_DATE_TYPES</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Structure for date type</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+     <CMPNAME>CS_LOGS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Structure for logs</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+     <CMPNAME>CS_SYSTEM_FIELDS</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Structure for System fields</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+     <CMPNAME>CS_TABLEDEF</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Structure for Table defination</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+     <CMPNAME>CS_TRK_OBJ_TYPE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Structure for Tracking Object</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+     <CMPNAME>CV_BASE_BTD_TCO_INB_DLV</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Base Document of inbound delivery</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+     <CMPNAME>CV_BASE_BTD_TCO_OUTB_DLV</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Base Document of outbound delivery</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_SOF_CTP_TOR_CONSTANTS</CLSNAME>
+     <CMPNAME>CV_STRUCTURE_PKG</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Structure for Package</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

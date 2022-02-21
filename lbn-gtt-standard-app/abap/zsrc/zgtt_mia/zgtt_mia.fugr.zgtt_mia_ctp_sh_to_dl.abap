@@ -14,11 +14,11 @@ FUNCTION zgtt_mia_ctp_sh_to_dl.
       lo_head->send_idoc_data( ).
 
     CATCH cx_udm_message INTO DATA(lo_udm_message).
-      zcl_gtt_mia_tools=>log_exception(
+      zcl_gtt_tools=>log_exception(
         EXPORTING
           io_udm_message = lo_udm_message
-          iv_object      = zif_gtt_mia_ef_constants=>cs_logs-object-shipment_ctp
-          iv_subobject   = zif_gtt_mia_ef_constants=>cs_logs-subobject-shipment_ctp ).
+          iv_object      = zif_gtt_ef_constants=>cs_logs-object-shipment_ctp
+          iv_subobject   = zif_gtt_ef_constants=>cs_logs-subobject-shipment_ctp ).
   ENDTRY.
 
 ENDFUNCTION.

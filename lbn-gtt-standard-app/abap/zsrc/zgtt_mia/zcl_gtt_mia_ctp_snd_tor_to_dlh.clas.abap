@@ -1,6 +1,6 @@
 CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh DEFINITION
   PUBLIC
-  INHERITING FROM zcl_gtt_mia_ctp_snd
+  INHERITING FROM zcl_gtt_ctp_snd
   CREATE PRIVATE .
 
   PUBLIC SECTION.
@@ -18,9 +18,11 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh DEFINITION
   PROTECTED SECTION.
 
     METHODS get_aotype_restriction_id
-      REDEFINITION.
+        REDEFINITION .
     METHODS get_object_type
-      REDEFINITION.
+        REDEFINITION .
+    METHODS get_evtype_restriction_id
+        REDEFINITION .
   PRIVATE SECTION.
 
     CONSTANTS:
@@ -32,34 +34,34 @@ CLASS zcl_gtt_mia_ctp_snd_tor_to_dlh DEFINITION
 
     METHODS fill_idoc_appobj_ctabs
       IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
         !is_likp      TYPE zif_gtt_mia_ctp_types=>ts_delivery
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
       RAISING
         cx_udm_message.
     METHODS fill_idoc_control_data
       IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
         !is_delivery  TYPE zif_gtt_mia_ctp_types=>ts_delivery
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
       RAISING
         cx_udm_message .
     METHODS fill_idoc_exp_event
       IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
         !is_delivery  TYPE zif_gtt_mia_ctp_types=>ts_delivery
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
       RAISING
         cx_udm_message .
     METHODS fill_idoc_tracking_id
       IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
         !is_delivery  TYPE zif_gtt_mia_ctp_types=>ts_delivery
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
       RAISING
         cx_udm_message .
 ENDCLASS.
@@ -98,19 +100,19 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
         value     = is_delivery-fu_relevant
       )
       (
-        paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_bisiness_timezone
-        value     = zcl_gtt_mia_tools=>get_system_time_zone( )
+        paramname = zif_gtt_ef_constants=>cs_system_fields-actual_bisiness_timezone
+        value     = zcl_gtt_tools=>get_system_time_zone( )
       )
       (
-        paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_bisiness_datetime
+        paramname = zif_gtt_ef_constants=>cs_system_fields-actual_bisiness_datetime
         value     = |0{ sy-datum }{ sy-uzeit }|
       )
       (
-        paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_technical_timezone
-        value     = zcl_gtt_mia_tools=>get_system_time_zone( )
+        paramname = zif_gtt_ef_constants=>cs_system_fields-actual_technical_timezone
+        value     = zcl_gtt_tools=>get_system_time_zone( )
       )
       (
-        paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_technical_datetime
+        paramname = zif_gtt_ef_constants=>cs_system_fields-actual_technical_datetime
         value     = |0{ sy-datum }{ sy-uzeit }|
       )
     ).
@@ -119,8 +121,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
     LOOP AT lt_control ASSIGNING FIELD-SYMBOL(<ls_control>).
       <ls_control>-appsys     = mv_appsys.
       <ls_control>-appobjtype = is_aotype-aot_type.
-      <ls_control>-appobjid   = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
-                                  ir_likp = REF #( is_delivery ) ).
+      <ls_control>-appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+        ir_likp = REF #( is_delivery ) ).
     ENDLOOP.
 
     cs_idoc_data-control  = VALUE #( BASE cs_idoc_data-control
@@ -162,10 +164,10 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
           LOOP AT lt_exp_event ASSIGNING FIELD-SYMBOL(<ls_exp_event>).
             <ls_exp_event>-appsys         = mv_appsys.
             <ls_exp_event>-appobjtype     = is_aotype-aot_type.
-            <ls_exp_event>-appobjid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
-                                              ir_likp = REF #( is_delivery ) ).
+            <ls_exp_event>-appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+              ir_likp = REF #( is_delivery ) ).
             <ls_exp_event>-language       = sy-langu.
-            <ls_exp_event>-evt_exp_tzone  = zcl_gtt_mia_tools=>get_system_time_zone( ).
+            <ls_exp_event>-evt_exp_tzone  = zcl_gtt_tools=>get_system_time_zone( ).
           ENDLOOP.
 
           cs_idoc_data-exp_event = VALUE #( BASE cs_idoc_data-exp_event
@@ -195,26 +197,9 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
 
   METHOD fill_idoc_tracking_id.
 
-    DATA:
-      lv_tmp_dlvhdtrxcod TYPE /saptrx/trxcod,
-      lv_dlvhdtrxcod     TYPE /saptrx/trxcod.
+    DATA:lv_dlvhdtrxcod     TYPE /saptrx/trxcod.
 
-    lv_dlvhdtrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_number.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type        = is_aotype-aot_type
-            iv_app         = 'MIA'
-          IMPORTING
-            ev_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
-
-        IF lv_tmp_dlvhdtrxcod IS NOT INITIAL.
-          lv_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
+    lv_dlvhdtrxcod = zif_gtt_ef_constants=>cs_trxcod-dl_number.
 
     " Delivery Header
     cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
@@ -225,7 +210,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
       trxcod      = lv_dlvhdtrxcod
       trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
                       ir_likp = REF #( is_delivery ) )
-      timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
+      timzon      = zcl_gtt_tools=>get_system_time_zone( )
     ) ).
 
   ENDMETHOD.
@@ -238,11 +223,16 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_evtype_restriction_id.
+    CLEAR: rv_rst_id.
+  ENDMETHOD.
+
+
   METHOD get_instance.
 
-    DATA(lt_trk_obj_type) = VALUE zif_gtt_mia_ctp_tor_types=>tt_trk_obj_type(
-       ( zif_gtt_mia_ef_constants=>cs_trk_obj_type-tms_tor )
-       ( zif_gtt_mia_ef_constants=>cs_trk_obj_type-esc_deliv )
+    DATA(lt_trk_obj_type) = VALUE zif_gtt_ctp_types=>tt_trk_obj_type(
+       ( zif_gtt_ef_constants=>cs_trk_obj_type-tms_tor )
+       ( zif_gtt_ef_constants=>cs_trk_obj_type-esc_deliv )
     ).
 
     IF is_gtt_enabled( it_trk_obj_type = lt_trk_obj_type ) = abap_true.
@@ -250,8 +240,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
 
       ro_sender->initiate( ).
     ELSE.
-      MESSAGE e006(zgtt_mia) INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e006(zgtt) INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -259,14 +249,14 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
 
   METHOD get_object_type.
 
-    rv_objtype  = zif_gtt_mia_ef_constants=>cs_trk_obj_type-esc_deliv.
+    rv_objtype  = zif_gtt_ef_constants=>cs_trk_obj_type-esc_deliv.
 
   ENDMETHOD.
 
 
   METHOD prepare_idoc_data.
 
-    DATA: ls_idoc_data    TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data.
+    DATA: ls_idoc_data    TYPE zif_gtt_ctp_types=>ts_idoc_data.
 
     DATA(lr_dlv)   = io_dl_head_data->get_deliveries( ).
 

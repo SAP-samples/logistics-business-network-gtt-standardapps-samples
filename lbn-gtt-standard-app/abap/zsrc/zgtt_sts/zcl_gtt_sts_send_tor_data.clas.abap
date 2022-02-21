@@ -132,7 +132,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
     " F.O./F.B./F.U. to Outbound DLV CrossTP update
     TRY.
-        CALL FUNCTION 'ZGTT_SOF_CTP_TOR_TO_DL'
+        CALL FUNCTION 'ZGTT_SSOF_CTP_TOR_TO_DL'
           EXPORTING
             it_tor_root_sstring        = it_tor_root_sstring
             it_tor_root_before_sstring = it_tor_root_before_sstring

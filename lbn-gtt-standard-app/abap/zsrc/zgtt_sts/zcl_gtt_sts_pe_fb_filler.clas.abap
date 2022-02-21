@@ -89,6 +89,16 @@ CLASS ZCL_GTT_STS_PE_FB_FILLER IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
+    popu(
+      EXPORTING
+        iv_tor_id       = lv_tor_id
+        it_stop         = lt_stop
+        it_loc_addr     = lt_loc_address
+        it_stop_points  = lt_stop_points
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
     shp_departure(
       EXPORTING
         iv_tor_id       = lv_tor_id

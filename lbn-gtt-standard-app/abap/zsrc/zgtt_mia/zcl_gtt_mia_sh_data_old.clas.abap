@@ -1,30 +1,30 @@
-CLASS zcl_gtt_mia_sh_data_old DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_SH_DATA_OLD definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS constructor
-      IMPORTING
-        !io_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters
-      RAISING
-        cx_udm_message .
-    METHODS get_vttk
-      RETURNING
-        VALUE(rr_vttk) TYPE REF TO data .
-    METHODS get_vttp
-      RETURNING
-        VALUE(rr_vttp) TYPE REF TO data .
-    METHODS get_vtts
-      RETURNING
-        VALUE(rr_vtts) TYPE REF TO data .
-    METHODS get_vtsp
-      RETURNING
-        VALUE(rr_vtsp) TYPE REF TO data .
+  methods CONSTRUCTOR
+    importing
+      !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_VTTK
+    returning
+      value(RR_VTTK) type ref to DATA .
+  methods GET_VTTP
+    returning
+      value(RR_VTTP) type ref to DATA .
+  methods GET_VTTS
+    returning
+      value(RR_VTTS) type ref to DATA .
+  methods GET_VTSP
+    returning
+      value(RR_VTSP) type ref to DATA .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
+    DATA mo_ef_parameters TYPE REF TO zif_gtt_ef_parameters .
     DATA mt_vttk TYPE zif_gtt_mia_app_types=>tt_vttkvb .
     DATA mt_vttp TYPE zif_gtt_mia_app_types=>tt_vttpvb .
     DATA mt_vtts TYPE zif_gtt_mia_app_types=>tt_vttsvb .
@@ -49,10 +49,10 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_sh_data_old IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_SH_DATA_OLD IMPLEMENTATION.
 
 
-  METHOD constructor.
+  METHOD CONSTRUCTOR.
 
     mo_ef_parameters  = io_ef_parameters.
 
@@ -61,35 +61,35 @@ CLASS zcl_gtt_mia_sh_data_old IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_vtsp.
+  METHOD GET_VTSP.
 
     rr_vtsp   = REF #( mt_vtsp ).
 
   ENDMETHOD.
 
 
-  METHOD get_vttk.
+  METHOD GET_VTTK.
 
     rr_vttk   = REF #( mt_vttk ).
 
   ENDMETHOD.
 
 
-  METHOD get_vttp.
+  METHOD GET_VTTP.
 
     rr_vttp   = REF #( mt_vttp ).
 
   ENDMETHOD.
 
 
-  METHOD get_vtts.
+  METHOD GET_VTTS.
 
     rr_vtts   = REF #( mt_vtts ).
 
   ENDMETHOD.
 
 
-  METHOD init.
+  METHOD INIT.
 
     init_vttk( ).
 
@@ -102,7 +102,7 @@ CLASS zcl_gtt_mia_sh_data_old IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD init_vtsp.
+  METHOD INIT_VTSP.
 
     FIELD-SYMBOLS: <lt_vtsp_new> TYPE zif_gtt_mia_app_types=>tt_vtspvb,
                    <lt_vtsp_old> TYPE zif_gtt_mia_app_types=>tt_vtspvb.
@@ -136,14 +136,14 @@ CLASS zcl_gtt_mia_sh_data_old IMPLEMENTATION.
         ENDIF.
       ENDLOOP.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTSP' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTSP' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD init_vttk.
+  METHOD INIT_VTTK.
 
     FIELD-SYMBOLS: <lt_vttk_new> TYPE zif_gtt_mia_app_types=>tt_vttkvb,
                    <lt_vttk_old> TYPE zif_gtt_mia_app_types=>tt_vttkvb.
@@ -175,14 +175,14 @@ CLASS zcl_gtt_mia_sh_data_old IMPLEMENTATION.
         ENDIF.
       ENDLOOP.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTK' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTK' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD init_vttp.
+  METHOD INIT_VTTP.
 
     FIELD-SYMBOLS: <lt_vttp_new> TYPE zif_gtt_mia_app_types=>tt_vttpvb,
                    <lt_vttp_old> TYPE zif_gtt_mia_app_types=>tt_vttpvb.
@@ -215,14 +215,14 @@ CLASS zcl_gtt_mia_sh_data_old IMPLEMENTATION.
         ENDIF.
       ENDLOOP.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTP' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTP' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD init_vtts.
+  METHOD INIT_VTTS.
 
     FIELD-SYMBOLS: <lt_vtts_new> TYPE zif_gtt_mia_app_types=>tt_vttsvb,
                    <lt_vtts_old> TYPE zif_gtt_mia_app_types=>tt_vttsvb.
@@ -255,8 +255,8 @@ CLASS zcl_gtt_mia_sh_data_old IMPLEMENTATION.
         ENDIF.
       ENDLOOP.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTS' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTS' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.

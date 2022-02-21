@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_EVENT_REL_DL_MAIN</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Abstract class for DL event relevence check</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

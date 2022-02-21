@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_AE_FILLER_SHH_BS</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Abstract class of Stop related Actual Event filler</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

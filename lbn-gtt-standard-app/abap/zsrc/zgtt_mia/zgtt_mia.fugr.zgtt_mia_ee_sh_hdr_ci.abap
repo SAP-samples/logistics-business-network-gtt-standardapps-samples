@@ -62,7 +62,7 @@ FUNCTION zgtt_mia_ee_sh_hdr_ci.
         ls_bapiret     TYPE bapiret2.
 
   TRY.
-      zcl_gtt_mia_ae_performer=>get_event_data(
+      zcl_gtt_ae_performer=>get_event_data(
         EXPORTING
           is_definition           = VALUE #( maintab = zif_gtt_mia_app_constants=>cs_tabledef-sh_header_new )
           io_ae_factory           = NEW zcl_gtt_mia_ae_factory_shh_ci( )
@@ -80,7 +80,7 @@ FUNCTION zgtt_mia_ee_sh_hdr_ci.
       ).
 
     CATCH cx_udm_message INTO lo_udm_message.
-      zcl_gtt_mia_tools=>get_errors_log(
+      zcl_gtt_tools=>get_errors_log(
         EXPORTING
           io_umd_message = lo_udm_message
           iv_appsys      = i_appsys
@@ -92,9 +92,9 @@ FUNCTION zgtt_mia_ee_sh_hdr_ci.
 
       " throw corresponding exception
       CASE lo_udm_message->textid.
-        WHEN zif_gtt_mia_ef_constants=>cs_errors-stop_processing.
+        WHEN zif_gtt_ef_constants=>cs_errors-stop_processing.
           RAISE stop_processing.
-        WHEN zif_gtt_mia_ef_constants=>cs_errors-table_determination.
+        WHEN zif_gtt_ef_constants=>cs_errors-table_determination.
           RAISE event_data_error.
       ENDCASE.
   ENDTRY.

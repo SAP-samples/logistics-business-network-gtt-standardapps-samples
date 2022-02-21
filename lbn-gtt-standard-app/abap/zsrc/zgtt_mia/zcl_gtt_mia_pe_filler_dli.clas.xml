@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_PE_FILLER_DLI</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Extractor for planned event of DLI</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

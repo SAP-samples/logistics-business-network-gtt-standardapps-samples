@@ -59,6 +59,8 @@ public section.
         req_doc_no            TYPE tt_req_doc_number,
         req_doc_first_stop    TYPE tt_stop,
         req_doc_last_stop     TYPE tt_stop,
+        resource_tp_line_cnt  TYPE tt_resource_tp_line_cnt,
+        resource_tp_id        TYPE tt_resource_tp_id,
       END OF ts_fo_header .
 
     METHODS get_data_from_root
@@ -326,6 +328,14 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       APPEND '' TO <ls_freight_order>-req_doc_line_no.
     ENDIF.
 
+    get_resource_info(
+      EXPORTING
+        iv_old_data             = iv_old_data
+        ir_root                 = lr_maintabref
+      CHANGING
+        ct_resource_tp_line_cnt = <ls_freight_order>-resource_tp_line_cnt
+        ct_resource_tp_id       = <ls_freight_order>-resource_tp_id ).
+
   ENDMETHOD.
 
 
@@ -358,20 +368,6 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
     ENDIF.
 
     lv_fotrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_number.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type      = is_app_object-appobjtype
-            iv_app       = 'STS'
-          IMPORTING
-            ev_shptrxcod = lv_tmp_fotrxcod.
-        IF lv_tmp_fotrxcod IS NOT INITIAL.
-          lv_fotrxcod = lv_tmp_fotrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
 
     add_track_id_data(
       EXPORTING

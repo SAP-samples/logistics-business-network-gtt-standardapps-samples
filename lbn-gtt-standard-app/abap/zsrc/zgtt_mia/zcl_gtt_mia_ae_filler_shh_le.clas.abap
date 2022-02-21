@@ -1,40 +1,40 @@
-CLASS zcl_gtt_mia_ae_filler_shh_le DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_mia_ae_filler_shh_bh
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_AE_FILLER_SHH_LE definition
+  public
+  inheriting from ZCL_GTT_MIA_AE_FILLER_SHH_BH
+  create public .
 
-  PUBLIC SECTION.
-  PROTECTED SECTION.
+public section.
+protected section.
 
-    METHODS get_eventid
-        REDEFINITION .
-    METHODS get_date_field
-        REDEFINITION .
-    METHODS get_time_field
-        REDEFINITION .
+  methods GET_DATE_FIELD
+    redefinition .
+  methods GET_EVENTID
+    redefinition .
+  methods GET_TIME_FIELD
+    redefinition .
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ae_filler_shh_le IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_AE_FILLER_SHH_LE IMPLEMENTATION.
 
 
-  METHOD get_date_field.
+  METHOD GET_DATE_FIELD.
 
     rv_field  = 'DALEN'.
 
   ENDMETHOD.
 
 
-  METHOD get_eventid.
+  METHOD GET_EVENTID.
 
-    rv_eventid  = zif_gtt_mia_app_constants=>cs_milestone-sh_load_end.
+    rv_eventid  = zif_gtt_ef_constants=>cs_milestone-sh_load_end.
 
   ENDMETHOD.
 
 
-  METHOD get_time_field.
+  METHOD GET_TIME_FIELD.
 
     rv_field  = 'UALEN'.
 

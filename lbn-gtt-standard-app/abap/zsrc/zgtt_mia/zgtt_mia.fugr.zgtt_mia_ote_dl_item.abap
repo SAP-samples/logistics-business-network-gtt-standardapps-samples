@@ -20,7 +20,7 @@ FUNCTION zgtt_mia_ote_dl_item.
         ls_bapiret     TYPE bapiret2.
 
   TRY.
-      zcl_gtt_mia_ef_performer=>get_control_data(
+      zcl_gtt_ef_performer=>get_control_data(
         EXPORTING
           is_definition         = VALUE #(
                                     maintab   = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new
@@ -35,7 +35,7 @@ FUNCTION zgtt_mia_ote_dl_item.
           ct_control_data       = e_control_data[] ).
 
     CATCH cx_udm_message INTO lo_udm_message.
-      zcl_gtt_mia_tools=>get_errors_log(
+      zcl_gtt_tools=>get_errors_log(
         EXPORTING
           io_umd_message = lo_udm_message
           iv_appsys      = i_appsys
@@ -47,9 +47,9 @@ FUNCTION zgtt_mia_ote_dl_item.
 
       " throw corresponding exception
       CASE lo_udm_message->textid.
-        WHEN zif_gtt_mia_ef_constants=>cs_errors-stop_processing.
+        WHEN zif_gtt_ef_constants=>cs_errors-stop_processing.
           RAISE stop_processing.
-        WHEN zif_gtt_mia_ef_constants=>cs_errors-table_determination.
+        WHEN zif_gtt_ef_constants=>cs_errors-table_determination.
           RAISE table_determination_error.
       ENDCASE.
   ENDTRY.

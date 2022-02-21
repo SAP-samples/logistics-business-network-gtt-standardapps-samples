@@ -1,11 +1,11 @@
-CLASS zcl_gtt_mia_sh_stops_events DEFINITION
-  PUBLIC
-  CREATE PRIVATE .
+class ZCL_GTT_MIA_SH_STOPS_EVENTS definition
+  public
+  create private .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      BEGIN OF ts_event_info,
+  types:
+    BEGIN OF ts_event_info,
         appsys        TYPE /saptrx/applsystem,
         appobjtype    TYPE /saptrx/aotype,
         appobjid      TYPE /saptrx/aoid,
@@ -13,21 +13,21 @@ CLASS zcl_gtt_mia_sh_stops_events DEFINITION
         evt_exp_tzone TYPE /saptrx/timezone,
       END OF ts_event_info .
 
-    CLASS-METHODS get_instance_for_delivery
-      IMPORTING
-        !iv_appobjid              TYPE /saptrx/aoid
-        !iv_vbeln                 TYPE vbeln_vl
-        !iv_posnr                 TYPE posnr_vl DEFAULT 0
-        !io_ef_parameters         TYPE REF TO zif_gtt_mia_ef_parameters
-      RETURNING
-        VALUE(ro_sh_stops_events) TYPE REF TO zcl_gtt_mia_sh_stops_events
-      RAISING
-        cx_udm_message .
-    METHODS get_planned_events
-      EXPORTING
-        !et_exp_event TYPE /saptrx/bapi_trk_ee_tab
-      RAISING
-        cx_udm_message .
+  class-methods GET_INSTANCE_FOR_DELIVERY
+    importing
+      !IV_APPOBJID type /SAPTRX/AOID
+      !IV_VBELN type VBELN_VL
+      !IV_POSNR type POSNR_VL default 0
+      !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS
+    returning
+      value(RO_SH_STOPS_EVENTS) type ref to ZCL_GTT_MIA_SH_STOPS_EVENTS
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_PLANNED_EVENTS
+    exporting
+      !ET_EXP_EVENT type /SAPTRX/BAPI_TRK_EE_TAB
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -67,7 +67,7 @@ CLASS zcl_gtt_mia_sh_stops_events DEFINITION
     CLASS-METHODS get_event_info
       IMPORTING
         !iv_appobjid         TYPE /saptrx/aoid
-        !io_ef_parameters    TYPE REF TO zif_gtt_mia_ef_parameters
+        !io_ef_parameters    TYPE REF TO zif_gtt_ef_parameters
       RETURNING
         VALUE(rs_event_info) TYPE ts_event_info
       RAISING
@@ -94,7 +94,7 @@ ENDCLASS.
 CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
 
 
-  METHOD constructor.
+  METHOD CONSTRUCTOR.
 
     mv_vbeln      = iv_vbeln.
     ms_event_info = is_event_info.
@@ -104,7 +104,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_delivery_items.
+  METHOD GET_DELIVERY_ITEMS.
 
     DATA: lt_vbeln TYPE RANGE OF vbeln_vl,
           lt_posnr TYPE RANGE OF posnr_vl.
@@ -129,15 +129,15 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
         APPEND <ls_lips> TO et_lips.
       ENDLOOP.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'LIPS' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'LIPS' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
 
   ENDMETHOD.
 
 
-  METHOD get_event_info.
+  METHOD GET_EVENT_INFO.
 
 
     rs_event_info = VALUE #(
@@ -145,20 +145,20 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
       appobjtype    = io_ef_parameters->get_app_obj_types( )-aotype
       appobjid      = iv_appobjid
       language      = sy-langu
-      evt_exp_tzone = zcl_gtt_mia_tools=>get_system_time_zone( )
+      evt_exp_tzone = zcl_gtt_tools=>get_system_time_zone( )
     ).
 
   ENDMETHOD.
 
 
-  METHOD get_instance_for_delivery.
+  METHOD GET_INSTANCE_FOR_DELIVERY.
 
     DATA: lt_stops_info TYPE tt_stops_info,
           lt_lips       TYPE zif_gtt_mia_app_types=>tt_lipsvb.
 
-    DATA(ls_event_info)  = get_event_info(
-                              iv_appobjid      = iv_appobjid
-                              io_ef_parameters = io_ef_parameters ).
+    DATA(ls_event_info) = get_event_info(
+      iv_appobjid      = iv_appobjid
+      io_ef_parameters = io_ef_parameters ).
 
     get_stops_info_for_delivery(
       EXPORTING
@@ -175,7 +175,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
       IMPORTING
         et_lips  = lt_lips ).
 
-    ro_sh_stops_events    = NEW zcl_gtt_mia_sh_stops_events(
+    ro_sh_stops_events = NEW zcl_gtt_mia_sh_stops_events(
       iv_vbeln      = iv_vbeln
       iv_posnr      = iv_posnr
       is_event_info = ls_event_info
@@ -185,7 +185,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_planned_events.
+  METHOD GET_PLANNED_EVENTS.
 
     DATA: lt_exp_event    TYPE /saptrx/bapi_trk_ee_tab,
           lv_milestonenum TYPE /saptrx/seq_num.
@@ -204,11 +204,11 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
           " Departure / Arrival
           lt_exp_event = VALUE #( BASE lt_exp_event (
               milestone         = COND #( WHEN <ls_watching>-loccat = zif_gtt_mia_app_constants=>cs_loccat-departure
-                                            THEN zif_gtt_mia_app_constants=>cs_milestone-sh_departure
-                                            ELSE zif_gtt_mia_app_constants=>cs_milestone-sh_arrival )
+                                            THEN zif_gtt_ef_constants=>cs_milestone-sh_departure
+                                            ELSE zif_gtt_ef_constants=>cs_milestone-sh_arrival )
               locid2            = <ls_stops>-stopid_txt
               loctype           = <ls_stops>-loctype
-              locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
+              locid1            = zcl_gtt_tools=>get_pretty_location_id(
                                     iv_locid   = <ls_stops>-locid
                                     iv_loctype = <ls_stops>-loctype )
               evt_exp_datetime  = <ls_stops>-pln_evt_datetime
@@ -220,14 +220,14 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
 
           " POD
           IF <ls_stops>-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
-             <ls_stops>-loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant AND
+             <ls_stops>-loctype = zif_gtt_ef_constants=>cs_loc_types-plant AND
              is_pod_relevant( iv_locid = <ls_stops>-locid ) = abap_true.
 
             lt_exp_event = VALUE #( BASE lt_exp_event (
-                milestone         = zif_gtt_mia_app_constants=>cs_milestone-sh_pod
+                milestone         = zif_gtt_ef_constants=>cs_milestone-sh_pod
                 locid2            = <ls_stops>-stopid_txt
                 loctype           = <ls_stops>-loctype
-                locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
+                locid1            = zcl_gtt_tools=>get_pretty_location_id(
                                       iv_locid   = <ls_stops>-locid
                                       iv_loctype = <ls_stops>-loctype )
                 evt_exp_datetime  = <ls_stops>-pln_evt_datetime
@@ -238,10 +238,10 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
             ADD 1 TO lv_milestonenum.
           ENDIF.
         ELSE.
-          MESSAGE e005(zgtt_mia)
+          MESSAGE e005(zgtt)
             WITH |{ <ls_watching>-stopid }{ <ls_watching>-loccat }| 'STOPS'
             INTO DATA(lv_dummy).
-          zcl_gtt_mia_tools=>throw_exception( ).
+          zcl_gtt_tools=>throw_exception( ).
         ENDIF.
       ENDLOOP.
     ENDLOOP.
@@ -259,7 +259,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_shipments_for_delivery.
+  METHOD GET_SHIPMENTS_FOR_DELIVERY.
 
     DATA: ls_comwa6 TYPE vbco6,
           lt_vbfas  TYPE STANDARD TABLE OF vbfas.
@@ -293,7 +293,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_stops_info_for_delivery.
+  METHOD GET_STOPS_INFO_FOR_DELIVERY.
 
     DATA: lt_tknum      TYPE tt_tknum,
           ls_stops_info TYPE ts_stops_info.
@@ -327,7 +327,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD is_pod_relevant.
+  METHOD IS_POD_RELEVANT.
 
     CLEAR: rv_result.
 

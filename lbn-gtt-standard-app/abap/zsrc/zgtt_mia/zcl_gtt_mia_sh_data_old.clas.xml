@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_SH_DATA_OLD</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Class for Shipment old data</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

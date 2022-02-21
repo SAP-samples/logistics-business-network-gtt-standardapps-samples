@@ -14,7 +14,8 @@ INTERFACE zif_gtt_mia_ctp_types
     END OF ts_fu_list .
   TYPES:
     BEGIN OF ts_fu_id,
-      tor_id TYPE /scmtms/tor_id,
+      tor_id    TYPE /scmtms/tor_id,
+      lifecycle TYPE  /scmtms/tor_lc_status,
     END OF ts_fu_id .
   TYPES:
     tt_fu_list  TYPE STANDARD TABLE OF ts_fu_list

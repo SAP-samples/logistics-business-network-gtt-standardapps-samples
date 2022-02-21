@@ -35,6 +35,7 @@ INTERFACE zif_gtt_sts_constants
       fo_shp_pod       TYPE /saptrx/appl_event_tag VALUE 'POD',
       fo_unload_start  TYPE /saptrx/appl_event_tag VALUE 'UNLOAD_BEGIN',
       fo_unload_end    TYPE /saptrx/appl_event_tag VALUE 'UNLOAD_END',
+      fo_popu          TYPE /saptrx/appl_event_tag VALUE 'POPU',
     END OF cs_milestone .
   CONSTANTS:
     BEGIN OF cs_location_type,

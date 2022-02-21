@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_AE_FILLER_SHH_CI</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Actual Event filler for Checking-in</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

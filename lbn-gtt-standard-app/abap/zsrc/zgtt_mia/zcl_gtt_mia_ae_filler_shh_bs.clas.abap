@@ -1,23 +1,23 @@
-CLASS zcl_gtt_mia_ae_filler_shh_bs DEFINITION
-  PUBLIC
-  ABSTRACT
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_AE_FILLER_SHH_BS definition
+  public
+  abstract
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_gtt_mia_ae_filler .
+  interfaces ZIF_GTT_AE_FILLER .
 
-    METHODS constructor
-      IMPORTING
-        !io_ae_parameters TYPE REF TO zif_gtt_mia_ae_parameters
-      RAISING
-        cx_udm_message .
+  methods CONSTRUCTOR
+    importing
+      !IO_AE_PARAMETERS type ref to ZIF_GTT_AE_PARAMETERS
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
 
     METHODS get_date_field
       ABSTRACT
       RETURNING
-        VALUE(rv_field) TYPE zif_gtt_mia_ef_types=>tv_field_name .
+        VALUE(rv_field) TYPE zif_gtt_ef_types=>tv_field_name .
     METHODS get_eventid
       ABSTRACT
       RETURNING
@@ -29,7 +29,7 @@ CLASS zcl_gtt_mia_ae_filler_shh_bs DEFINITION
     METHODS get_time_field
       ABSTRACT
       RETURNING
-        VALUE(rv_field) TYPE zif_gtt_mia_ef_types=>tv_field_name .
+        VALUE(rv_field) TYPE zif_gtt_ef_types=>tv_field_name .
     METHODS is_location_required
       ABSTRACT
       RETURNING
@@ -43,7 +43,7 @@ CLASS zcl_gtt_mia_ae_filler_shh_bs DEFINITION
         posnr TYPE posnr_vl,
       END OF ts_dl_item_id .
 
-    DATA mo_ae_parameters TYPE REF TO zif_gtt_mia_ae_parameters .
+    DATA mo_ae_parameters TYPE REF TO zif_gtt_ae_parameters .
     DATA mt_vtts_new TYPE tt_vttsvb .
     DATA mt_vtts_old TYPE tt_vttsvb .
 
@@ -74,7 +74,7 @@ ENDCLASS.
 CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
 
 
-  METHOD constructor.
+  METHOD CONSTRUCTOR.
 
     mo_ae_parameters  = io_ae_parameters.
 
@@ -96,7 +96,7 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_copy_of_vtts_table.
+  METHOD GET_COPY_OF_VTTS_TABLE.
 
     FIELD-SYMBOLS: <lt_vtts>  TYPE tt_vttsvb.
 
@@ -114,19 +114,19 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_stops_from_shipment.
+  METHOD GET_STOPS_FROM_SHIPMENT.
 
     DATA: lt_vtts  TYPE vttsvb_tab.
 
-    DATA(lv_tknum) = CONV tknum( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_tknum) = CONV tknum( zcl_gtt_tools=>get_field_of_structure(
                                    ir_struct_data = is_events-maintabref
                                    iv_field_name  = 'TKNUM' ) ).
-    DATA(lr_vttp)  = mo_ae_parameters->get_appl_table(
-                      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
-    DATA(lr_vtts)  = mo_ae_parameters->get_appl_table(
-                      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_stage_new ).
-    DATA(lr_vtsp)  = mo_ae_parameters->get_appl_table(
-                      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_stage_new ).
+    DATA(lr_vttp) = mo_ae_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
+    DATA(lr_vtts) = mo_ae_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_stage_new ).
+    DATA(lr_vtsp) = mo_ae_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_stage_new ).
 
     FIELD-SYMBOLS: <lt_vttp> TYPE vttpvb_tab,
                    <lt_vtts> TYPE vttsvb_tab,
@@ -145,25 +145,25 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
 
       zcl_gtt_mia_sh_tools=>get_stops_from_shipment(
         EXPORTING
-          iv_tknum  = lv_tknum
-          it_vtts   = lt_vtts
-          it_vtsp   = <lt_vtsp>
-          it_vttp   = <lt_vttp>
+          iv_tknum = lv_tknum
+          it_vtts  = lt_vtts
+          it_vtsp  = <lt_vtsp>
+          it_vttp  = <lt_vttp>
         IMPORTING
-          et_stops  = et_stops ).
+          et_stops = et_stops ).
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTS' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTS' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD is_stop_changed.
+  METHOD IS_STOP_CHANGED.
 
     FIELD-SYMBOLS: <lv_edate> TYPE d.
 
-    rv_result = zif_gtt_mia_ef_constants=>cs_condition-false.
+    rv_result = zif_gtt_ef_constants=>cs_condition-false.
 
     READ TABLE mt_vtts_new ASSIGNING FIELD-SYMBOL(<ls_vtts_new>)
       WITH KEY tknum = iv_tknum
@@ -172,23 +172,23 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
 
     IF sy-subrc = 0.
       CASE <ls_vtts_new>-updkz.
-        WHEN zif_gtt_mia_ef_constants=>cs_change_mode-insert.
+        WHEN zif_gtt_ef_constants=>cs_change_mode-insert.
 
           ASSIGN COMPONENT get_date_field(  ) OF STRUCTURE <ls_vtts_new>
             TO <lv_edate>.
 
           IF <lv_edate> IS ASSIGNED.
             rv_result   = COND #( WHEN <lv_edate> IS NOT INITIAL
-                                    THEN zif_gtt_mia_ef_constants=>cs_condition-true
-                                    ELSE zif_gtt_mia_ef_constants=>cs_condition-false ).
+                                    THEN zif_gtt_ef_constants=>cs_condition-true
+                                    ELSE zif_gtt_ef_constants=>cs_condition-false ).
           ELSE.
-            MESSAGE e001(zgtt_mia) WITH get_date_field(  ) 'VTTS'
+            MESSAGE e001(zgtt) WITH get_date_field(  ) 'VTTS'
               INTO DATA(lv_dummy).
-            zcl_gtt_mia_tools=>throw_exception( ).
+            zcl_gtt_tools=>throw_exception( ).
           ENDIF.
 
-        WHEN zif_gtt_mia_ef_constants=>cs_change_mode-update OR
-             zif_gtt_mia_ef_constants=>cs_change_mode-undefined.
+        WHEN zif_gtt_ef_constants=>cs_change_mode-update OR
+             zif_gtt_ef_constants=>cs_change_mode-undefined.
 
           ASSIGN COMPONENT get_date_field(  ) OF STRUCTURE <ls_vtts_new>
             TO <lv_edate>.
@@ -202,7 +202,7 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
               BINARY SEARCH.
 
             IF sy-subrc = 0.
-              rv_result   = zcl_gtt_mia_tools=>are_fields_different(
+              rv_result   = zcl_gtt_tools=>are_fields_different(
                               ir_data1  = REF #( <ls_vtts_new> )
                               ir_data2  = REF #( <ls_vtts_old> )
                               it_fields = VALUE #( ( get_date_field( ) )
@@ -211,28 +211,28 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
           ENDIF.
       ENDCASE.
     ELSE.
-      MESSAGE e005(zgtt_mia) WITH |{ iv_tknum }{ iv_tsnum }| 'VTTS' INTO lv_dummy.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e005(zgtt) WITH |{ iv_tknum }{ iv_tsnum }| 'VTTS' INTO lv_dummy.
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_ae_filler~check_relevance.
+  METHOD ZIF_GTT_AE_FILLER~CHECK_RELEVANCE.
 
     DATA: lv_date     TYPE d.
 
     FIELD-SYMBOLS: <lt_vtts_new> TYPE zif_gtt_mia_app_types=>tt_vttsvb,
                    <lt_vtts_old> TYPE zif_gtt_mia_app_types=>tt_vttsvb.
 
-    DATA(lt_fields)   = VALUE zif_gtt_mia_ef_types=>tt_field_name( ( get_date_field( ) )
+    DATA(lt_fields)   = VALUE zif_gtt_ef_types=>tt_field_name( ( get_date_field( ) )
                                                            ( get_time_field( ) ) ).
     DATA(lr_vttp)     = mo_ae_parameters->get_appl_table(
                           iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
     DATA(lr_vtts_new) = mo_ae_parameters->get_appl_table(
                           iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_stage_new ).
 
-    rv_result   = zif_gtt_mia_ef_constants=>cs_condition-false.
+    rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
     IF is_events-maintabdef = zif_gtt_mia_app_constants=>cs_tabledef-sh_header_new AND
        zcl_gtt_mia_sh_tools=>is_appropriate_type( ir_vttk = is_events-maintabref ) = abap_true AND
@@ -248,42 +248,26 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
                           iv_tknum = <ls_vtts_new>-tknum
                           iv_tsnum = <ls_vtts_new>-tsnum ).
 
-          IF rv_result = zif_gtt_mia_ef_constants=>cs_condition-true.
+          IF rv_result = zif_gtt_ef_constants=>cs_condition-true.
             EXIT.
           ENDIF.
         ENDLOOP.
       ELSE.
-        MESSAGE e002(zgtt_mia) WITH 'VTTS' INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        MESSAGE e002(zgtt) WITH 'VTTS' INTO DATA(lv_dummy).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_ae_filler~get_event_data.
+  METHOD ZIF_GTT_AE_FILLER~GET_EVENT_DATA.
 
     DATA:
       lt_stops         TYPE zif_gtt_mia_app_types=>tt_stops,
-      lv_tmp_shptrxcod TYPE /saptrx/trxcod,
       lv_shptrxcod     TYPE /saptrx/trxcod.
 
-    lv_shptrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_number.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type      = is_events-eventtype
-            iv_app       = 'MIA'
-          IMPORTING
-            ev_shptrxcod = lv_tmp_shptrxcod.
-
-        IF lv_tmp_shptrxcod IS NOT INITIAL.
-          lv_shptrxcod = lv_tmp_shptrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
+    lv_shptrxcod = zif_gtt_ef_constants=>cs_trxcod-sh_number.
 
     get_stops_from_shipment(
       EXPORTING
@@ -295,7 +279,7 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
       WHERE loccat = get_location_category( ).
 
       IF is_stop_changed( iv_tknum = <ls_stops>-tknum
-                          iv_tsnum = <ls_stops>-tsnum ) = zif_gtt_mia_ef_constants=>cs_condition-true.
+                          iv_tsnum = <ls_stops>-tsnum ) = zif_gtt_ef_constants=>cs_condition-true.
 
         DATA(lv_evtcnt) = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
 
@@ -311,13 +295,13 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
                             ir_vttk = is_events-maintabref )
             evtcnt      = lv_evtcnt
             evtid       = get_eventid( )
-            evtdat      = zcl_gtt_mia_tools=>get_field_of_structure(
+            evtdat      = zcl_gtt_tools=>get_field_of_structure(
                               ir_struct_data = REF #( <ls_vtts_new> )
                               iv_field_name  = get_date_field( ) )
-            evttim      = zcl_gtt_mia_tools=>get_field_of_structure(
+            evttim      = zcl_gtt_tools=>get_field_of_structure(
                               ir_struct_data = REF #( <ls_vtts_new> )
                               iv_field_name  = get_time_field( ) )
-            evtzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
+            evtzon      = zcl_gtt_tools=>get_system_time_zone( )
           ) ).
 
           ct_eventid_map  = VALUE #( BASE ct_eventid_map (
@@ -328,7 +312,7 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
           ct_tracklocation  = VALUE #( BASE ct_tracklocation (
             evtcnt      = lv_evtcnt
             loccod      = <ls_stops>-loctype
-            locid1      = zcl_gtt_mia_tools=>get_pretty_location_id(
+            locid1      = zcl_gtt_tools=>get_pretty_location_id(
                             iv_locid   = <ls_stops>-locid
                             iv_loctype = <ls_stops>-loctype )
             locid2      = <ls_stops>-stopid_txt
@@ -338,24 +322,24 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BS IMPLEMENTATION.
             ct_trackparameters = VALUE #( BASE ct_trackparameters
               (
                 evtcnt      = lv_evtcnt
-                param_name  = zif_gtt_mia_app_constants=>cs_event_param-location_id
-                param_value = zcl_gtt_mia_tools=>get_pretty_location_id(
+                param_name  = zif_gtt_ef_constants=>cs_event_param-location_id
+                param_value = zcl_gtt_tools=>get_pretty_location_id(
                                 iv_locid   = <ls_stops>-locid
                                 iv_loctype = <ls_stops>-loctype )
               )
               (
                 evtcnt      = lv_evtcnt
-                param_name  = zif_gtt_mia_app_constants=>cs_event_param-location_type
+                param_name  = zif_gtt_ef_constants=>cs_event_param-location_type
                 param_value = <ls_stops>-loctype
               )
             ).
           ENDIF.
 
         ELSE.
-          MESSAGE e005(zgtt_mia)
+          MESSAGE e005(zgtt)
             WITH |{ <ls_stops>-tknum }{ <ls_stops>-tsnum }| 'VTTK'
             INTO DATA(lv_dummy).
-          zcl_gtt_mia_tools=>throw_exception( ).
+          zcl_gtt_tools=>throw_exception( ).
         ENDIF.
       ENDIF.
     ENDLOOP.

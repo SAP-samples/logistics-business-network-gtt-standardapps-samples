@@ -1,15 +1,15 @@
-CLASS zcl_gtt_mia_ae_filler_shh_bh DEFINITION
-  PUBLIC
-  ABSTRACT
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_AE_FILLER_SHH_BH definition
+  public
+  abstract
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_gtt_mia_ae_filler .
+  interfaces ZIF_GTT_AE_FILLER .
 
-    METHODS constructor
-      IMPORTING
-        !io_ae_parameters TYPE REF TO zif_gtt_mia_ae_parameters .
+  methods CONSTRUCTOR
+    importing
+      !IO_AE_PARAMETERS type ref to ZIF_GTT_AE_PARAMETERS .
   PROTECTED SECTION.
 
     METHODS get_eventid
@@ -19,11 +19,11 @@ CLASS zcl_gtt_mia_ae_filler_shh_bh DEFINITION
     METHODS get_date_field
       ABSTRACT
       RETURNING
-        VALUE(rv_field) TYPE zif_gtt_mia_ef_types=>tv_field_name .
+        VALUE(rv_field) TYPE zif_gtt_ef_types=>tv_field_name .
     METHODS get_time_field
       ABSTRACT
       RETURNING
-        VALUE(rv_field) TYPE zif_gtt_mia_ef_types=>tv_field_name .
+        VALUE(rv_field) TYPE zif_gtt_ef_types=>tv_field_name .
   PRIVATE SECTION.
 
     TYPES:
@@ -32,7 +32,7 @@ CLASS zcl_gtt_mia_ae_filler_shh_bh DEFINITION
         posnr TYPE posnr_vl,
       END OF ts_dl_item_id .
 
-    DATA mo_ae_parameters TYPE REF TO zif_gtt_mia_ae_parameters .
+    DATA mo_ae_parameters TYPE REF TO zif_gtt_ae_parameters .
 ENDCLASS.
 
 
@@ -40,14 +40,14 @@ ENDCLASS.
 CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BH IMPLEMENTATION.
 
 
-  METHOD constructor.
+  METHOD CONSTRUCTOR.
 
     mo_ae_parameters  = io_ae_parameters.
 
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_ae_filler~check_relevance.
+  METHOD ZIF_GTT_AE_FILLER~CHECK_RELEVANCE.
 
     DATA: lr_vttk_old TYPE REF TO data,
           lv_date     TYPE d.
@@ -55,22 +55,22 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BH IMPLEMENTATION.
     DATA(lr_vttp) = mo_ae_parameters->get_appl_table(
                       iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
 
-    lv_date       = zcl_gtt_mia_tools=>get_field_of_structure(
+    lv_date       = zcl_gtt_tools=>get_field_of_structure(
                       ir_struct_data = is_events-maintabref
                       iv_field_name  = get_date_field( ) ).
 
-    rv_result   = zif_gtt_mia_ef_constants=>cs_condition-false.
+    rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
     IF is_events-maintabdef = zif_gtt_mia_app_constants=>cs_tabledef-sh_header_new AND
        zcl_gtt_mia_sh_tools=>is_appropriate_type( ir_vttk = is_events-maintabref ) = abap_true AND
        zcl_gtt_mia_sh_tools=>is_delivery_assigned( ir_vttp = lr_vttp ) = abap_true AND
        lv_date IS NOT INITIAL.
 
-      lr_vttk_old = COND #( WHEN is_events-update_indicator = zif_gtt_mia_ef_constants=>cs_change_mode-insert
+      lr_vttk_old = COND #( WHEN is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-insert
                               THEN NEW vttkvb( )
                               ELSE is_events-mainoldtabref ).
 
-      rv_result   = zcl_gtt_mia_tools=>are_fields_different(
+      rv_result   = zcl_gtt_tools=>are_fields_different(
                       ir_data1  = is_events-maintabref
                       ir_data2  = lr_vttk_old
                       it_fields = VALUE #( ( get_date_field( ) )
@@ -80,30 +80,14 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_ae_filler~get_event_data.
+  METHOD ZIF_GTT_AE_FILLER~GET_EVENT_DATA.
 
     DATA:
-      lv_tmp_shptrxcod TYPE /saptrx/trxcod,
       lv_shptrxcod     TYPE /saptrx/trxcod.
 
     DATA(lv_evtcnt) = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
 
-    lv_shptrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_number.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type      = is_events-eventtype
-            iv_app       = 'MIA'
-          IMPORTING
-            ev_shptrxcod = lv_tmp_shptrxcod.
-
-        IF lv_tmp_shptrxcod IS NOT INITIAL.
-          lv_shptrxcod = lv_tmp_shptrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
+    lv_shptrxcod = zif_gtt_ef_constants=>cs_trxcod-sh_number.
 
     ct_trackingheader = VALUE #( BASE ct_trackingheader (
       language    = sy-langu
@@ -112,13 +96,13 @@ CLASS ZCL_GTT_MIA_AE_FILLER_SHH_BH IMPLEMENTATION.
       trxcod      = lv_shptrxcod
       evtcnt      = lv_evtcnt
       evtid       = get_eventid( )
-      evtdat      = zcl_gtt_mia_tools=>get_field_of_structure(
+      evtdat      = zcl_gtt_tools=>get_field_of_structure(
                         ir_struct_data = is_events-maintabref
                         iv_field_name  = get_date_field( ) )
-      evttim      = zcl_gtt_mia_tools=>get_field_of_structure(
+      evttim      = zcl_gtt_tools=>get_field_of_structure(
                         ir_struct_data = is_events-maintabref
                         iv_field_name  = get_time_field( ) )
-      evtzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
+      evtzon      = zcl_gtt_tools=>get_system_time_zone( )
     ) ).
 
     ct_eventid_map  = VALUE #( BASE ct_eventid_map (

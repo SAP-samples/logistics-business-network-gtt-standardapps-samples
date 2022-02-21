@@ -1,58 +1,64 @@
-CLASS zcl_gtt_mia_tm_tools DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_TM_TOOLS definition
+  public
+  create public .
 
-  PUBLIC SECTION.
-    CLASS-METHODS get_formated_tor_id
-      IMPORTING
-        ir_data TYPE REF TO data
-      RETURNING
-        VALUE(rv_tor_id) TYPE /scmtms/tor_id
-      RAISING
-        cx_udm_message.
+public section.
 
-    CLASS-METHODS get_formated_tor_item
-      IMPORTING
-        ir_data TYPE REF TO data
-      RETURNING
-        VALUE(rv_item_id) TYPE /scmtms/item_id
-      RAISING
-        cx_udm_message.
-
-    CLASS-METHODS get_tor_root_tor_id
-      IMPORTING
-        !iv_key          TYPE /bobf/conf_key
-      RETURNING
-        VALUE(rv_tor_id) TYPE /scmtms/tor_id .
-    CLASS-METHODS get_tor_items_for_dlv_items
-      IMPORTING
-        !it_lips    TYPE zif_gtt_mia_app_types=>tt_lipsvb_key
-        !iv_tor_cat TYPE /scmtms/tor_category OPTIONAL
-      EXPORTING
-        !et_key     TYPE /bobf/t_frw_key
-        !et_fu_item TYPE /scmtms/t_tor_item_tr_k
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS is_fu_relevant
-      IMPORTING
-        !it_lips         TYPE zif_gtt_mia_app_types=>tt_lipsvb_key
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  class-methods GET_FORMATED_TOR_ID
+    importing
+      !IR_DATA type ref to DATA
+    returning
+      value(RV_TOR_ID) type /SCMTMS/TOR_ID
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_FORMATED_TOR_ITEM
+    importing
+      !IR_DATA type ref to DATA
+    returning
+      value(RV_ITEM_ID) type /SCMTMS/ITEM_ID
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_TOR_ROOT_TOR_ID
+    importing
+      !IV_KEY type /BOBF/CONF_KEY
+    returning
+      value(RV_TOR_ID) type /SCMTMS/TOR_ID .
+  class-methods GET_TOR_ITEMS_FOR_DLV_ITEMS
+    importing
+      !IT_LIPS type ZIF_GTT_MIA_APP_TYPES=>TT_LIPSVB_KEY
+      !IV_TOR_CAT type /SCMTMS/TOR_CATEGORY optional
+    exporting
+      !ET_KEY type /BOBF/T_FRW_KEY
+      !ET_FU_ITEM type /SCMTMS/T_TOR_ITEM_TR_K
+    raising
+      CX_UDM_MESSAGE .
+  class-methods IS_FU_RELEVANT
+    importing
+      !IT_LIPS type ZIF_GTT_MIA_APP_TYPES=>TT_LIPSVB_KEY
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_TOR_ROOT
+    importing
+      !IV_KEY type /BOBF/CONF_KEY
+    exporting
+      !ES_TOR type /SCMTMS/S_TOR_ROOT_K
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    CLASS-METHODS get_tor_item_selparam_for_lips
-      IMPORTING
-        !it_lips     TYPE zif_gtt_mia_app_types=>tt_lipsvb_key
-      EXPORTING
-        !et_selparam TYPE /bobf/t_frw_query_selparam .
-    CLASS-METHODS filter_tor_items_by_tor_cat
-      IMPORTING
-        !iv_tor_cat TYPE /scmtms/tor_category
-      CHANGING
-        !ct_key     TYPE /bobf/t_frw_key .
+  class-methods GET_TOR_ITEM_SELPARAM_FOR_LIPS
+    importing
+      !IT_LIPS type ZIF_GTT_MIA_APP_TYPES=>TT_LIPSVB_KEY
+    exporting
+      !ET_SELPARAM type /BOBF/T_FRW_QUERY_SELPARAM .
+  class-methods FILTER_TOR_ITEMS_BY_TOR_CAT
+    importing
+      !IV_TOR_CAT type /SCMTMS/TOR_CATEGORY
+    changing
+      !CT_KEY type /BOBF/T_FRW_KEY .
 ENDCLASS.
 
 
@@ -95,7 +101,7 @@ CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
 
   METHOD get_formated_tor_id.
 
-    rv_tor_id   = zcl_gtt_mia_tools=>get_field_of_structure(
+    rv_tor_id   = zcl_gtt_tools=>get_field_of_structure(
                     ir_struct_data = ir_data
                     iv_field_name  = 'TOR_ID' ).
 
@@ -106,7 +112,7 @@ CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
 
   METHOD get_formated_tor_item.
 
-    rv_item_id   = zcl_gtt_mia_tools=>get_field_of_structure(
+    rv_item_id   = zcl_gtt_tools=>get_field_of_structure(
                     ir_struct_data = ir_data
                     iv_field_name  = 'ITEM_ID' ).
 
@@ -132,7 +138,7 @@ CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
       ( base_btd_tco      = zif_gtt_mia_app_constants=>cs_base_btd_tco-inb_dlv
         base_btd_id       = |{ ls_lips-vbeln ALPHA = IN }|
         base_btditem_id   = |{ ls_lips-posnr ALPHA = IN }|
-        base_btd_logsys   = zcl_gtt_mia_tools=>get_logical_system( ) )
+        base_btd_logsys   = zcl_gtt_tools=>get_logical_system( ) )
     ).
 
     get_tor_item_selparam_for_lips(
@@ -266,5 +272,29 @@ CLASS ZCL_GTT_MIA_TM_TOOLS IMPLEMENTATION.
 
     rv_result   = boolc( lt_key[] IS NOT INITIAL ).
 
+  ENDMETHOD.
+
+
+  METHOD get_tor_root.
+    DATA: lo_srv_mgr  TYPE REF TO /bobf/if_tra_service_manager,
+          lt_tor_root TYPE /scmtms/t_tor_root_k.
+    CLEAR es_tor.
+    lo_srv_mgr = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
+      /scmtms/if_tor_c=>sc_bo_key ).
+
+    TRY.
+        lo_srv_mgr->retrieve(
+          EXPORTING
+            iv_node_key             = /scmtms/if_tor_c=>sc_node-root
+            it_key                  = VALUE #( ( key = iv_key ) )
+            iv_fill_data            = abap_true
+            it_requested_attributes = VALUE #( ( /scmtms/if_tor_c=>sc_node_attribute-root-tor_id ) )
+          IMPORTING
+            et_data                 = lt_tor_root ).
+
+        es_tor  = lt_tor_root[ 1 ].
+
+      CATCH /bobf/cx_frw_contrct_violation.
+    ENDTRY.
   ENDMETHOD.
 ENDCLASS.

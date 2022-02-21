@@ -989,26 +989,6 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
     lv_futrxcod = zif_gtt_sts_constants=>cs_trxcod-fu_number.
     lv_fotrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_number.
 
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type      = is_app_object-appobjtype
-            iv_app       = 'STS'
-          IMPORTING
-            ev_shptrxcod = lv_tmp_fotrxcod
-            ev_futrxcod  = lv_tmp_futrxcod.
-
-        IF lv_tmp_fotrxcod IS NOT INITIAL.
-          lv_fotrxcod = lv_tmp_fotrxcod.
-        ENDIF.
-
-        IF lv_tmp_futrxcod IS NOT INITIAL.
-          lv_futrxcod = lv_tmp_futrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
-
     lv_trxid = |{ <ls_root>-tor_id ALPHA = OUT }|.
     add_track_id_data(
       EXPORTING

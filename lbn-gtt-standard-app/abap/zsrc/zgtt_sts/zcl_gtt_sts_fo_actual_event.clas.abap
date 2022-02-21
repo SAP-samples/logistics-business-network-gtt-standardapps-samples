@@ -28,7 +28,8 @@ CLASS ZCL_GTT_STS_FO_ACTUAL_EVENT IMPLEMENTATION.
        iv_event_code <> /scmtms/if_tor_const=>sc_tor_event-unload_end   AND
        iv_event_code <> /scmtms/if_tor_const=>sc_tor_event-coupling     AND
        iv_event_code <> /scmtms/if_tor_const=>sc_tor_event-decoupling   AND
-       iv_event_code <> /scmtms/if_tor_const=>sc_tor_event-delay.
+       iv_event_code <> /scmtms/if_tor_const=>sc_tor_event-delay        AND
+       iv_event_code <> /scmtms/if_tor_const=>sc_tor_event-delay_fu.
       ev_result = zif_gtt_sts_ef_constants=>cs_condition-false.
     ENDIF.
 

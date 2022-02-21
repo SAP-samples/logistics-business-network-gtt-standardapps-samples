@@ -1,29 +1,30 @@
 CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh DEFINITION
   PUBLIC
-  INHERITING FROM zcl_gtt_mia_ctp_snd
-  CREATE PRIVATE.
+  INHERITING FROM zcl_gtt_ctp_snd
+  CREATE PRIVATE .
 
   PUBLIC SECTION.
+
     CLASS-METHODS get_instance
       RETURNING
         VALUE(ro_sender) TYPE REF TO zcl_gtt_mia_ctp_snd_sh_to_dlh
       RAISING
         cx_udm_message .
-
     METHODS prepare_idoc_data
       IMPORTING
         !io_ship_data TYPE REF TO zcl_gtt_mia_ctp_shipment_data
       RAISING
         cx_udm_message .
-
   PROTECTED SECTION.
+
     METHODS get_aotype_restriction_id
-        REDEFINITION.
-
+        REDEFINITION .
     METHODS get_object_type
-        REDEFINITION.
-
+        REDEFINITION .
+    METHODS get_evtype_restriction_id
+        REDEFINITION .
   PRIVATE SECTION.
+
     CONSTANTS:
       BEGIN OF cs_mapping,
         vbeln                 TYPE /saptrx/paramname VALUE 'YN_DLV_NO',
@@ -38,39 +39,39 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh DEFINITION
 
     METHODS fill_idoc_appobj_ctabs
       IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
         !is_likp      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
       RAISING
-        cx_udm_message.
+        cx_udm_message .
     METHODS fill_idoc_control_data
       IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
         !is_ship      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
         !is_likp      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
         !is_stops     TYPE zcl_gtt_mia_ctp_shipment_data=>ts_stops
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
       RAISING
         cx_udm_message .
     METHODS fill_idoc_exp_event
       IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
         !is_ship      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
         !is_likp      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
         !is_stops     TYPE zcl_gtt_mia_ctp_shipment_data=>ts_stops
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
       RAISING
         cx_udm_message .
     METHODS fill_idoc_tracking_id
       IMPORTING
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
+        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
         !is_ship      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
         !is_likp      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
       CHANGING
-        !cs_idoc_data TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data
+        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
       RAISING
         cx_udm_message .
     METHODS get_shipment_stop
@@ -90,9 +91,9 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh DEFINITION
         !is_likp         TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
         !it_stops        TYPE zif_gtt_mia_app_types=>tt_stops
       RETURNING
-        VALUE(rv_result) TYPE zif_gtt_mia_ef_types=>tv_condition
+        VALUE(rv_result) TYPE zif_gtt_ef_types=>tv_condition
       RAISING
-        cx_udm_message.
+        cx_udm_message .
     METHODS is_pod_relevant_stop
       IMPORTING
         !is_ship         TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
@@ -101,7 +102,7 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh DEFINITION
       RETURNING
         VALUE(rv_result) TYPE abap_bool
       RAISING
-        cx_udm_message.
+        cx_udm_message .
 ENDCLASS.
 
 
@@ -141,19 +142,19 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
                       it_stops = is_stops-stops )
       )
       (
-        paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_bisiness_timezone
-        value     = zcl_gtt_mia_tools=>get_system_time_zone( )
+        paramname = zif_gtt_ef_constants=>cs_system_fields-actual_bisiness_timezone
+        value     = zcl_gtt_tools=>get_system_time_zone( )
       )
       (
-        paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_bisiness_datetime
+        paramname = zif_gtt_ef_constants=>cs_system_fields-actual_bisiness_datetime
         value     = |0{ sy-datum }{ sy-uzeit }|
       )
       (
-        paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_technical_timezone
-        value     = zcl_gtt_mia_tools=>get_system_time_zone( )
+        paramname = zif_gtt_ef_constants=>cs_system_fields-actual_technical_timezone
+        value     = zcl_gtt_tools=>get_system_time_zone( )
       )
       (
-        paramname = zif_gtt_mia_ef_constants=>cs_system_fields-actual_technical_datetime
+        paramname = zif_gtt_ef_constants=>cs_system_fields-actual_technical_datetime
         value     = |0{ sy-datum }{ sy-uzeit }|
       )
     ).
@@ -198,7 +199,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
         (
           paramindex = lv_count
           paramname  = cs_mapping-shp_lstop_rec_loc
-          value      = zcl_gtt_mia_tools=>get_pretty_location_id(
+          value      = zcl_gtt_tools=>get_pretty_location_id(
                          iv_locid   = ls_lstop-locid
                          iv_loctype = ls_lstop-loctype )
         )
@@ -222,8 +223,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
     LOOP AT lt_control ASSIGNING FIELD-SYMBOL(<ls_control>).
       <ls_control>-appsys     = mv_appsys.
       <ls_control>-appobjtype = is_aotype-aot_type.
-      <ls_control>-appobjid   = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
-                                  ir_likp = REF #( is_likp ) ).
+      <ls_control>-appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+        ir_likp = REF #( is_likp ) ).
     ENDLOOP.
 
     cs_idoc_data-control  = VALUE #( BASE cs_idoc_data-control
@@ -249,9 +250,9 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
         et_exp_event = lt_exp_event_dlv ).
 
     LOOP AT lt_exp_event_dlv TRANSPORTING NO FIELDS
-      WHERE ( milestone = zif_gtt_mia_app_constants=>cs_milestone-sh_arrival OR
-              milestone = zif_gtt_mia_app_constants=>cs_milestone-sh_departure OR
-              milestone = zif_gtt_mia_app_constants=>cs_milestone-sh_pod ).
+      WHERE ( milestone = zif_gtt_ef_constants=>cs_milestone-sh_arrival OR
+              milestone = zif_gtt_ef_constants=>cs_milestone-sh_departure OR
+              milestone = zif_gtt_ef_constants=>cs_milestone-sh_pod ).
       DELETE lt_exp_event_dlv.
     ENDLOOP.
 
@@ -271,11 +272,11 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
         " Departure / Arrival
         lt_exp_event = VALUE #( BASE lt_exp_event (
             milestone         = COND #( WHEN <ls_watching>-loccat = zif_gtt_mia_app_constants=>cs_loccat-departure
-                                          THEN zif_gtt_mia_app_constants=>cs_milestone-sh_departure
-                                          ELSE zif_gtt_mia_app_constants=>cs_milestone-sh_arrival )
+                                          THEN zif_gtt_ef_constants=>cs_milestone-sh_departure
+                                          ELSE zif_gtt_ef_constants=>cs_milestone-sh_arrival )
             locid2            = <ls_stops>-stopid_txt
             loctype           = <ls_stops>-loctype
-            locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
+            locid1            = zcl_gtt_tools=>get_pretty_location_id(
                                   iv_locid   = <ls_stops>-locid
                                   iv_loctype = <ls_stops>-loctype )
             evt_exp_datetime  = <ls_stops>-pln_evt_datetime
@@ -286,16 +287,16 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
         " POD
         IF <ls_stops>-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
-           <ls_stops>-loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant AND
+           <ls_stops>-loctype = zif_gtt_ef_constants=>cs_loc_types-plant AND
            is_pod_relevant_stop( is_ship  = is_ship
                                  is_likp  = is_likp
                                  is_stops = <ls_stops> ) = abap_true.
 
           lt_exp_event = VALUE #( BASE lt_exp_event (
-              milestone         = zif_gtt_mia_app_constants=>cs_milestone-sh_pod
+              milestone         = zif_gtt_ef_constants=>cs_milestone-sh_pod
               locid2            = <ls_stops>-stopid_txt
               loctype           = <ls_stops>-loctype
-              locid1            = zcl_gtt_mia_tools=>get_pretty_location_id(
+              locid1            = zcl_gtt_tools=>get_pretty_location_id(
                                     iv_locid   = <ls_stops>-locid
                                     iv_loctype = <ls_stops>-loctype )
               evt_exp_datetime  = <ls_stops>-pln_evt_datetime
@@ -305,16 +306,16 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
           ADD 1 TO lv_milestonenum.
         ENDIF.
       ELSE.
-        MESSAGE e005(zgtt_mia)
+        MESSAGE e005(zgtt)
           WITH |{ <ls_watching>-stopid }{ <ls_watching>-loccat }| 'STOPS'
           INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ENDLOOP.
 
     " fill sequence number in DLV events
-    lv_milestonenum   = zcl_gtt_mia_tools=>get_next_sequence_id(
-                          it_expeventdata = lt_exp_event ).
+    lv_milestonenum = zcl_gtt_tools=>get_next_sequence_id(
+      it_expeventdata = lt_exp_event ).
 
     LOOP AT lt_exp_event_dlv ASSIGNING FIELD-SYMBOL(<ls_exp_event_dlv>).
       <ls_exp_event_dlv>-milestonenum   = lv_milestonenum.
@@ -338,10 +339,10 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
     LOOP AT lt_exp_event ASSIGNING FIELD-SYMBOL(<ls_exp_event>).
       <ls_exp_event>-appsys         = mv_appsys.
       <ls_exp_event>-appobjtype     = is_aotype-aot_type.
-      <ls_exp_event>-appobjid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
-                                        ir_likp = REF #( is_likp ) ).
+      <ls_exp_event>-appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+        ir_likp = REF #( is_likp ) ).
       <ls_exp_event>-language       = sy-langu.
-      <ls_exp_event>-evt_exp_tzone  = zcl_gtt_mia_tools=>get_system_time_zone(  ).
+      <ls_exp_event>-evt_exp_tzone  = zcl_gtt_tools=>get_system_time_zone(  ).
     ENDLOOP.
 
     cs_idoc_data-exp_event = VALUE #( BASE cs_idoc_data-exp_event
@@ -356,53 +357,31 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
     "and for tracking ID type 'RESOURCE' of shipment header,
     "DO NOT enable START DATE and END DATE
     DATA:
-      lt_tracking_id     TYPE /saptrx/bapi_trk_trkid_tab,
-      lv_tmp_shptrxcod   TYPE /saptrx/trxcod,
-      lv_shptrxcod       TYPE /saptrx/trxcod,
-      lv_tmp_dlvhdtrxcod TYPE /saptrx/trxcod,
-      lv_dlvhdtrxcod     TYPE /saptrx/trxcod.
+      lt_tracking_id TYPE /saptrx/bapi_trk_trkid_tab,
+      lv_shptrxcod   TYPE /saptrx/trxcod,
+      lv_dlvhdtrxcod TYPE /saptrx/trxcod.
 
-    lv_shptrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_number.
-    lv_dlvhdtrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_number.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type        = is_aotype-aot_type
-            iv_app         = 'MIA'
-          IMPORTING
-            ev_shptrxcod   = lv_tmp_shptrxcod
-            ev_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
-
-        IF lv_tmp_shptrxcod IS NOT INITIAL.
-          lv_shptrxcod = lv_tmp_shptrxcod.
-        ENDIF.
-
-        IF lv_tmp_dlvhdtrxcod IS NOT INITIAL.
-          lv_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
+    lv_shptrxcod = zif_gtt_ef_constants=>cs_trxcod-sh_number.
+    lv_dlvhdtrxcod = zif_gtt_ef_constants=>cs_trxcod-dl_number.
 
     " Delivery Header
     lt_tracking_id    = VALUE #( (
       trxcod      = lv_dlvhdtrxcod
       trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
                       ir_likp = REF #( is_likp ) )
-      timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
+      timzon      = zcl_gtt_tools=>get_system_time_zone( )
     ) ).
 
     " Shipment
     LOOP AT is_ship-likp\likp_dlt[ is_likp ] ASSIGNING FIELD-SYMBOL(<ls_likp_dlt>).
-      IF <ls_likp_dlt>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert OR
-         <ls_likp_dlt>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+      IF <ls_likp_dlt>-updkz = zif_gtt_ef_constants=>cs_change_mode-insert OR
+         <ls_likp_dlt>-updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
         lt_tracking_id    = VALUE #( BASE lt_tracking_id (
           trxcod      = lv_shptrxcod
           trxid       = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
                           ir_vttk = REF #( <ls_likp_dlt> ) )              "<ls_likp_dlt>-tknum
-          action      = COND #( WHEN <ls_likp_dlt>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete
-                                  THEN zif_gtt_mia_ef_constants=>cs_change_mode-delete )
+          action      = COND #( WHEN <ls_likp_dlt>-updkz = zif_gtt_ef_constants=>cs_change_mode-delete
+                                  THEN zif_gtt_ef_constants=>cs_change_mode-delete )
         ) ).
       ENDIF.
     ENDLOOP.
@@ -411,8 +390,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
     LOOP AT lt_tracking_id ASSIGNING FIELD-SYMBOL(<ls_tracking_id>).
       <ls_tracking_id>-appsys     = mv_appsys.
       <ls_tracking_id>-appobjtype = is_aotype-aot_type.
-      <ls_tracking_id>-appobjid   = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
-                                        ir_likp = REF #( is_likp ) ).
+      <ls_tracking_id>-appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+        ir_likp = REF #( is_likp ) ).
     ENDLOOP.
 
     cs_idoc_data-tracking_id = VALUE #( BASE cs_idoc_data-tracking_id
@@ -428,11 +407,16 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_evtype_restriction_id.
+    CLEAR: rv_rst_id .
+  ENDMETHOD.
+
+
   METHOD get_instance.
 
-    DATA(lt_trk_obj_type) = VALUE zif_gtt_mia_ctp_tor_types=>tt_trk_obj_type(
-       ( zif_gtt_mia_ef_constants=>cs_trk_obj_type-esc_shipmt )
-       ( zif_gtt_mia_ef_constants=>cs_trk_obj_type-esc_deliv )
+    DATA(lt_trk_obj_type) = VALUE zif_gtt_ctp_types=>tt_trk_obj_type(
+       ( zif_gtt_ef_constants=>cs_trk_obj_type-esc_shipmt )
+       ( zif_gtt_ef_constants=>cs_trk_obj_type-esc_deliv )
     ).
 
     IF is_gtt_enabled( it_trk_obj_type = lt_trk_obj_type ) = abap_true.
@@ -440,8 +424,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
       ro_sender->initiate( ).
     ELSE.
-      MESSAGE e006(zgtt_mia) INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e006(zgtt) INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -449,7 +433,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
   METHOD get_object_type.
 
-    rv_objtype  = zif_gtt_mia_ef_constants=>cs_trk_obj_type-esc_deliv.
+    rv_objtype  = zif_gtt_ef_constants=>cs_trk_obj_type-esc_deliv.
 
   ENDMETHOD.
 
@@ -480,8 +464,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
                                     THEN zif_gtt_mia_app_constants=>cs_loccat-arrival
                                     ELSE zif_gtt_mia_app_constants=>cs_loccat-departure ).
       IF sy-subrc <> 0.
-        MESSAGE e011(zgtt_mia) WITH lv_stopid is_stops-tknum INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        MESSAGE e011(zgtt) WITH lv_stopid is_stops-tknum INTO DATA(lv_dummy).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ENDIF.
 
@@ -492,7 +476,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
     DATA: lt_werks TYPE RANGE OF lips-werks.
 
-    rv_result   = zif_gtt_mia_ef_constants=>cs_condition-false.
+    rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
     " prepare list of POD relevant plants
     LOOP AT is_ship-likp\lips[ is_likp ] ASSIGNING FIELD-SYMBOL(<ls_lips>).
@@ -520,9 +504,9 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
       LOOP AT it_stops ASSIGNING FIELD-SYMBOL(<ls_stops>)
         WHERE locid    IN lt_werks
           AND loccat   = zif_gtt_mia_app_constants=>cs_loccat-arrival
-          AND loctype  = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
+          AND loctype  = zif_gtt_ef_constants=>cs_loc_types-plant.
 
-        rv_result   = zif_gtt_mia_ef_constants=>cs_condition-true.
+        rv_result   = zif_gtt_ef_constants=>cs_condition-true.
         EXIT.
       ENDLOOP.
     ENDIF.
@@ -537,7 +521,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
     LOOP AT is_ship-likp\lips[ is_likp ] ASSIGNING FIELD-SYMBOL(<ls_lips>).
       IF is_stops-locid   = <ls_lips>-werks AND
          is_stops-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
-         is_stops-loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
+         is_stops-loctype = zif_gtt_ef_constants=>cs_loc_types-plant.
 
         READ TABLE is_ship-ee_rel ASSIGNING FIELD-SYMBOL(<ls_ee_rel>)
           WITH TABLE KEY appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
@@ -575,7 +559,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
     "     ARRIV_DEST
     "     POD
 
-    DATA: ls_idoc_data    TYPE zif_gtt_mia_ctp_tor_types=>ts_idoc_data.
+    DATA: ls_idoc_data    TYPE zif_gtt_ctp_types=>ts_idoc_data.
 
     DATA(lr_ship)   = io_ship_data->get_data( ).
     DATA(lr_stops)  = io_ship_data->get_stops( ).
@@ -635,9 +619,9 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
             CHANGING
               cs_idoc_data = ls_idoc_data ).
         ELSE.
-          MESSAGE e005(zgtt_mia) WITH |{ <ls_likp>-tknum }| 'STOPS'
+          MESSAGE e005(zgtt) WITH |{ <ls_likp>-tknum }| 'STOPS'
             INTO DATA(lv_dummy).
-          zcl_gtt_mia_tools=>throw_exception( ).
+          zcl_gtt_tools=>throw_exception( ).
         ENDIF.
 
       ENDLOOP.

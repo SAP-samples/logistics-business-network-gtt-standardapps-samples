@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_PE_FILLER_DLH</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Extractor for planned event of DLH</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

@@ -221,6 +221,15 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
     IF is_execinfo-actual_date IS NOT INITIAL.
       cs_trackingheader-evttst = is_execinfo-actual_date.
+      IF is_execinfo-actual_tzone IS NOT INITIAL.
+        CALL FUNCTION 'IB_CONVERT_FROM_TIMESTAMP'
+          EXPORTING
+            i_timestamp = is_execinfo-actual_date
+            i_tzone     = is_execinfo-actual_tzone
+          IMPORTING
+            e_datlo     = cs_trackingheader-evtdat
+            e_timlo     = cs_trackingheader-evttim.
+      ENDIF.
     ENDIF.
 
     CLEAR ls_loc_root.
@@ -395,7 +404,9 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       lt_execinfo_tr TYPE /scmtms/t_tor_exec_tr_k,
       lv_timezone    TYPE /scmtms/tzone,
       lv_locno       TYPE /sapapo/locno,
-      lv_loctype     TYPE /saptrx/loc_id_type.
+      lv_loctype     TYPE /saptrx/loc_id_type,
+      lv_ref_evt     TYPE /scmtms/tor_event,
+      lv_estimated   TYPE string.
 
     DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
     TEST-SEAM lt_execinfo_tr.
@@ -414,10 +425,12 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
                                                                                                        ##WARN_OK.
     IF sy-subrc = 0.
       IF <ls_execinfo_tr>-estimated_date IS NOT INITIAL.
+        lv_estimated = <ls_execinfo_tr>-estimated_date.
+        CONDENSE lv_estimated NO-GAPS.
         INSERT VALUE #( evtcnt      = iv_evt_cnt
                         param_name  = zif_gtt_sts_ef_constants=>cs_parameter-estimated_datetime
                         param_index = 1
-                        param_value = <ls_execinfo_tr>-estimated_date ) INTO TABLE ct_trackparameters.
+                        param_value = lv_estimated ) INTO TABLE ct_trackparameters.
 
         INSERT VALUE #( evtcnt      = iv_evt_cnt
                        param_name  = zif_gtt_sts_ef_constants=>cs_parameter-stop_id
@@ -439,13 +452,20 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ENDIF.
     ENDIF.
 
-    IF is_execinfo-ref_event_code IS NOT INITIAL.
+    lv_ref_evt = is_execinfo-ref_event_code.
+
+*   If referred event type = null, set to 'ARRIV_DEST'
+    IF lv_ref_evt IS INITIAL.
+      lv_ref_evt = zif_gtt_sts_actual_event~cs_event_id-model-shp_arrival.
+    ENDIF.
+
+    IF lv_ref_evt IS NOT INITIAL.
       lv_locno = cs_tracklocation-locid1.
       lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
 
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_milestone
-                      param_value = is_execinfo-ref_event_code ) INTO TABLE ct_trackparameters.
+                      param_value = lv_ref_evt ) INTO TABLE ct_trackparameters.
 
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_loctype
@@ -620,33 +640,6 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
         WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
           ls_trackingheader-trxcod = zif_gtt_sts_constants=>cs_trxcod-fu_number.
       ENDCASE.
-
-      TRY.
-          CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-            EXPORTING
-              iv_type      = <ls_event>-eventtype
-              iv_app       = 'STS'
-            IMPORTING
-              ev_shptrxcod = lv_tmp_fotrxcod
-              ev_futrxcod  = lv_tmp_futrxcod.
-
-          CASE <ls_tor_root>-tor_cat.
-            WHEN /scmtms/if_tor_const=>sc_tor_category-active.
-              IF lv_tmp_fotrxcod IS NOT INITIAL.
-                ls_trackingheader-trxcod = lv_tmp_fotrxcod.
-              ENDIF.
-            WHEN /scmtms/if_tor_const=>sc_tor_category-booking.
-              IF lv_tmp_fotrxcod IS NOT INITIAL.
-                ls_trackingheader-trxcod = lv_tmp_fotrxcod.
-              ENDIF.
-            WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
-              IF lv_tmp_futrxcod IS NOT INITIAL.
-                ls_trackingheader-trxcod = lv_tmp_futrxcod.
-              ENDIF.
-          ENDCASE.
-
-        CATCH cx_sy_dyn_call_illegal_func.
-      ENDTRY.
 
       GET TIME STAMP FIELD DATA(lv_timestamp).
       ls_trackingheader-evttst = lv_timestamp.

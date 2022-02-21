@@ -1,17 +1,17 @@
-CLASS zcl_gtt_mia_ctp_dat_tor_to_dlh DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_CTP_DAT_TOR_TO_DLH definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS constructor
-      IMPORTING
-        !it_delivery_chng TYPE zif_gtt_mia_ctp_types=>tt_delivery_chng
-        !it_tor_root      TYPE /scmtms/t_em_bo_tor_root
-        !it_tor_item      TYPE /scmtms/t_em_bo_tor_item .
-    METHODS get_deliveries
-      RETURNING
-        VALUE(rr_deliveries) TYPE REF TO data .
+  methods CONSTRUCTOR
+    importing
+      !IT_DELIVERY_CHNG type ZIF_GTT_MIA_CTP_TYPES=>TT_DELIVERY_CHNG
+      !IT_TOR_ROOT type /SCMTMS/T_EM_BO_TOR_ROOT
+      !IT_TOR_ITEM type /SCMTMS/T_EM_BO_TOR_ITEM .
+  methods GET_DELIVERIES
+    returning
+      value(RR_DELIVERIES) type ref to DATA .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -33,7 +33,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ctp_dat_tor_to_dlh IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_CTP_DAT_TOR_TO_DLH IMPLEMENTATION.
 
 
   METHOD constructor.

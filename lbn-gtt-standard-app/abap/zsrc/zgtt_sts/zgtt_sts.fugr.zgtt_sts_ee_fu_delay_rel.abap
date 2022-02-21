@@ -58,7 +58,8 @@ FUNCTION zgtt_sts_ee_fu_delay_rel.
     IMPORTING
       es_tortype = DATA(ls_torty) ).
 
-  DATA(lv_is_correct_tor_cat) = xsdbool( <ls_tor_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit ).
+  DATA(lv_is_correct_tor_cat) = xsdbool( <ls_tor_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit OR
+                                         <ls_tor_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active ).
 
   IF ls_torty-track_exec_rel = /scmtms/if_tor_const=>sc_tracking_relevance-exec_track_em  AND
      lv_is_correct_tor_cat   = abap_true.

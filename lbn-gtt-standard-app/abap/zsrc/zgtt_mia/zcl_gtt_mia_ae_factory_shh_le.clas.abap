@@ -1,25 +1,25 @@
-CLASS zcl_gtt_mia_ae_factory_shh_le DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_mia_ae_factory
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_AE_FACTORY_SHH_LE definition
+  public
+  inheriting from ZCL_GTT_AE_FACTORY
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS zif_gtt_mia_ae_factory~get_ae_filler
-        REDEFINITION .
+  methods ZIF_GTT_AE_FACTORY~GET_AE_FILLER
+    redefinition .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_ae_factory_shh_le IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_AE_FACTORY_SHH_LE IMPLEMENTATION.
 
 
-  METHOD zif_gtt_mia_ae_factory~get_ae_filler.
+  METHOD ZIF_GTT_AE_FACTORY~GET_AE_FILLER.
 
-    ro_ae_filler    = NEW zcl_gtt_mia_ae_filler_shh_le(
-                        io_ae_parameters = io_ae_parameters ).
+    ro_ae_filler = NEW zcl_gtt_mia_ae_filler_shh_le(
+      io_ae_parameters = io_ae_parameters ).
 
   ENDMETHOD.
 ENDCLASS.

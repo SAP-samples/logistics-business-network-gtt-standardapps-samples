@@ -1,67 +1,66 @@
-CLASS zcl_gtt_mia_sh_tools DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_SH_TOOLS definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    CLASS-METHODS get_carrier_reference_document
-      IMPORTING
-        !is_vttk    TYPE vttkvb
-      EXPORTING
-        !ev_ref_typ TYPE zif_gtt_mia_app_types=>tv_crdoc_ref_typ
-        !ev_ref_val TYPE zif_gtt_mia_app_types=>tv_crdoc_ref_val .
-    CLASS-METHODS get_formated_sh_number
-      IMPORTING
-        !ir_vttk        TYPE REF TO data
-      RETURNING
-        VALUE(rv_tknum) TYPE tknum
-      RAISING
-        cx_udm_message.
-    CLASS-METHODS get_formated_sh_stopid
-      IMPORTING
-        iv_tknum TYPE tknum
-        iv_cnt   TYPE clike
-      RETURNING
-        VALUE(rv_stopid) TYPE zif_gtt_mia_app_types=>tv_stopid.
-    CLASS-METHODS get_next_event_counter
-      RETURNING
-        VALUE(rv_evtcnt) TYPE /saptrx/evtcnt .
-    CLASS-METHODS get_tracking_id_sh_header
-      IMPORTING
-        !ir_vttk           TYPE REF TO data
-      RETURNING
-        VALUE(rv_track_id) TYPE /saptrx/trxid
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_stops_from_shipment
-      IMPORTING
-        !iv_tknum              TYPE tknum
-        !it_vtts               TYPE vttsvb_tab OPTIONAL
-        !it_vtsp               TYPE vtspvb_tab OPTIONAL
-        !it_vttp               TYPE vttpvb_tab OPTIONAL
-      EXPORTING
-        !et_stops              TYPE zif_gtt_mia_app_types=>tt_stops
-        !et_dlv_watching_stops TYPE zif_gtt_mia_app_types=>tt_dlv_watch_stops .
-    CLASS-METHODS is_appropriate_type
-      IMPORTING
-        !ir_vttk         TYPE REF TO data
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS is_delivery_assigned
-      IMPORTING
-        !ir_vttp         TYPE REF TO data
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS is_object_modified
-      IMPORTING
-        !is_events       TYPE trxas_evt_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool .
-
+  class-methods GET_CARRIER_REFERENCE_DOCUMENT
+    importing
+      !IS_VTTK type VTTKVB
+    exporting
+      !EV_REF_TYP type ZIF_GTT_MIA_APP_TYPES=>TV_CRDOC_REF_TYP
+      !EV_REF_VAL type ZIF_GTT_MIA_APP_TYPES=>TV_CRDOC_REF_VAL .
+  class-methods GET_FORMATED_SH_NUMBER
+    importing
+      !IR_VTTK type ref to DATA
+    returning
+      value(RV_TKNUM) type TKNUM
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_FORMATED_SH_STOPID
+    importing
+      !IV_TKNUM type TKNUM
+      !IV_CNT type CLIKE
+    returning
+      value(RV_STOPID) type ZIF_GTT_MIA_APP_TYPES=>TV_STOPID .
+  class-methods GET_NEXT_EVENT_COUNTER
+    returning
+      value(RV_EVTCNT) type /SAPTRX/EVTCNT .
+  class-methods GET_TRACKING_ID_SH_HEADER
+    importing
+      !IR_VTTK type ref to DATA
+    returning
+      value(RV_TRACK_ID) type /SAPTRX/TRXID
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_STOPS_FROM_SHIPMENT
+    importing
+      !IV_TKNUM type TKNUM
+      !IT_VTTS type VTTSVB_TAB optional
+      !IT_VTSP type VTSPVB_TAB optional
+      !IT_VTTP type VTTPVB_TAB optional
+    exporting
+      !ET_STOPS type ZIF_GTT_MIA_APP_TYPES=>TT_STOPS
+      !ET_DLV_WATCHING_STOPS type ZIF_GTT_MIA_APP_TYPES=>TT_DLV_WATCH_STOPS .
+  class-methods IS_APPROPRIATE_TYPE
+    importing
+      !IR_VTTK type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods IS_DELIVERY_ASSIGNED
+    importing
+      !IR_VTTP type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods IS_OBJECT_MODIFIED
+    importing
+      !IS_EVENTS type TRXAS_EVT_CTAB_WA
+    returning
+      value(RV_RESULT) type ABAP_BOOL .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -96,7 +95,7 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
 
   METHOD get_formated_sh_number.
 
-    rv_tknum  = zcl_gtt_mia_tools=>get_field_of_structure(
+    rv_tknum  = zcl_gtt_tools=>get_field_of_structure(
                   ir_struct_data = ir_vttk
                   iv_field_name  = 'TKNUM' ).
 
@@ -188,19 +187,19 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
     LOOP AT lt_vttsvb INTO ls_vttsvb WHERE tknum = iv_tknum
                                        AND updkz <> 'D'.
       IF ls_vttsvb-kunna IS NOT INITIAL.
-        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
+        lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
         lv_srclocid   = ls_vttsvb-kunna.
       ELSEIF ls_vttsvb-vstel IS NOT INITIAL.
-        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-shippingpoint.
+        lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
         lv_srclocid   = ls_vttsvb-vstel.
       ELSEIF ls_vttsvb-lifna IS NOT INITIAL.
-        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
+        lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
         lv_srclocid   = ls_vttsvb-lifna.
       ELSEIF ls_vttsvb-werka IS NOT INITIAL.
-        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
+        lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-plant.
         lv_srclocid   = ls_vttsvb-werka.
       ELSEIF ls_vttsvb-knota IS NOT INITIAL.
-        lv_srcloctype = zif_gtt_mia_ef_constants=>cs_loc_types-logisticlocation.
+        lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
         lv_srclocid   = ls_vttsvb-knota.
       ENDIF.
 
@@ -210,19 +209,19 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
       ENDIF.
 
       IF ls_vttsvb-kunnz IS NOT INITIAL.
-        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
+        lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
         lv_deslocid   = ls_vttsvb-kunnz.
       ELSEIF ls_vttsvb-vstez IS NOT INITIAL.
-        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-shippingpoint.
+        lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
         lv_deslocid   = ls_vttsvb-vstez.
       ELSEIF ls_vttsvb-lifnz IS NOT INITIAL.
-        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-businesspartner.
+        lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
         lv_deslocid   = ls_vttsvb-lifnz.
       ELSEIF ls_vttsvb-werkz IS NOT INITIAL.
-        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant.
+        lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-plant.
         lv_deslocid   = ls_vttsvb-werkz.
       ELSEIF ls_vttsvb-knotz IS NOT INITIAL.
-        lv_desloctype = zif_gtt_mia_ef_constants=>cs_loc_types-logisticlocation.
+        lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
         lv_deslocid   = ls_vttsvb-knotz.
       ENDIF.
 
@@ -400,7 +399,7 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
 
     DATA: lv_tknum TYPE vttk-tknum.
 
-    lv_tknum  = zcl_gtt_mia_tools=>get_field_of_structure(
+    lv_tknum  = zcl_gtt_tools=>get_field_of_structure(
                   ir_struct_data = ir_vttk
                   iv_field_name  = 'TKNUM' ).
 
@@ -413,7 +412,7 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
 
     DATA: lv_abfer  TYPE tvtk-abfer.
 
-    DATA(lv_shtyp)  = CONV shtyp( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_shtyp)  = CONV shtyp( zcl_gtt_tools=>get_field_of_structure(
                                     ir_struct_data = ir_vttk
                                     iv_field_name  = 'SHTYP' ) ).
 
@@ -430,7 +429,7 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
     ELSE.
       MESSAGE e057(00) WITH lv_shtyp '' '' 'TVTK'
         INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -453,9 +452,9 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
   METHOD is_object_modified.
 
     rv_result   = boolc(
-      is_events-update_indicator = zif_gtt_mia_ef_constants=>cs_change_mode-insert OR
-      is_events-update_indicator = zif_gtt_mia_ef_constants=>cs_change_mode-update OR
-      is_events-update_indicator = zif_gtt_mia_ef_constants=>cs_change_mode-undefined
+      is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-insert OR
+      is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-update OR
+      is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-undefined
     ).
 
   ENDMETHOD.

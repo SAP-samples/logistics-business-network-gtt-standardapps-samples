@@ -1,20 +1,20 @@
-CLASS zcl_gtt_mia_ctp_tor_changes DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_CTP_TOR_CHANGES definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS constructor
-      IMPORTING
-        !it_tor_root_sstring        TYPE /scmtms/t_em_bo_tor_root
-        !it_tor_root_before_sstring TYPE /scmtms/t_em_bo_tor_root
-        !it_tor_item_sstring        TYPE /scmtms/t_em_bo_tor_item
-        !it_tor_item_before_sstring TYPE /scmtms/t_em_bo_tor_item
-        !it_tor_stop_sstring        TYPE /scmtms/t_em_bo_tor_stop
-        !it_tor_stop_addr_sstring   TYPE /scmtms/t_em_bo_loc_addr .
-    METHODS get_delivery_items
-      RETURNING
-        VALUE(rr_deliveries) TYPE REF TO data .
+  methods CONSTRUCTOR
+    importing
+      !IT_TOR_ROOT_SSTRING type /SCMTMS/T_EM_BO_TOR_ROOT
+      !IT_TOR_ROOT_BEFORE_SSTRING type /SCMTMS/T_EM_BO_TOR_ROOT
+      !IT_TOR_ITEM_SSTRING type /SCMTMS/T_EM_BO_TOR_ITEM
+      !IT_TOR_ITEM_BEFORE_SSTRING type /SCMTMS/T_EM_BO_TOR_ITEM
+      !IT_TOR_STOP_SSTRING type /SCMTMS/T_EM_BO_TOR_STOP
+      !IT_TOR_STOP_ADDR_SSTRING type /SCMTMS/T_EM_BO_LOC_ADDR .
+  methods GET_DELIVERY_ITEMS
+    returning
+      value(RR_DELIVERIES) type ref to DATA .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -105,8 +105,8 @@ CLASS ZCL_GTT_MIA_CTP_TOR_CHANGES IMPLEMENTATION.
 
       IF <ls_tor_item>-base_btd_tco = zif_gtt_mia_ctp_tor_constants=>cv_base_btd_tco_inb_dlv AND
          <ls_tor_item>-base_btd_id     IS NOT INITIAL AND
-         <ls_tor_item>-base_btditem_id IS NOT INITIAL.
-
+         <ls_tor_item>-base_btditem_id IS NOT INITIAL AND
+         <ls_tor_item>-item_cat = /scmtms/if_tor_const=>sc_tor_item_category-product.
         add_delivery_item(
           EXPORTING
             is_tor_root      = is_tor_root
@@ -196,7 +196,8 @@ CLASS ZCL_GTT_MIA_CTP_TOR_CHANGES IMPLEMENTATION.
             ( change_mode = /bobf/if_frw_c=>sc_modify_delete OR
               change_mode = /bobf/if_frw_c=>sc_modify_create ) AND
               base_btd_id IS NOT INITIAL AND
-              base_btditem_id IS NOT INITIAL.
+              base_btditem_id IS NOT INITIAL AND
+             item_cat = /scmtms/if_tor_const=>sc_tor_item_category-product.
 
       ASSIGN mt_tor_root[ node_id = <ls_tor_item>-parent_node_id ] TO FIELD-SYMBOL(<ls_tor_root>).
       IF sy-subrc = 0 AND

@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>ZGTT_SSOF_PLN_EVT_DATETIME</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME>CHAR15</DOMNAME>
+    <HEADLEN>55</HEADLEN>
+    <SCRLEN1>10</SCRLEN1>
+    <SCRLEN2>20</SCRLEN2>
+    <SCRLEN3>40</SCRLEN3>
+    <DDTEXT>Planned Event Business Datetime (GTT)</DDTEXT>
+    <REPTEXT>Planned Event Business Datetime (GTT)</REPTEXT>
+    <SCRTEXT_S>PlnEvt Tm.</SCRTEXT_S>
+    <SCRTEXT_M>Plnd. Evt. Datetime</SCRTEXT_M>
+    <SCRTEXT_L>Planned Event Business Datetime (GTT)</SCRTEXT_L>
+    <DTELMASTER>E</DTELMASTER>
+    <REFKIND>D</REFKIND>
+   </DD04V>
+   <I18N_LANGS>
+    <LANGU>늑</LANGU>
+    <LANGU>닱</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DDTEXT>DTEL ZGTT_PLN_EVT_DATETIME</DDTEXT>
+     <REPTEXT>DTEL ZGTT_PLN_EVT_DATETIME</REPTEXT>
+     <SCRTEXT_S>DTEL&gt;ZGTT_</SCRTEXT_S>
+     <SCRTEXT_M>DTEL&gt;ZGTT_PLN_EVT_DA</SCRTEXT_M>
+     <SCRTEXT_L>DTEL ZGTT_PLN_EVT_DATETIME</SCRTEXT_L>
+    </item>
+    <item>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DDTEXT>[Ƥĺąŋŋēƌ∙Ĕʋēŋţ∙Ɓűşįŋēşş∙Ďąţēţįɱē∙(ĢŢŢ)∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DDTEXT>
+     <REPTEXT>[Ƥĺąŋŋēƌ∙Ĕʋēŋţ∙Ɓűşįŋēşş∙Ďąţēţįɱē∙(ĢŢŢ)∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</REPTEXT>
+     <SCRTEXT_S>[ƤĺŋĔʋţ∙Ţ]</SCRTEXT_S>
+     <SCRTEXT_M>[Ƥĺŋƌ.∙Ĕʋţ.∙Ďąţēţįɱ]</SCRTEXT_M>
+     <SCRTEXT_L>[Ƥĺąŋŋēƌ∙Ĕʋēŋţ∙Ɓűşįŋēşş∙Ďąţēţįɱē∙(ĢŢŢ)∙]</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

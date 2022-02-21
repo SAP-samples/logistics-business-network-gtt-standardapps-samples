@@ -1,21 +1,21 @@
-CLASS zcl_gtt_mia_ae_filler_dli_pkn DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_AE_FILLER_DLI_PKN definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_gtt_mia_ae_filler .
+  interfaces ZIF_GTT_AE_FILLER .
 
-    METHODS constructor
-      IMPORTING
-        !io_ae_parameters TYPE REF TO zif_gtt_mia_ae_parameters .
+  methods CONSTRUCTOR
+    importing
+      !IO_AE_PARAMETERS type ref to ZIF_GTT_AE_PARAMETERS .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
     TYPES:
       tt_vepo            TYPE STANDARD TABLE OF vepovb .
 
-    DATA mo_ae_parameters TYPE REF TO zif_gtt_mia_ae_parameters .
+    DATA mo_ae_parameters TYPE REF TO zif_gtt_ae_parameters .
 
     METHODS get_packing_quantity
       IMPORTING
@@ -29,7 +29,7 @@ CLASS zcl_gtt_mia_ae_filler_dli_pkn DEFINITION
       IMPORTING
         !is_events        TYPE trxas_evt_ctab_wa
       RETURNING
-        VALUE(rv_changed) TYPE zif_gtt_mia_ef_types=>tv_condition
+        VALUE(rv_changed) TYPE zif_gtt_ef_types=>tv_condition
       RAISING
         cx_udm_message .
 ENDCLASS.
@@ -39,23 +39,23 @@ ENDCLASS.
 CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
 
 
-  METHOD constructor.
+  METHOD CONSTRUCTOR.
 
     mo_ae_parameters  = io_ae_parameters.
 
   ENDMETHOD.
 
 
-  METHOD get_packing_quantity.
+  METHOD GET_PACKING_QUANTITY.
 
     DATA: lv_vemng_flo  TYPE vepo-vemng_flo VALUE 0.
 
     FIELD-SYMBOLS: <lt_vepo> TYPE tt_vepo.
 
-    DATA(lv_vbeln)  = CONV vbeln_vl( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_vbeln)  = CONV vbeln_vl( zcl_gtt_tools=>get_field_of_structure(
                                        ir_struct_data = ir_lips
                                        iv_field_name  = 'VBELN' ) ).
-    DATA(lv_posnr)  = CONV posnr_vl( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_posnr)  = CONV posnr_vl( zcl_gtt_tools=>get_field_of_structure(
                                        ir_struct_data = ir_lips
                                        iv_field_name  = 'POSNR' ) ).
 
@@ -71,45 +71,45 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
         ADD <ls_vepo>-vemng_flo TO lv_vemng_flo.
       ENDLOOP.
 
-      rv_menge  = zcl_gtt_mia_dl_tools=>convert_quantity_into_pounits(
-                    iv_quantity_uom = lv_vemng_flo
-                    ir_lips         = ir_lips ).
+      rv_menge = zcl_gtt_mia_dl_tools=>convert_quantity_into_pounits(
+        iv_quantity_uom = lv_vemng_flo
+        ir_lips         = ir_lips ).
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VEPO' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VEPO' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD get_packing_quantity_changed.
+  METHOD GET_PACKING_QUANTITY_CHANGED.
 
     FIELD-SYMBOLS: <lt_vepo_old> TYPE tt_vepo,
                    <lt_vepo_new> TYPE tt_vepo.
 
-    IF is_events-update_indicator = zif_gtt_mia_ef_constants=>cs_change_mode-insert.
+    IF is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-insert.
       DATA(lv_quantity) = get_packing_quantity(
                             ir_lips = is_events-maintabref
                             ir_vepo = mo_ae_parameters->get_appl_table(
                                         iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_hu_item_new ) ).
 
       rv_changed        = COND #( WHEN lv_quantity > 0
-                                    THEN zif_gtt_mia_ef_constants=>cs_condition-true
-                                    ELSE zif_gtt_mia_ef_constants=>cs_condition-false ).
+                                    THEN zif_gtt_ef_constants=>cs_condition-true
+                                    ELSE zif_gtt_ef_constants=>cs_condition-false ).
     ELSE.
-      rv_changed    = zif_gtt_mia_ef_constants=>cs_condition-false.
+      rv_changed    = zif_gtt_ef_constants=>cs_condition-false.
 
-      DATA(lv_vbeln)  = CONV vbeln_vl( zcl_gtt_mia_tools=>get_field_of_structure(
+      DATA(lv_vbeln)  = CONV vbeln_vl( zcl_gtt_tools=>get_field_of_structure(
                                          ir_struct_data = is_events-maintabref
                                          iv_field_name  = 'VBELN' ) ).
-      DATA(lv_posnr)  = CONV posnr_vl( zcl_gtt_mia_tools=>get_field_of_structure(
+      DATA(lv_posnr)  = CONV posnr_vl( zcl_gtt_tools=>get_field_of_structure(
                                          ir_struct_data = is_events-maintabref
                                          iv_field_name  = 'POSNR' ) ).
 
       DATA(lr_vepo_old) = mo_ae_parameters->get_appl_table(
-                            iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_hu_item_old ).
+        iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_hu_item_old ).
       DATA(lr_vepo_new) = mo_ae_parameters->get_appl_table(
-                            iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_hu_item_new ).
+        iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_hu_item_new ).
 
       ASSIGN lr_vepo_old->* TO <lt_vepo_old>.
       ASSIGN lr_vepo_new->* TO <lt_vepo_new>.
@@ -123,20 +123,20 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
             AND updkz IS NOT INITIAL.
 
           " HU item inserted ?
-          IF <ls_vepo_new>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert.
-            rv_changed  = zif_gtt_mia_ef_constants=>cs_condition-true.
+          IF <ls_vepo_new>-updkz = zif_gtt_ef_constants=>cs_change_mode-insert.
+            rv_changed  = zif_gtt_ef_constants=>cs_condition-true.
             RETURN.
 
             " HU item updated ?
-          ELSEIF <ls_vepo_new>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-update OR
-                 <ls_vepo_new>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-undefined.
+          ELSEIF <ls_vepo_new>-updkz = zif_gtt_ef_constants=>cs_change_mode-update OR
+                 <ls_vepo_new>-updkz = zif_gtt_ef_constants=>cs_change_mode-undefined.
 
             READ TABLE <lt_vepo_old> ASSIGNING FIELD-SYMBOL(<ls_vepo_old>)
               WITH KEY venum = <ls_vepo_new>-venum
                        vepos = <ls_vepo_new>-vepos.
 
             IF sy-subrc = 0 AND <ls_vepo_new>-vemng_flo <> <ls_vepo_old>-vemng_flo .
-              rv_changed  = zif_gtt_mia_ef_constants=>cs_condition-true.
+              rv_changed  = zif_gtt_ef_constants=>cs_condition-true.
               RETURN.
             ENDIF.
           ENDIF.
@@ -146,34 +146,34 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
         READ TABLE <lt_vepo_old> TRANSPORTING NO FIELDS
           WITH KEY vbeln = lv_vbeln
                    posnr = lv_posnr
-                   updkz = zif_gtt_mia_ef_constants=>cs_change_mode-delete.
+                   updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
 
         rv_changed  = COND #( WHEN sy-subrc = 0
-                                THEN zif_gtt_mia_ef_constants=>cs_condition-true
-                                ELSE zif_gtt_mia_ef_constants=>cs_condition-false ).
+                                THEN zif_gtt_ef_constants=>cs_condition-true
+                                ELSE zif_gtt_ef_constants=>cs_condition-false ).
       ELSE.
-        MESSAGE e002(zgtt_mia) WITH 'VEPO' INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        MESSAGE e002(zgtt) WITH 'VEPO' INTO DATA(lv_dummy).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_ae_filler~check_relevance.
+  METHOD ZIF_GTT_AE_FILLER~CHECK_RELEVANCE.
 
     DATA: lv_difference    TYPE menge_d.
 
-    rv_result   = zif_gtt_mia_ef_constants=>cs_condition-false.
+    rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
     IF is_events-maintabdef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new AND
        zcl_gtt_mia_dl_tools=>is_appropriate_dl_type( ir_struct = is_events-mastertabref ) = abap_true AND
        zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = is_events-maintabref ) = abap_true.
 
       CASE is_events-update_indicator.
-        WHEN zif_gtt_mia_ef_constants=>cs_change_mode-insert OR
-             zif_gtt_mia_ef_constants=>cs_change_mode-update OR
-             zif_gtt_mia_ef_constants=>cs_change_mode-undefined.
+        WHEN zif_gtt_ef_constants=>cs_change_mode-insert OR
+             zif_gtt_ef_constants=>cs_change_mode-update OR
+             zif_gtt_ef_constants=>cs_change_mode-undefined.
 
           rv_result   = get_packing_quantity_changed( is_events = is_events ).
       ENDCASE.
@@ -182,10 +182,9 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_ae_filler~get_event_data.
+  METHOD ZIF_GTT_AE_FILLER~GET_EVENT_DATA.
     DATA:
       lv_werks           TYPE werks_d,
-      lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
       lv_dlvittrxcod     TYPE /saptrx/trxcod.
 
     DATA(lv_quantity)   = get_packing_quantity(
@@ -193,26 +192,11 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
                             ir_vepo = mo_ae_parameters->get_appl_table(
                                         iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_hu_item_new ) ).
 
-    lv_werks            = zcl_gtt_mia_tools=>get_field_of_structure(
-                            ir_struct_data = is_events-maintabref
-                            iv_field_name  = 'WERKS' ).
+    lv_werks = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = is_events-maintabref
+      iv_field_name  = 'WERKS' ).
 
-    lv_dlvittrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_position.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type        = is_events-eventtype
-            iv_app         = 'MIA'
-          IMPORTING
-            ev_dlvittrxcod = lv_tmp_dlvittrxcod.
-
-        IF lv_tmp_dlvittrxcod IS NOT INITIAL.
-          lv_dlvittrxcod = lv_tmp_dlvittrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
+    lv_dlvittrxcod = zif_gtt_ef_constants=>cs_trxcod-dl_position.
 
     ct_trackingheader = VALUE #( BASE ct_trackingheader (
       language    = sy-langu
@@ -220,10 +204,10 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
                       ir_lips = is_events-maintabref )
       trxcod      = lv_dlvittrxcod
       evtcnt      = is_events-eventid
-      evtid       = zif_gtt_mia_app_constants=>cs_milestone-dl_packing
+      evtid       = zif_gtt_ef_constants=>cs_milestone-dl_packing
       evtdat      = sy-datum
       evttim      = sy-uzeit
-      evtzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
+      evtzon      = zcl_gtt_tools=>get_system_time_zone( )
     ) ).
 
     ct_eventid_map  = VALUE #( BASE ct_eventid_map (
@@ -233,18 +217,18 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
 
     ct_tracklocation  = VALUE #( BASE ct_tracklocation (
       evtcnt      = is_events-eventid
-      loccod      = zif_gtt_mia_ef_constants=>cs_loc_types-plant
-      locid1      = zcl_gtt_mia_tools=>get_pretty_location_id(
+      loccod      = zif_gtt_ef_constants=>cs_loc_types-plant
+      locid1      = zcl_gtt_tools=>get_pretty_location_id(
                       iv_locid   = lv_werks
-                      iv_loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant )
+                      iv_loctype = zif_gtt_ef_constants=>cs_loc_types-plant )
     ) ).
 
     " the WHOLE QUANTITY is sent (delta approach might have calculation mistakes
     " because of quantity conversion
     ct_trackparameters  = VALUE #( BASE ct_trackparameters (
       evtcnt      = is_events-eventid
-      param_name  = zif_gtt_mia_app_constants=>cs_event_param-quantity
-      param_value = zcl_gtt_mia_tools=>get_pretty_value( iv_value = lv_quantity )
+      param_name  = zif_gtt_ef_constants=>cs_event_param-quantity
+      param_value = zcl_gtt_tools=>get_pretty_value( iv_value = lv_quantity )
     ) ).
 
   ENDMETHOD.

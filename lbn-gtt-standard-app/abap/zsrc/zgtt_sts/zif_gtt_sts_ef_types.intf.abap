@@ -1,48 +1,49 @@
-interface ZIF_GTT_STS_EF_TYPES
-  public .
+INTERFACE zif_gtt_sts_ef_types
+  PUBLIC .
 
 
-  types TS_CONTROL_DATA type /SAPTRX/CONTROL_DATA .
-  types:
+  TYPES ts_control_data TYPE /saptrx/control_data .
+  TYPES:
     tt_control_data TYPE STANDARD TABLE OF ts_control_data .
-  types:
+  TYPES:
     BEGIN OF ts_enh_track_id_data,
-           key TYPE char33.
-           INCLUDE TYPE /saptrx/track_id_data.
+      key TYPE char33.
+      INCLUDE TYPE /saptrx/track_id_data.
   TYPES: END OF ts_enh_track_id_data .
-  types:
+  TYPES:
     tt_enh_track_id_data TYPE STANDARD TABLE OF ts_enh_track_id_data .
-  types TS_TRACK_ID_DATA type /SAPTRX/TRACK_ID_DATA .
-  types:
+  TYPES ts_track_id_data TYPE /saptrx/track_id_data .
+  TYPES:
     tt_track_id_data TYPE STANDARD TABLE OF ts_track_id_data .
-  types TS_STRUCDATADEF type /SAPTRX/STRUCDATADEF .
-  types:
+  TYPES ts_strucdatadef TYPE /saptrx/strucdatadef .
+  TYPES:
     tt_strucdatadef TYPE STANDARD TABLE OF ts_strucdatadef .
-  types TS_EXPEVENTDATA type /SAPTRX/EXP_EVENTS .
-  types:
+  TYPES ts_expeventdata TYPE /saptrx/exp_events .
+  TYPES:
     tt_expeventdata TYPE STANDARD TABLE OF ts_expeventdata .
-  types TS_MEASRMNTDATA type /SAPTRX/MEASR_DATA .
-  types:
+  TYPES ts_measrmntdata TYPE /saptrx/measr_data .
+  TYPES:
     tt_measrmntdata TYPE STANDARD TABLE OF ts_measrmntdata .
-  types TS_INFODATA type /SAPTRX/INFO_DATA .
-  types:
+  TYPES ts_infodata TYPE /saptrx/info_data .
+  TYPES:
     tt_infodata TYPE STANDARD TABLE OF ts_infodata .
-  types:
+  TYPES:
     BEGIN OF ts_definition,
-           maintab   TYPE /saptrx/strucdatadef,
-           mastertab TYPE /saptrx/strucdatadef,
-         END OF ts_definition .
-  types:
+      maintab   TYPE /saptrx/strucdatadef,
+      mastertab TYPE /saptrx/strucdatadef,
+    END OF ts_definition .
+  TYPES:
     tt_tracklocation  TYPE STANDARD TABLE OF /saptrx/bapi_evm_locationid .
-  types:
+  TYPES:
     tt_trackingheader TYPE STANDARD TABLE OF /saptrx/bapi_evm_header .
-  types TV_CONDITION type SY-BINPT .
-  types:
+  TYPES tv_condition TYPE sy-binpt .
+  TYPES:
     BEGIN OF ts_stop_points,
-           stop_id   TYPE string,
-           log_locid TYPE /scmtms/location_id,
-           seq_num   TYPE /scmtms/seq_num,
-         END OF ts_stop_points .
-  types:
+      stop_id   TYPE string,
+      log_locid TYPE /scmtms/location_id,
+      seq_num   TYPE /scmtms/seq_num,
+    END OF ts_stop_points .
+  TYPES:
     tt_stop_points TYPE STANDARD TABLE OF ts_stop_points .
-endinterface.
+
+ENDINTERFACE.

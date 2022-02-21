@@ -1,28 +1,27 @@
-CLASS zcl_gtt_mia_event_rel_dl_main DEFINITION
-  PUBLIC
-  ABSTRACT
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_EVENT_REL_DL_MAIN definition
+  public
+  abstract
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS constructor
-      IMPORTING
-        !io_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters
-        !is_app_objects   TYPE trxas_appobj_ctab_wa OPTIONAL .
-    METHODS initiate
-      RAISING
-        cx_udm_message .
-    METHODS is_enabled
-      IMPORTING
-        !iv_milestone    TYPE clike
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
-    METHODS update .
-
+  methods CONSTRUCTOR
+    importing
+      !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA optional .
+  methods INITIATE
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_ENABLED
+    importing
+      !IV_MILESTONE type CLIKE
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods UPDATE .
   PROTECTED SECTION.
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
+    DATA mo_ef_parameters TYPE REF TO zif_gtt_ef_parameters .
     DATA ms_app_objects TYPE trxas_appobj_ctab_wa .
     DATA ms_relevance TYPE zgtt_mia_ee_rel .
 
@@ -67,17 +66,18 @@ ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_event_rel_dl_main IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_EVENT_REL_DL_MAIN IMPLEMENTATION.
 
 
-  METHOD constructor.
+  METHOD CONSTRUCTOR.
 
     mo_ef_parameters  = io_ef_parameters.
     ms_app_objects    = is_app_objects.
 
   ENDMETHOD.
 
-  METHOD initiate.
+
+  METHOD INITIATE.
 
     " read stored statuses
     SELECT SINGLE *
@@ -105,20 +105,20 @@ CLASS zcl_gtt_mia_event_rel_dl_main IMPLEMENTATION.
       ms_relevance-appobjid = ms_app_objects-appobjid.
 
       " recalculate statuses
-      recalc_relevance( iv_milestone = zif_gtt_mia_app_constants=>cs_milestone-dl_put_away ).
-      recalc_relevance( iv_milestone = zif_gtt_mia_app_constants=>cs_milestone-dl_packing ).
-      recalc_relevance( iv_milestone = zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt ).
-      recalc_relevance( iv_milestone = zif_gtt_mia_app_constants=>cs_milestone-dl_pod ).
+      recalc_relevance( iv_milestone = zif_gtt_ef_constants=>cs_milestone-dl_put_away ).
+      recalc_relevance( iv_milestone = zif_gtt_ef_constants=>cs_milestone-dl_packing ).
+      recalc_relevance( iv_milestone = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt ).
+      recalc_relevance( iv_milestone = zif_gtt_ef_constants=>cs_milestone-dl_pod ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD is_enabled.
+  METHOD IS_ENABLED.
 
     DATA(lv_field_name) = get_field_name(
-                            iv_milestone   = iv_milestone
-                            iv_internal = abap_true ).
+      iv_milestone = iv_milestone
+      iv_internal  = abap_true ).
 
     ASSIGN COMPONENT lv_field_name OF STRUCTURE ms_relevance
       TO FIELD-SYMBOL(<lv_value>).
@@ -126,14 +126,14 @@ CLASS zcl_gtt_mia_event_rel_dl_main IMPLEMENTATION.
     IF <lv_value> IS ASSIGNED.
       rv_result   = <lv_value>.
     ELSE.
-      MESSAGE e001(zgtt_mia) WITH lv_field_name '' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e001(zgtt) WITH lv_field_name '' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD recalc_relevance.
+  METHOD RECALC_RELEVANCE.
 
     " retrieve delivery item status field value
     DATA(lv_status)     = get_object_status( iv_milestone = iv_milestone ).
@@ -147,7 +147,7 @@ CLASS zcl_gtt_mia_event_rel_dl_main IMPLEMENTATION.
       WHEN lv_status = zif_gtt_mia_app_constants=>cs_delivery_stat-not_relevant
         THEN abap_false
       WHEN lv_status = zif_gtt_mia_app_constants=>cs_delivery_stat-not_processed OR
-           iv_milestone = zif_gtt_mia_app_constants=>cs_milestone-dl_pod
+           iv_milestone = zif_gtt_ef_constants=>cs_milestone-dl_pod
         THEN abap_true
         ELSE abap_undefined
     ).
@@ -163,11 +163,11 @@ CLASS zcl_gtt_mia_event_rel_dl_main IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD set_relevance.
+  METHOD SET_RELEVANCE.
 
     DATA(lv_fname_int) = get_field_name(
-                           iv_milestone = iv_milestone
-                           iv_internal  = abap_true ).
+      iv_milestone = iv_milestone
+      iv_internal  = abap_true ).
 
     ASSIGN COMPONENT lv_fname_int OF STRUCTURE ms_relevance
       TO FIELD-SYMBOL(<lv_flag>).
@@ -175,14 +175,14 @@ CLASS zcl_gtt_mia_event_rel_dl_main IMPLEMENTATION.
     IF <lv_flag> IS ASSIGNED.
       <lv_flag>   = iv_relevance.
     ELSE.
-      MESSAGE e001(zgtt_mia) WITH lv_fname_int '' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e001(zgtt) WITH lv_fname_int '' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD update.
+  METHOD UPDATE.
 
     CALL FUNCTION 'ZGTT_MIA_UPDATE_RELEVANCE_TAB'
       IN UPDATE TASK

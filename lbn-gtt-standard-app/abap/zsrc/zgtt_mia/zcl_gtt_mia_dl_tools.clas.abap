@@ -1,109 +1,109 @@
-CLASS zcl_gtt_mia_dl_tools DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_DL_TOOLS definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    CLASS-METHODS convert_quantity_into_pounits
-      IMPORTING
-        !iv_quantity_uom       TYPE any
-        !ir_lips               TYPE REF TO data
-      RETURNING
-        VALUE(rv_quantity_pou) TYPE f
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_addres_info
-      IMPORTING
-        !iv_addr_type TYPE ad_adrtype DEFAULT zif_gtt_mia_app_constants=>cs_adrtype-organization
-        !iv_addr_numb TYPE ad_addrnum
-      EXPORTING
-        !ev_address   TYPE clike
-        !ev_email     TYPE clike
-        !ev_telephone TYPE clike
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_door_description
-      IMPORTING
-        !iv_lgnum       TYPE lgnum
-        !iv_lgtor       TYPE lgtor
-      RETURNING
-        VALUE(rv_descr) TYPE /saptrx/paramval200
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_delivery_date
-      IMPORTING
-        !ir_data       TYPE REF TO data
-      RETURNING
-        VALUE(rv_date) TYPE /saptrx/event_exp_datetime
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_formated_dlv_item
-      IMPORTING
-        !ir_lips        TYPE REF TO data
-      RETURNING
-        VALUE(rv_posnr) TYPE char6
-      RAISING
-        cx_udm_message.
-    CLASS-METHODS get_formated_dlv_number
-      IMPORTING
-        !ir_likp        TYPE REF TO data
-      RETURNING
-        VALUE(rv_vbeln) TYPE vbeln_vl
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_formated_po_item
-      IMPORTING
-        !ir_lips        TYPE REF TO data
-      RETURNING
-        VALUE(rv_po_item) TYPE char20
-      RAISING
-        cx_udm_message.
-    CLASS-METHODS get_next_event_counter
-      RETURNING
-        VALUE(rv_evtcnt) TYPE /saptrx/evtcnt .
-    CLASS-METHODS get_plant_address_number
-      IMPORTING
-        !iv_werks       TYPE werks_d
-      RETURNING
-        VALUE(ev_adrnr) TYPE adrnr
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_storage_location_txt
-      IMPORTING
-        !iv_werks       TYPE werks_d
-        !iv_lgort       TYPE lgort_d
-      RETURNING
-        VALUE(rv_lgobe) TYPE lgobe
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_tracking_id_dl_header
-      IMPORTING
-        !ir_likp           TYPE REF TO data
-      RETURNING
-        VALUE(rv_track_id) TYPE /saptrx/trxid
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_tracking_id_dl_item
-      IMPORTING
-        !ir_lips           TYPE REF TO data
-      RETURNING
-        VALUE(rv_track_id) TYPE /saptrx/trxid
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS is_appropriate_dl_item
-      IMPORTING
-        !ir_struct       TYPE REF TO data
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS is_appropriate_dl_type
-      IMPORTING
-        !ir_struct       TYPE REF TO data
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  class-methods CONVERT_QUANTITY_INTO_POUNITS
+    importing
+      !IV_QUANTITY_UOM type ANY
+      !IR_LIPS type ref to DATA
+    returning
+      value(RV_QUANTITY_POU) type F
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_ADDRES_INFO
+    importing
+      !IV_ADDR_TYPE type AD_ADRTYPE default ZIF_GTT_MIA_APP_CONSTANTS=>CS_ADRTYPE-ORGANIZATION
+      !IV_ADDR_NUMB type AD_ADDRNUM
+    exporting
+      !EV_ADDRESS type CLIKE
+      !EV_EMAIL type CLIKE
+      !EV_TELEPHONE type CLIKE
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_DOOR_DESCRIPTION
+    importing
+      !IV_LGNUM type LGNUM
+      !IV_LGTOR type LGTOR
+    returning
+      value(RV_DESCR) type /SAPTRX/PARAMVAL200
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_DELIVERY_DATE
+    importing
+      !IR_DATA type ref to DATA
+    returning
+      value(RV_DATE) type /SAPTRX/EVENT_EXP_DATETIME
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_FORMATED_DLV_ITEM
+    importing
+      !IR_LIPS type ref to DATA
+    returning
+      value(RV_POSNR) type CHAR6
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_FORMATED_DLV_NUMBER
+    importing
+      !IR_LIKP type ref to DATA
+    returning
+      value(RV_VBELN) type VBELN_VL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_FORMATED_PO_ITEM
+    importing
+      !IR_LIPS type ref to DATA
+    returning
+      value(RV_PO_ITEM) type CHAR20
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_NEXT_EVENT_COUNTER
+    returning
+      value(RV_EVTCNT) type /SAPTRX/EVTCNT .
+  class-methods GET_PLANT_ADDRESS_NUMBER
+    importing
+      !IV_WERKS type WERKS_D
+    returning
+      value(EV_ADRNR) type ADRNR
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_STORAGE_LOCATION_TXT
+    importing
+      !IV_WERKS type WERKS_D
+      !IV_LGORT type LGORT_D
+    returning
+      value(RV_LGOBE) type LGOBE
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_TRACKING_ID_DL_HEADER
+    importing
+      !IR_LIKP type ref to DATA
+    returning
+      value(RV_TRACK_ID) type /SAPTRX/TRXID
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_TRACKING_ID_DL_ITEM
+    importing
+      !IR_LIPS type ref to DATA
+    returning
+      value(RV_TRACK_ID) type /SAPTRX/TRXID
+    raising
+      CX_UDM_MESSAGE .
+  class-methods IS_APPROPRIATE_DL_ITEM
+    importing
+      !IR_STRUCT type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods IS_APPROPRIATE_DL_TYPE
+    importing
+      !IR_STRUCT type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -117,10 +117,10 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
   METHOD convert_quantity_into_pounits.
 
-    DATA(lv_matnr)  = CONV matnr( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_matnr)  = CONV matnr( zcl_gtt_tools=>get_field_of_structure(
                                        ir_struct_data = ir_lips
                                        iv_field_name  = 'MATNR' ) ).
-    DATA(lv_vrkme)  = CONV vrkme( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_vrkme)  = CONV vrkme( zcl_gtt_tools=>get_field_of_structure(
                                        ir_struct_data = ir_lips
                                        iv_field_name  = 'VRKME' ) ).
 
@@ -143,7 +143,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
         OTHERS               = 9.
     IF sy-subrc <> 0.
       CLEAR: rv_quantity_pou.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -178,7 +178,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
                                   ELSE |{ ev_address }${ <ls_address>-address_line }| ).
         ENDLOOP.
       ELSE.
-        zcl_gtt_mia_tools=>throw_exception( ).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ENDIF.
 
@@ -202,7 +202,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
         ev_email      = VALUE #( ls_addr_comp-adsmtp_tab[ 1 ]-adsmtp-smtp_addr OPTIONAL ).
         ev_telephone  = VALUE #( ls_addr_comp-adtel_tab[ 1 ]-adtel-tel_number OPTIONAL ).
       ELSE.
-        zcl_gtt_mia_tools=>throw_exception( ).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ENDIF.
 
@@ -211,11 +211,11 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
   METHOD get_delivery_date.
 
-    rv_date = zcl_gtt_mia_tools=>get_local_timestamp(
-                iv_date = zcl_gtt_mia_tools=>get_field_of_structure(
+    rv_date = zcl_gtt_tools=>get_local_timestamp(
+                iv_date = zcl_gtt_tools=>get_field_of_structure(
                             ir_struct_data = ir_data
                             iv_field_name  = 'LFDAT' )
-                iv_time = zcl_gtt_mia_tools=>get_field_of_structure(
+                iv_time = zcl_gtt_tools=>get_field_of_structure(
                             ir_struct_data = ir_data
                             iv_field_name  = 'LFUHR' ) ).
 
@@ -224,9 +224,9 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
   METHOD get_formated_dlv_item.
 
-    rv_posnr  = zcl_gtt_mia_tools=>get_field_of_structure(
-                  ir_struct_data = ir_lips
-                  iv_field_name  = 'POSNR' ).
+    rv_posnr = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_lips
+      iv_field_name  = 'POSNR' ).
 
     rv_posnr   = |{ rv_posnr ALPHA = IN }|.
 
@@ -235,9 +235,9 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
   METHOD get_formated_dlv_number.
 
-    rv_vbeln  = zcl_gtt_mia_tools=>get_field_of_structure(
-                  ir_struct_data = ir_likp
-                  iv_field_name  = 'VBELN' ).
+    rv_vbeln = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_likp
+      iv_field_name  = 'VBELN' ).
 
     rv_vbeln   = |{ rv_vbeln ALPHA = OUT }|.
 
@@ -245,11 +245,11 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
 
   METHOD get_formated_po_item.
-    DATA(lv_ebeln)  = CONV ebeln( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_ebeln)  = CONV ebeln( zcl_gtt_tools=>get_field_of_structure(
                                     ir_struct_data = ir_lips
                                     iv_field_name  = 'VGBEL' ) ).
 
-    DATA(lv_vgpos)  = CONV vgpos( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_vgpos)  = CONV vgpos( zcl_gtt_tools=>get_field_of_structure(
                                     ir_struct_data = ir_lips
                                     iv_field_name  = 'VGPOS' ) ).
 
@@ -290,10 +290,10 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
       ELSE.
         MESSAGE e057(00) WITH iv_lgnum iv_lgtor '' 'T30BT'
           INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ELSE.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -310,7 +310,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
   METHOD get_plant_address_number.
 
-    DATA: ls_t001w TYPE T001w.
+    DATA: ls_t001w TYPE t001w.
 
     CALL FUNCTION 'WCB_T001W_SINGLE_READ'
       EXPORTING
@@ -324,7 +324,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
     IF sy-subrc = 0.
       ev_adrnr    = ls_t001w-adrnr.
     ELSE.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -349,7 +349,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
     ELSE.
       MESSAGE e058(00) WITH iv_werks iv_lgort '' 'T001L'
         INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -359,9 +359,9 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
     DATA: lv_vbeln TYPE lips-vbeln.
 
-    lv_vbeln  = zcl_gtt_mia_tools=>get_field_of_structure(
-                  ir_struct_data = ir_likp
-                  iv_field_name  = 'VBELN' ).
+    lv_vbeln = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_likp
+      iv_field_name  = 'VBELN' ).
 
     rv_track_id   = |{ lv_vbeln ALPHA = OUT }|.
 
@@ -373,13 +373,13 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
     DATA: lv_vbeln TYPE lips-vbeln,
           lv_posnr TYPE lips-posnr.
 
-    lv_vbeln  = zcl_gtt_mia_tools=>get_field_of_structure(
-                  ir_struct_data = ir_lips
-                  iv_field_name  = 'VBELN' ).
+    lv_vbeln = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_lips
+      iv_field_name  = 'VBELN' ).
 
-    lv_posnr  = zcl_gtt_mia_tools=>get_field_of_structure(
-                  ir_struct_data = ir_lips
-                  iv_field_name  = 'POSNR' ).
+    lv_posnr = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_lips
+      iv_field_name  = 'POSNR' ).
 
     rv_track_id   = |{ lv_vbeln ALPHA = OUT }{ lv_posnr ALPHA = IN }|.
 
@@ -391,7 +391,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
     DATA: it_tvlp  TYPE STANDARD TABLE OF tvlp.
 
-    DATA(lv_pstyv)  = CONV pstyv_vl( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_pstyv)  = CONV pstyv_vl( zcl_gtt_tools=>get_field_of_structure(
                                        ir_struct_data = ir_struct
                                        iv_field_name  = 'PSTYV' ) ).
 
@@ -410,7 +410,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
     ELSE.
       MESSAGE e057(00) WITH lv_pstyv '' '' 'TVLP'
         INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -420,7 +420,7 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
 
     DATA: ls_tvlk   TYPE tvlk.
 
-    DATA(lv_lfart)  = CONV lfart( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_lfart)  = CONV lfart( zcl_gtt_tools=>get_field_of_structure(
                                     ir_struct_data = ir_struct
                                     iv_field_name  = 'LFART' ) ).
 

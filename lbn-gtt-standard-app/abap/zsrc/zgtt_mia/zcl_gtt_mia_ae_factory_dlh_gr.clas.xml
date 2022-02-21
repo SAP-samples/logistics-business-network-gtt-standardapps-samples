@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_AE_FACTORY_DLH_GR</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Actual Event factory for Goods Receipt</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

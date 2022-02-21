@@ -1,14 +1,14 @@
-CLASS zcl_gtt_mia_tp_reader_shh DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_TP_READER_SHH definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_gtt_mia_tp_reader .
+  interfaces ZIF_GTT_TP_READER .
 
-    METHODS constructor
-      IMPORTING
-        !io_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
+  methods CONSTRUCTOR
+    importing
+      !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -58,7 +58,7 @@ CLASS zcl_gtt_mia_tp_reader_shh DEFINITION
         shpdoc_ref_val    TYPE STANDARD TABLE OF vbeln WITH EMPTY KEY,
       END OF ts_sh_header .
 
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_mia_ef_parameters .
+    DATA mo_ef_parameters TYPE REF TO zif_gtt_ef_parameters .
     CONSTANTS:
       BEGIN OF cs_mapping,
         tknum             TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
@@ -187,14 +187,14 @@ ENDCLASS.
 CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
 
-  METHOD constructor.
+  METHOD CONSTRUCTOR.
 
     mo_ef_parameters    = io_ef_parameters.
 
   ENDMETHOD.
 
 
-  METHOD fill_carrier_ref_doc_tables.
+  METHOD FILL_CARRIER_REF_DOC_TABLES.
 
     zcl_gtt_mia_sh_tools=>get_carrier_reference_document(
       EXPORTING
@@ -213,23 +213,23 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD fill_header_from_vttk.
+  METHOD FILL_HEADER_FROM_VTTK.
 
     FIELD-SYMBOLS: <ls_vttk> TYPE vttkvb.
 
     ASSIGN ir_vttk->* TO <ls_vttk>.
     IF sy-subrc = 0.
-      cs_header-tknum       = zcl_gtt_mia_sh_tools=>get_formated_sh_number(
-                                ir_vttk = ir_vttk ).
-      cs_header-bu_id_num   = get_forwarding_agent_id_number(
-                                iv_tdlnr = <ls_vttk>-tdlnr ).
+      cs_header-tknum = zcl_gtt_mia_sh_tools=>get_formated_sh_number(
+        ir_vttk = ir_vttk ).
+      cs_header-bu_id_num = get_forwarding_agent_id_number(
+        iv_tdlnr = <ls_vttk>-tdlnr ).
       cs_header-cont_dg     = <ls_vttk>-cont_dg.
       cs_header-tndr_trkid  = <ls_vttk>-tndr_trkid.
-      cs_header-ship_type   = get_shippment_type(
-                                iv_vsart    = <ls_vttk>-vsart
-                                iv_vttp_cnt = iv_vttp_cnt ).
-      cs_header-trans_mode  = get_transportation_mode(
-                                iv_vsart = <ls_vttk>-vsart ) .
+      cs_header-ship_type = get_shippment_type(
+        iv_vsart    = <ls_vttk>-vsart
+        iv_vttp_cnt = iv_vttp_cnt ).
+      cs_header-trans_mode = get_transportation_mode(
+        iv_vsart = <ls_vttk>-vsart ).
       cs_header-ship_kind   = zif_gtt_mia_app_constants=>cs_shipment_kind-shipment.
       cs_header-tdlnr       = <ls_vttk>-tdlnr.
 
@@ -254,14 +254,14 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
           et_ref_typ = cs_header-crdoc_ref_typ
           et_ref_val = cs_header-crdoc_ref_val ).
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTK' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTK' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD fill_header_from_vttp.
+  METHOD FILL_HEADER_FROM_VTTP.
 
     TYPES: tt_vttp  TYPE STANDARD TABLE OF vttpvb.
     DATA: lv_count TYPE i VALUE 0,
@@ -278,8 +278,8 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
       LOOP AT <lt_vttp> ASSIGNING FIELD-SYMBOL(<ls_vttp>)
         WHERE tknum = <ls_vttk>-tknum.
 
-        lv_vbeln    = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
-                        ir_likp = REF #( <ls_vttp> ) ).
+        lv_vbeln = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
+          ir_likp = REF #( <ls_vttp> ) ).
 
 *       For inbound Delivery,add shipper reference document
         IF <ls_vttk>-abfer = zif_gtt_mia_app_constants=>cs_abfer-empty_inb_ship OR
@@ -295,17 +295,17 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
       ENDLOOP.
 
     ELSEIF <ls_vttk> IS NOT ASSIGNED.
-      MESSAGE e002(zgtt_mia) WITH 'VTTK' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTK' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTP' INTO lv_dummy.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTP' INTO lv_dummy.
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD fill_header_from_vtts.
+  METHOD FILL_HEADER_FROM_VTTS.
 
     TYPES: BEGIN OF ts_stop_id,
              stopid_txt TYPE zif_gtt_mia_app_types=>tv_stopid,
@@ -314,7 +314,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
              locid      TYPE zif_gtt_mia_app_types=>tv_locid,
            END OF ts_stop_id.
 
-    DATA(lv_tknum) = CONV tknum( zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_tknum) = CONV tknum( zcl_gtt_tools=>get_field_of_structure(
                                    ir_struct_data = ir_vttk
                                    iv_field_name  = 'TKNUM' ) ).
 
@@ -344,12 +344,12 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
       zcl_gtt_mia_sh_tools=>get_stops_from_shipment(
         EXPORTING
-          iv_tknum  = lv_tknum
-          it_vtts   = lt_vtts
-          it_vtsp   = <lt_vtsp>
-          it_vttp   = <lt_vttp>
+          iv_tknum = lv_tknum
+          it_vtts  = lt_vtts
+          it_vtsp  = <lt_vtsp>
+          it_vttp  = <lt_vttp>
         IMPORTING
-          et_stops  = lt_stops ).
+          et_stops = lt_stops ).
 
       CLEAR: lv_count.
 
@@ -358,9 +358,9 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
       DELETE ADJACENT DUPLICATES FROM lt_stop_ids.
 
       LOOP AT lt_stop_ids ASSIGNING FIELD-SYMBOL(<ls_stop_ids>).
-        lv_locid    = zcl_gtt_mia_tools=>get_pretty_location_id(
-                            iv_locid   = <ls_stop_ids>-locid
-                            iv_loctype = <ls_stop_ids>-loctype ).
+        lv_locid = zcl_gtt_tools=>get_pretty_location_id(
+          iv_locid   = <ls_stop_ids>-locid
+          iv_loctype = <ls_stop_ids>-loctype ).
 
         APPEND <ls_stop_ids>-stopid_txt TO cs_header-stpid_stopid.
         APPEND <ls_stop_ids>-stopcnt    TO cs_header-stpid_stopcnt.
@@ -370,39 +370,39 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
       READ TABLE lt_stops ASSIGNING <ls_stops> INDEX 1.
       IF sy-subrc = 0.
-        cs_header-departure_dt      = zcl_gtt_mia_tools=>convert_datetime_to_utc(
-                                        iv_datetime = <ls_stops>-pln_evt_datetime
-                                        iv_timezone = <ls_stops>-pln_evt_timezone ).
+        cs_header-departure_dt = zcl_gtt_tools=>convert_datetime_to_utc(
+          iv_datetime = <ls_stops>-pln_evt_datetime
+          iv_timezone = <ls_stops>-pln_evt_timezone ).
         cs_header-departure_tz      = <ls_stops>-pln_evt_timezone.
-        cs_header-departure_locid   = zcl_gtt_mia_tools=>get_pretty_location_id(
-                                        iv_locid   = <ls_stops>-locid
-                                        iv_loctype = <ls_stops>-loctype ).
+        cs_header-departure_locid = zcl_gtt_tools=>get_pretty_location_id(
+          iv_locid   = <ls_stops>-locid
+          iv_loctype = <ls_stops>-loctype ).
         cs_header-departure_loctype = <ls_stops>-loctype.
       ENDIF.
 
       READ TABLE lt_stops ASSIGNING <ls_stops> INDEX lines( lt_stops ).
       IF sy-subrc = 0.
-        cs_header-arrival_dt      = zcl_gtt_mia_tools=>convert_datetime_to_utc(
-                                        iv_datetime = <ls_stops>-pln_evt_datetime
-                                        iv_timezone = <ls_stops>-pln_evt_timezone ).
+        cs_header-arrival_dt = zcl_gtt_tools=>convert_datetime_to_utc(
+          iv_datetime = <ls_stops>-pln_evt_datetime
+          iv_timezone = <ls_stops>-pln_evt_timezone ).
         cs_header-arrival_tz      = <ls_stops>-pln_evt_timezone.
-        cs_header-arrival_locid   = zcl_gtt_mia_tools=>get_pretty_location_id(
-                                        iv_locid   = <ls_stops>-locid
-                                        iv_loctype = <ls_stops>-loctype ).
+        cs_header-arrival_locid = zcl_gtt_tools=>get_pretty_location_id(
+          iv_locid   = <ls_stops>-locid
+          iv_loctype = <ls_stops>-loctype ).
         cs_header-arrival_loctype = <ls_stops>-loctype.
       ENDIF.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTS' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTS' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD fill_resource_tables.
+  METHOD FILL_RESOURCE_TABLES.
 
-    DATA(lv_res_tid)  = get_resource_tracking_id(
-                          is_vttk = is_vttk ).
+    DATA(lv_res_tid) = get_resource_tracking_id(
+      is_vttk = is_vttk ).
 
     IF lv_res_tid IS NOT INITIAL.
       et_ref_cnt    = VALUE #( ( 1 ) ).
@@ -412,7 +412,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD fill_tracked_object_tables.
+  METHOD FILL_TRACKED_OBJECT_TABLES.
 
     IF is_vttk-exti1 IS NOT INITIAL AND
        is_vttk-vsart = '01'.
@@ -440,7 +440,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_forwarding_agent_id_number.
+  METHOD GET_FORWARDING_AGENT_ID_NUMBER.
 
     DATA: lv_forward_agt TYPE bu_partner,
           lt_bpdetail    TYPE STANDARD TABLE OF bapibus1006_id_details.
@@ -468,7 +468,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_resource_tracking_id.
+  METHOD GET_RESOURCE_TRACKING_ID.
 
     rv_tracking_id  = COND #(
       WHEN is_vttk-exti1 IS NOT INITIAL AND
@@ -486,15 +486,15 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_shippment_header.
+  METHOD GET_SHIPPMENT_HEADER.
 
     TYPES: tt_vttk TYPE STANDARD TABLE OF vttkvb.
 
     FIELD-SYMBOLS: <lt_vttk> TYPE tt_vttk.
 
-    DATA(lv_tknum)  = zcl_gtt_mia_tools=>get_field_of_structure(
-                        ir_struct_data = is_app_object-maintabref
-                        iv_field_name  = 'TKNUM' ).
+    DATA(lv_tknum) = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = is_app_object-maintabref
+      iv_field_name  = 'TKNUM' ).
 
     ASSIGN ir_vttk->* TO <lt_vttk>.
     IF <lt_vttk> IS ASSIGNED.
@@ -504,19 +504,19 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
       IF sy-subrc = 0.
         rr_vttk = REF #( <ls_vttk> ).
       ELSE.
-        MESSAGE e005(zgtt_mia) WITH 'VTTK OLD' lv_tknum
+        MESSAGE e005(zgtt) WITH 'VTTK OLD' lv_tknum
           INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTK' INTO lv_dummy.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTK' INTO lv_dummy.
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD get_shippment_item_count.
+  METHOD GET_SHIPPMENT_ITEM_COUNT.
 
     FIELD-SYMBOLS: <lt_vttp> TYPE ANY TABLE.
 
@@ -527,7 +527,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_shippment_type.
+  METHOD GET_SHIPPMENT_TYPE.
 
     rv_ship_type  = COND #( WHEN iv_vttp_cnt <= 1
                               THEN SWITCH #( iv_vsart
@@ -540,7 +540,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_transportation_mode.
+  METHOD GET_TRANSPORTATION_MODE.
 
     rv_trans_mode = SWITCH #( iv_vsart
                               WHEN '04' THEN '01'   "Sea
@@ -555,43 +555,43 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD is_object_changed.
+  METHOD IS_OBJECT_CHANGED.
 
-    rv_result = zcl_gtt_mia_tools=>is_object_changed(
-                  is_app_object    = is_app_object
-                  io_ef_parameters = mo_ef_parameters
-                  it_check_tables  = VALUE #( ( zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new )
-                                              ( zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new )
-                                              ( zif_gtt_mia_app_constants=>cs_tabledef-sh_stage_new )
-                                              ( zif_gtt_mia_app_constants=>cs_tabledef-sh_stage_old )
-                                              ( zif_gtt_mia_app_constants=>cs_tabledef-sh_item_stage_new )
-                                              ( zif_gtt_mia_app_constants=>cs_tabledef-sh_item_stage_old ) )
-                  iv_key_field     = 'TKNUM'
-                  iv_upd_field     = 'UPDKZ' ).
+    rv_result = zcl_gtt_tools=>is_object_changed(
+      is_app_object    = is_app_object
+      io_ef_parameters = mo_ef_parameters
+      it_check_tables  = VALUE #( ( zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new )
+                                  ( zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new )
+                                  ( zif_gtt_mia_app_constants=>cs_tabledef-sh_stage_new )
+                                  ( zif_gtt_mia_app_constants=>cs_tabledef-sh_stage_old )
+                                  ( zif_gtt_mia_app_constants=>cs_tabledef-sh_item_stage_new )
+                                  ( zif_gtt_mia_app_constants=>cs_tabledef-sh_item_stage_old ) )
+      iv_key_field     = 'TKNUM'
+      iv_upd_field     = 'UPDKZ' ).
 
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_tp_reader~check_relevance.
+  METHOD ZIF_GTT_TP_READER~CHECK_RELEVANCE.
 
     DATA(lr_vttp) = mo_ef_parameters->get_appl_table(
-                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
 
-    rv_result = zif_gtt_mia_ef_constants=>cs_condition-false.
+    rv_result = zif_gtt_ef_constants=>cs_condition-false.
 
     IF zcl_gtt_mia_sh_tools=>is_appropriate_type( ir_vttk = is_app_object-maintabref ) = abap_true AND
        zcl_gtt_mia_sh_tools=>is_delivery_assigned( ir_vttp = lr_vttp ) = abap_true AND
        is_object_changed( is_app_object = is_app_object ) = abap_true.
 
       CASE is_app_object-update_indicator.
-        WHEN zif_gtt_mia_ef_constants=>cs_change_mode-insert.
-          rv_result   = zif_gtt_mia_ef_constants=>cs_condition-true.
-        WHEN zif_gtt_mia_ef_constants=>cs_change_mode-update OR
-             zif_gtt_mia_ef_constants=>cs_change_mode-undefined.
-          rv_result   = zcl_gtt_mia_tools=>are_structures_different(
-                          ir_data1  = zif_gtt_mia_tp_reader~get_data(
+        WHEN zif_gtt_ef_constants=>cs_change_mode-insert.
+          rv_result   = zif_gtt_ef_constants=>cs_condition-true.
+        WHEN zif_gtt_ef_constants=>cs_change_mode-update OR
+             zif_gtt_ef_constants=>cs_change_mode-undefined.
+          rv_result   = zcl_gtt_tools=>are_structures_different(
+                          ir_data1  = zif_gtt_tp_reader~get_data(
                                         is_app_object = is_app_object )
-                          ir_data2  = zif_gtt_mia_tp_reader~get_data_old(
+                          ir_data2  = zif_gtt_tp_reader~get_data_old(
                                         is_app_object = is_app_object ) ).
       ENDCASE.
     ENDIF.
@@ -599,13 +599,13 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_tp_reader~get_app_obj_type_id.
-    rv_appobjid   = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
-                      ir_vttk = is_app_object-maintabref ).
+  METHOD ZIF_GTT_TP_READER~GET_APP_OBJ_TYPE_ID.
+    rv_appobjid = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
+      ir_vttk = is_app_object-maintabref ).
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_tp_reader~get_data.
+  METHOD ZIF_GTT_TP_READER~GET_DATA.
 
     FIELD-SYMBOLS: <ls_header>  TYPE ts_sh_header.
 
@@ -614,7 +614,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
     ASSIGN rr_data->* TO <ls_header>.
 
     DATA(lr_vttp) = mo_ef_parameters->get_appl_table(
-                      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
 
     fill_header_from_vttk(
       EXPORTING
@@ -644,16 +644,16 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_tp_reader~get_data_old.
+  METHOD ZIF_GTT_TP_READER~GET_DATA_OLD.
 
     FIELD-SYMBOLS: <ls_header>  TYPE ts_sh_header.
 
-    DATA(lo_sh_data)  = NEW zcl_gtt_mia_sh_data_old(
-                          io_ef_parameters = mo_ef_parameters ).
+    DATA(lo_sh_data) = NEW zcl_gtt_mia_sh_data_old(
+      io_ef_parameters = mo_ef_parameters ).
 
     DATA(lr_vttk) = get_shippment_header(
-                      is_app_object = is_app_object
-                      ir_vttk       = lo_sh_data->get_vttk( ) ).
+      is_app_object = is_app_object
+      ir_vttk       = lo_sh_data->get_vttk( ) ).
 
     rr_data   = NEW ts_sh_header(  ).
 
@@ -687,16 +687,16 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_tp_reader~get_field_parameter.
+  METHOD ZIF_GTT_TP_READER~GET_FIELD_PARAMETER.
 
     CASE iv_parameter.
-      WHEN zif_gtt_mia_ef_constants=>cs_parameter_id-key_field.
+      WHEN zif_gtt_ef_constants=>cs_parameter_id-key_field.
         rv_result   = boolc( "iv_field_name = cs_mapping-deliv_cnt     OR
                              iv_field_name = cs_mapping-trobj_res_val OR
                              iv_field_name = cs_mapping-resrc_cnt     OR
                              iv_field_name = cs_mapping-crdoc_ref_val OR
                              iv_field_name = cs_mapping-stpid_stopcnt ).
-      WHEN zif_gtt_mia_ef_constants=>cs_parameter_id-no_empty_tag.
+      WHEN zif_gtt_ef_constants=>cs_parameter_id-no_empty_tag.
         rv_result   = boolc( iv_field_name = cs_mapping-departure_dt      OR
                              iv_field_name = cs_mapping-departure_tz      OR
                              iv_field_name = cs_mapping-departure_locid   OR
@@ -712,14 +712,14 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_tp_reader~get_mapping_structure.
+  METHOD ZIF_GTT_TP_READER~GET_MAPPING_STRUCTURE.
 
     rr_data = REF #( cs_mapping ).
 
   ENDMETHOD.
 
 
-  METHOD zif_gtt_mia_tp_reader~get_track_id_data.
+  METHOD ZIF_GTT_TP_READER~GET_TRACK_ID_DATA.
 
     "another tip is that: for tracking ID type 'SHIPMENT_ORDER' of delivery header,
     "and for tracking ID type 'RESOURCE' of shipment header,
@@ -727,37 +727,15 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
     DATA:
       lv_dummy         TYPE string,
-      lv_tmp_shptrxcod TYPE /saptrx/trxcod,
-      lv_tmp_restrxcod TYPE /saptrx/trxcod,
       lv_shptrxcod     TYPE /saptrx/trxcod,
       lv_restrxcod     TYPE /saptrx/trxcod.
 
     FIELD-SYMBOLS: <ls_vttk>     TYPE vttkvb,
                    <ls_vttk_old> TYPE vttkvb.
 
-    lv_shptrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_number.
-    lv_restrxcod = zif_gtt_mia_app_constants=>cs_trxcod-sh_resource.
+    lv_shptrxcod = zif_gtt_ef_constants=>cs_trxcod-sh_number.
+    lv_restrxcod = zif_gtt_ef_constants=>cs_trxcod-sh_resource.
     CLEAR et_track_id_data.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type      = is_app_object-appobjtype
-            iv_app       = 'MIA'
-          IMPORTING
-            ev_shptrxcod = lv_tmp_shptrxcod
-            ev_restrxcod = lv_tmp_restrxcod.
-
-        IF lv_tmp_shptrxcod IS NOT INITIAL.
-          lv_shptrxcod = lv_tmp_shptrxcod.
-        ENDIF.
-
-        IF lv_tmp_restrxcod IS NOT INITIAL.
-          lv_restrxcod = lv_tmp_restrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
 
     ASSIGN is_app_object-maintabref->* TO <ls_vttk>.
 
@@ -770,14 +748,14 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
         trxcod      = lv_shptrxcod
         trxid       = zcl_gtt_mia_sh_tools=>get_tracking_id_sh_header(
                         ir_vttk = is_app_object-maintabref )
-        timzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
+        timzon      = zcl_gtt_tools=>get_system_time_zone( )
       ) ).
 
-      DATA(lv_res_tid_new)  = get_resource_tracking_id(
-                                is_vttk = <ls_vttk> ).
+      DATA(lv_res_tid_new) = get_resource_tracking_id(
+        is_vttk = <ls_vttk> ).
 
       " is shipment created?
-      IF <ls_vttk>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-insert AND
+      IF <ls_vttk>-updkz = zif_gtt_ef_constants=>cs_change_mode-insert AND
          lv_res_tid_new IS NOT INITIAL.
 
         " add RESOURCE Tracking ID for the new Shipment
@@ -790,7 +768,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
         ) ).
 
         " is shipment updated?
-      ELSEIF <ls_vttk>-updkz = zif_gtt_mia_ef_constants=>cs_change_mode-update.
+      ELSEIF <ls_vttk>-updkz = zif_gtt_ef_constants=>cs_change_mode-update.
         DATA(lr_vttk_old) = get_shippment_header(
                               is_app_object = is_app_object
                               ir_vttk       = mo_ef_parameters->get_appl_table(
@@ -798,8 +776,8 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
 
         ASSIGN lr_vttk_old->* TO <ls_vttk_old>.
         IF <ls_vttk_old> IS ASSIGNED.
-          DATA(lv_res_tid_old)  = get_resource_tracking_id(
-                                    is_vttk = <ls_vttk_old> ).
+          DATA(lv_res_tid_old) = get_resource_tracking_id(
+            is_vttk = <ls_vttk_old> ).
 
           " is RESOURCE Tracking ID changed?
           IF lv_res_tid_old <> lv_res_tid_new.
@@ -822,18 +800,18 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
                 appobjid    = is_app_object-appobjid
                 trxcod      = lv_restrxcod
                 trxid       = lv_res_tid_old
-                action      = zif_gtt_mia_ef_constants=>cs_change_mode-delete
+                action      = zif_gtt_ef_constants=>cs_change_mode-delete
               ) ).
             ENDIF.
           ENDIF.
         ELSE.
-          MESSAGE e002(zgtt_mia) WITH 'VTTK' INTO lv_dummy.
-          zcl_gtt_mia_tools=>throw_exception( ).
+          MESSAGE e002(zgtt) WITH 'VTTK' INTO lv_dummy.
+          zcl_gtt_tools=>throw_exception( ).
         ENDIF.
       ENDIF.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VTTK' INTO lv_dummy.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VTTK' INTO lv_dummy.
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.

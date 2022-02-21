@@ -1,5 +1,15 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2202 Release
+
+1.	Track SO Fulfillment and Track PO Fulfillment standard apps are now available for use with Version 2. You can use the two apps to track the fulfilment status of sales orders and purchase orders. The following delivered contents are updated: 
+*	[SAP ERP Sample Code Configuration Guide for Fulfillment Tracking Apps.pdf](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/master/lbn-gtt-standard-app/Documents/SAP%20ERP%20Sample%20Code%20Configuration%20Guide%20for%20Fulfillment%20Tracking%20Apps.pdf)
+*	Configuration file for SAP ERP extractors 
+*	Sample code for SAP ERP extractors to send the tracked processes and events to the global track and trace option (ABAP). 
+2.	A new tracked object type "IMO" is added for ocean freight booking.
+3.	Issues on reporting "Delay" and "Proof of Pickup" events are fixed.
+
+
 ## What's New in the 2112 Release
 
 The location type in the following tracked processes is changed from "Supplier" / "Customer" to "BusinessPartner":</br>

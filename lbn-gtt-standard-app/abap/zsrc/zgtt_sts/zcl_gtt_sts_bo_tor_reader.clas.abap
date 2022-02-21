@@ -51,84 +51,91 @@ protected section.
     tt_capacity_doc_number TYPE STANDARD TABLE OF /scmtms/tor_id WITH EMPTY KEY .
   types:
     tt_stop TYPE STANDARD TABLE OF /saptrx/loc_id_2 WITH EMPTY KEY .
+  types:
+    tt_resource_tp_line_cnt type STANDARD TABLE OF int4 WITH EMPTY KEY .
+  types:
+    tt_resource_tp_id type STANDARD TABLE OF string WITH EMPTY KEY .
 
   constants:
     BEGIN OF cs_text_type,
-        cont TYPE /bobf/txc_text_type VALUE 'CONT',
-        mobl TYPE /bobf/txc_text_type VALUE 'MOBL',
-      END OF cs_text_type .
+      cont TYPE /bobf/txc_text_type VALUE 'CONT',
+      mobl TYPE /bobf/txc_text_type VALUE 'MOBL',
+    END OF cs_text_type .
   constants:
     BEGIN OF cs_track_id,
-        container_id  TYPE tv_tracked_object_type VALUE 'CONTAINER_ID',
-        mobile_number TYPE tv_tracked_object_type VALUE 'MOBILE_NUMBER',
-        truck_id      TYPE tv_tracked_object_type VALUE 'TRUCK_ID',
-        license_plate TYPE tv_tracked_object_type VALUE 'LICENSE_PLATE',
-        vessel        TYPE tv_tracked_object_type VALUE 'VESSEL',
-        flight_number TYPE tv_tracked_object_type VALUE 'FLIGHT_NUMBER',
-      END OF cs_track_id .
+      container_id  TYPE tv_tracked_object_type VALUE 'CONTAINER_ID',
+      mobile_number TYPE tv_tracked_object_type VALUE 'MOBILE_NUMBER',
+      truck_id      TYPE tv_tracked_object_type VALUE 'TRUCK_ID',
+      license_plate TYPE tv_tracked_object_type VALUE 'LICENSE_PLATE',
+      vessel        TYPE tv_tracked_object_type VALUE 'VESSEL',
+      flight_number TYPE tv_tracked_object_type VALUE 'FLIGHT_NUMBER',
+      imo           TYPE tv_tracked_object_type VALUE 'IMO',
+    END OF cs_track_id .
   constants:
     BEGIN OF cs_mapping,
-        shipment_type         TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPMENT_TYPE',
-        tor_id                TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
-        mtr                   TYPE /saptrx/paramname VALUE 'YN_SHP_MTR',
-        gro_vol_val           TYPE /saptrx/paramname VALUE 'YN_SHP_VOLUME',
-        gro_vol_uni           TYPE /saptrx/paramname VALUE 'YN_SHP_VOLUME_UOM',
-        gro_wei_val           TYPE /saptrx/paramname VALUE 'YN_SHP_WEIGHT',
-        gro_wei_uni           TYPE /saptrx/paramname VALUE 'YN_SHP_WEIGHT_UOM',
-        qua_pcs_val           TYPE /saptrx/paramname VALUE 'YN_SHP_QUANTITY',
-        qua_pcs_uni           TYPE /saptrx/paramname VALUE 'YN_SHP_QUANTITY_UOM',
-        total_distance_km     TYPE /saptrx/paramname VALUE 'YN_SHP_TOTAL_DIST',
-        total_distance_km_uom TYPE /saptrx/paramname VALUE 'YN_SHP_TOTAL_DIST_UOM',
-        dgo_indicator         TYPE /saptrx/paramname VALUE 'YN_SHP_CONTAIN_DGOODS',
-        total_duration_net    TYPE /saptrx/paramname VALUE 'YN_SHP_PLAN_NET_DURAT',
-        shipping_type         TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPING_TYPE',
-        traffic_direct        TYPE /saptrx/paramname VALUE 'YN_SHP_TRAFFIC_DIRECT',
-        trmodcod              TYPE /saptrx/paramname VALUE 'YN_SHP_TRANSPORTATION_MODE',
-        tspid                 TYPE /saptrx/paramname VALUE 'YN_SHP_SA_LBN_ID',
-        tracked_object_id     TYPE /saptrx/paramname VALUE 'YN_SHP_TRACKED_RESOURCE_ID',
-        tracked_object_type   TYPE /saptrx/paramname VALUE 'YN_SHP_TRACKED_RESOURCE_VALUE',
-        carrier_ref_type      TYPE /saptrx/paramname VALUE 'YN_SHP_CARRIER_REF_TYPE',
-        carrier_ref_value     TYPE /saptrx/paramname VALUE 'YN_SHP_CARRIER_REF_VALUE',
-        shipper_ref_type      TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPER_REF_TYPE',
-        shipper_ref_value     TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPER_REF_VALUE',
-        inc_class_code        TYPE /saptrx/paramname VALUE 'YN_SHP_INCOTERM',
-        inc_transf_loc_n      TYPE /saptrx/paramname VALUE 'YN_SHP_INCOTERM_LOC',
-        country               TYPE /saptrx/paramname VALUE 'YN_SHP_REG_COUNTRY',
-        platenumber           TYPE /saptrx/paramname VALUE 'YN_SHP_REG_NUM',
-        res_id                TYPE /saptrx/paramname VALUE 'YN_SHP_VEHICLE',
-        pln_dep_loc_id        TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_DEP_LOC_ID',
-        pln_dep_loc_type      TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_DEP_LOC_TYPE',
-        pln_dep_timest        TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_DEP_BUS_DATETIME',
-        pln_dep_timezone      TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_DEP_BUS_TIMEZONE',
-        pln_arr_loc_id        TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_LOC_ID',
-        pln_arr_loc_type      TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_LOC_TYPE',
-        pln_arr_timest        TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_BUS_DATETIME',
-        pln_arr_timezone      TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_BUS_TIMEZONE',
-        pln_grs_duration      TYPE /saptrx/paramname VALUE 'YN_SHP_GROSS_DUR',
-        stop_id               TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_ID',
-        ordinal_no            TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_ORD_NO',
-        loc_type              TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_LOC_TYPE',
-        loc_id                TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_LOC_ID',
-        item_id               TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_FU_ITEM_ID',
-        erp_dlv_id            TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_ERP_DLV_ID',
-        erp_dlv_item_id       TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_ERP_DLV_ITM_ID',
-        itm_qua_pcs_val       TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_QUANTITY',
-        itm_qua_pcs_uni       TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_QUANTITY_UOM',
-        product_id            TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_PRODUCT_ID',
-        product_txt           TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_PRODUCT_TEXT',
-        req_doc_line_no       TYPE /saptrx/paramname VALUE 'YN_SHP_REQ_DOC_LINE_NO',
-        req_doc_no            TYPE /saptrx/paramname VALUE 'YN_SHP_REQ_DOC_NO',
-        req_doc_first_stop    TYPE /saptrx/paramname VALUE 'YN_SHP_REQ_DOC_FIRST_STOP',
-        req_doc_last_stop     TYPE /saptrx/paramname VALUE 'YN_SHP_REQ_DOC_LAST_STOP',
-        capa_doc_line_no      TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_LINE_NO',
-        capa_doc_no           TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_NO',
-        capa_doc_first_stop   TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_FIRST_STOP',
-        capa_doc_last_stop    TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_LAST_STOP',
-        dlv_item_inb_alt_id   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_INB_ALT_ID',
-        dlv_item_oub_alt_id   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_OUB_ALT_ID',
-        estimated_datetime    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_DATETIME',
-        estimated_timezone    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_TIMEZONE',
-      END OF cs_mapping .
+      shipment_type         TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPMENT_TYPE',
+      tor_id                TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
+      mtr                   TYPE /saptrx/paramname VALUE 'YN_SHP_MTR',
+      gro_vol_val           TYPE /saptrx/paramname VALUE 'YN_SHP_VOLUME',
+      gro_vol_uni           TYPE /saptrx/paramname VALUE 'YN_SHP_VOLUME_UOM',
+      gro_wei_val           TYPE /saptrx/paramname VALUE 'YN_SHP_WEIGHT',
+      gro_wei_uni           TYPE /saptrx/paramname VALUE 'YN_SHP_WEIGHT_UOM',
+      qua_pcs_val           TYPE /saptrx/paramname VALUE 'YN_SHP_QUANTITY',
+      qua_pcs_uni           TYPE /saptrx/paramname VALUE 'YN_SHP_QUANTITY_UOM',
+      total_distance_km     TYPE /saptrx/paramname VALUE 'YN_SHP_TOTAL_DIST',
+      total_distance_km_uom TYPE /saptrx/paramname VALUE 'YN_SHP_TOTAL_DIST_UOM',
+      dgo_indicator         TYPE /saptrx/paramname VALUE 'YN_SHP_CONTAIN_DGOODS',
+      total_duration_net    TYPE /saptrx/paramname VALUE 'YN_SHP_PLAN_NET_DURAT',
+      shipping_type         TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPING_TYPE',
+      traffic_direct        TYPE /saptrx/paramname VALUE 'YN_SHP_TRAFFIC_DIRECT',
+      trmodcod              TYPE /saptrx/paramname VALUE 'YN_SHP_TRANSPORTATION_MODE',
+      tspid                 TYPE /saptrx/paramname VALUE 'YN_SHP_SA_LBN_ID',
+      tracked_object_id     TYPE /saptrx/paramname VALUE 'YN_SHP_TRACKED_RESOURCE_ID',
+      tracked_object_type   TYPE /saptrx/paramname VALUE 'YN_SHP_TRACKED_RESOURCE_VALUE',
+      carrier_ref_type      TYPE /saptrx/paramname VALUE 'YN_SHP_CARRIER_REF_TYPE',
+      carrier_ref_value     TYPE /saptrx/paramname VALUE 'YN_SHP_CARRIER_REF_VALUE',
+      shipper_ref_type      TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPER_REF_TYPE',
+      shipper_ref_value     TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPER_REF_VALUE',
+      inc_class_code        TYPE /saptrx/paramname VALUE 'YN_SHP_INCOTERM',
+      inc_transf_loc_n      TYPE /saptrx/paramname VALUE 'YN_SHP_INCOTERM_LOC',
+      country               TYPE /saptrx/paramname VALUE 'YN_SHP_REG_COUNTRY',
+      platenumber           TYPE /saptrx/paramname VALUE 'YN_SHP_REG_NUM',
+      res_id                TYPE /saptrx/paramname VALUE 'YN_SHP_VEHICLE',
+      pln_dep_loc_id        TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_DEP_LOC_ID',
+      pln_dep_loc_type      TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_DEP_LOC_TYPE',
+      pln_dep_timest        TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_DEP_BUS_DATETIME',
+      pln_dep_timezone      TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_DEP_BUS_TIMEZONE',
+      pln_arr_loc_id        TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_LOC_ID',
+      pln_arr_loc_type      TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_LOC_TYPE',
+      pln_arr_timest        TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_BUS_DATETIME',
+      pln_arr_timezone      TYPE /saptrx/paramname VALUE 'YN_SHP_PLN_AR_BUS_TIMEZONE',
+      pln_grs_duration      TYPE /saptrx/paramname VALUE 'YN_SHP_GROSS_DUR',
+      stop_id               TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_ID',
+      ordinal_no            TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_ORD_NO',
+      loc_type              TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_LOC_TYPE',
+      loc_id                TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_LOC_ID',
+      item_id               TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_FU_ITEM_ID',
+      erp_dlv_id            TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_ERP_DLV_ID',
+      erp_dlv_item_id       TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_ERP_DLV_ITM_ID',
+      itm_qua_pcs_val       TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_QUANTITY',
+      itm_qua_pcs_uni       TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_QUANTITY_UOM',
+      product_id            TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_PRODUCT_ID',
+      product_txt           TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_PRODUCT_TEXT',
+      req_doc_line_no       TYPE /saptrx/paramname VALUE 'YN_SHP_REQ_DOC_LINE_NO',
+      req_doc_no            TYPE /saptrx/paramname VALUE 'YN_SHP_REQ_DOC_NO',
+      req_doc_first_stop    TYPE /saptrx/paramname VALUE 'YN_SHP_REQ_DOC_FIRST_STOP',
+      req_doc_last_stop     TYPE /saptrx/paramname VALUE 'YN_SHP_REQ_DOC_LAST_STOP',
+      capa_doc_line_no      TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_LINE_NO',
+      capa_doc_no           TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_NO',
+      capa_doc_first_stop   TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_FIRST_STOP',
+      capa_doc_last_stop    TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_LAST_STOP',
+      dlv_item_inb_alt_id   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_INB_ALT_ID',
+      dlv_item_oub_alt_id   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_OUB_ALT_ID',
+      estimated_datetime    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_DATETIME',
+      estimated_timezone    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_TIMEZONE',
+      resource_tp_line_cnt  TYPE /saptrx/paramname VALUE 'YN_SHP_RESOURCE_TP_LINE_COUNT',
+      resource_tp_id        TYPE /saptrx/paramname VALUE 'YN_SHP_RESOURCE_TP_ID',
+    END OF cs_mapping .
   constants CS_BP_TYPE type BU_ID_TYPE value 'LBN001' ##NO_TEXT.
   data MO_EF_PARAMETERS type ref to ZIF_GTT_STS_EF_PARAMETERS .
 
@@ -266,6 +273,15 @@ protected section.
       !IV_TSPID type BU_ID_NUMBER
     returning
       value(RV_CARRIER) type BU_ID_NUMBER
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_RESOURCE_INFO
+    importing
+      !IV_OLD_DATA type ABAP_BOOL optional
+      !IR_ROOT type ref to DATA
+    changing
+      !CT_RESOURCE_TP_LINE_CNT type TT_RESOURCE_TP_LINE_CNT
+      !CT_RESOURCE_TP_ID type TT_RESOURCE_TP_ID
     raising
       CX_UDM_MESSAGE .
   PRIVATE SECTION.
@@ -447,20 +463,6 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
     ENDIF.
 
     lv_restrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type      = is_app_object-appobjtype
-            iv_app       = 'STS'
-          IMPORTING
-            ev_restrxcod = lv_tmp_restrxcod.
-
-        IF lv_tmp_restrxcod IS NOT INITIAL.
-          lv_restrxcod = lv_tmp_restrxcod.
-        ENDIF.
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
 
     get_data_from_text_collection(
       EXPORTING
@@ -887,5 +889,154 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
   METHOD zif_gtt_sts_bo_reader~get_track_id_data.
     CLEAR et_track_id_data.
     RETURN.
+  ENDMETHOD.
+
+
+  METHOD get_resource_info.
+
+    FIELD-SYMBOLS:
+      <ls_root>     TYPE /scmtms/s_em_bo_tor_root,
+      <lt_root_old> TYPE /scmtms/t_em_bo_tor_root,
+      <lt_item>     TYPE /scmtms/t_em_bo_tor_item.
+
+    DATA:
+      lv_count          TYPE int4 VALUE 1,
+      lr_item           TYPE REF TO data,
+      lv_tor_id         TYPE /scmtms/tor_id,
+      lv_resource_tp_id TYPE string.
+
+    CLEAR:
+      ct_resource_tp_line_cnt,
+      ct_resource_tp_id.
+
+    ASSIGN ir_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    IF iv_old_data = abap_true.
+      DATA(lr_root_old) = mo_ef_parameters->get_appl_table( zif_gtt_sts_constants=>cs_tabledef-fo_header_old ).
+      ASSIGN lr_root_old->* TO <lt_root_old>.
+      IF sy-subrc = 0.
+        ASSIGN <lt_root_old>[ tor_id = <ls_root>-tor_id ] TO <ls_root>.
+        IF sy-subrc <> 0.
+          " FO is just crerated
+          RETURN.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+
+    lv_tor_id = <ls_root>-tor_id.
+    SHIFT lv_tor_id LEFT DELETING LEADING '0'.
+
+    lr_item = mo_ef_parameters->get_appl_table(
+                                SWITCH #( iv_old_data WHEN abap_true THEN zif_gtt_sts_constants=>cs_tabledef-fo_item_old
+                                                      ELSE zif_gtt_sts_constants=>cs_tabledef-fo_item_new ) ).
+    ASSIGN lr_item->* TO <lt_item>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO lv_dummy ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    get_data_from_text_collection(
+      EXPORTING
+        iv_old_data     = iv_old_data
+        ir_data         = ir_root
+      IMPORTING
+        er_text         = DATA(lr_text)
+        er_text_content = DATA(lr_text_content) ).
+
+    CASE <ls_root>-tor_cat.
+      WHEN /scmtms/if_tor_const=>sc_tor_category-active. "Freight order
+
+        ASSIGN <lt_item>[ item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item ] TO FIELD-SYMBOL(<ls_av_item>).
+        IF sy-subrc <> 0.
+          MESSAGE e010(zgtt_sts) INTO lv_dummy.
+          zcl_gtt_sts_tools=>throw_exception( ).
+        ENDIF.
+
+*       Registration Number
+        IF <ls_av_item>-platenumber IS NOT INITIAL.
+          CLEAR lv_resource_tp_id.
+          CONCATENATE lv_tor_id <ls_av_item>-platenumber INTO lv_resource_tp_id.
+          APPEND lv_count          TO ct_resource_tp_line_cnt.
+          APPEND lv_resource_tp_id TO ct_resource_tp_id.
+          ADD 1 TO lv_count.
+        ENDIF.
+
+*       Vehicle ID
+        IF <ls_av_item>-res_id IS NOT INITIAL.
+          CLEAR lv_resource_tp_id.
+          CONCATENATE lv_tor_id <ls_av_item>-res_id INTO lv_resource_tp_id.
+          APPEND lv_count          TO ct_resource_tp_line_cnt.
+          APPEND lv_resource_tp_id TO ct_resource_tp_id.
+          ADD 1 TO lv_count.
+        ENDIF.
+
+*       Notes container ID,Mobile ID
+        IF lr_text->* IS NOT INITIAL AND lr_text_content->* IS NOT INITIAL.
+          LOOP AT lr_text->* ASSIGNING FIELD-SYMBOL(<ls_text>).
+            CLEAR lv_resource_tp_id.
+            READ TABLE lr_text_content->* WITH KEY parent_key
+              COMPONENTS parent_key = <ls_text>-key ASSIGNING FIELD-SYMBOL(<ls_text_content>).
+            IF sy-subrc = 0.
+              IF <ls_text>-text_type = cs_text_type-cont AND <ls_text_content>-text IS NOT INITIAL.
+                CONCATENATE lv_tor_id <ls_text_content>-text INTO lv_resource_tp_id.
+                APPEND lv_count          TO ct_resource_tp_line_cnt.
+                APPEND lv_resource_tp_id TO ct_resource_tp_id.
+                ADD 1 TO lv_count.
+              ELSEIF <ls_text>-text_type = cs_text_type-mobl AND <ls_text_content>-text IS NOT INITIAL.
+                CONCATENATE lv_tor_id <ls_text_content>-text INTO lv_resource_tp_id.
+                APPEND lv_count          TO ct_resource_tp_line_cnt.
+                APPEND lv_resource_tp_id TO ct_resource_tp_id.
+                ADD 1 TO lv_count.
+              ENDIF.
+            ENDIF.
+          ENDLOOP.
+        ENDIF.
+
+      WHEN /scmtms/if_tor_const=>sc_tor_category-booking. "Freight booking
+        ASSIGN <lt_item>[ item_cat       = /scmtms/if_tor_const=>sc_tor_item_category-booking
+                          parent_node_id = <ls_root>-node_id ] TO FIELD-SYMBOL(<ls_booking_item>).
+        IF sy-subrc <> 0.
+          MESSAGE e010(zgtt_sts) INTO lv_dummy.
+          zcl_gtt_sts_tools=>throw_exception( ).
+        ENDIF.
+
+*       Vessel ID
+        IF <ls_booking_item>-vessel_id IS NOT INITIAL.
+          CLEAR lv_resource_tp_id.
+          CONCATENATE lv_tor_id <ls_booking_item>-vessel_id INTO lv_resource_tp_id.
+          APPEND lv_count          TO ct_resource_tp_line_cnt.
+          APPEND lv_resource_tp_id TO ct_resource_tp_id.
+          ADD 1 TO lv_count.
+        ENDIF.
+
+*       Notes container ID
+        IF lr_text->* IS NOT INITIAL AND lr_text_content->* IS NOT INITIAL.
+          LOOP AT lr_text->* ASSIGNING <ls_text>.
+            CLEAR lv_resource_tp_id.
+            READ TABLE lr_text_content->* WITH KEY parent_key
+              COMPONENTS parent_key = <ls_text>-key ASSIGNING <ls_text_content>.
+            IF sy-subrc = 0.
+              IF <ls_text>-text_type = cs_text_type-cont AND <ls_text_content>-text IS NOT INITIAL.
+                CONCATENATE lv_tor_id <ls_text_content>-text INTO lv_resource_tp_id.
+                APPEND lv_count          TO ct_resource_tp_line_cnt.
+                APPEND lv_resource_tp_id TO ct_resource_tp_id.
+                ADD 1 TO lv_count.
+              ENDIF.
+            ENDIF.
+          ENDLOOP.
+        ENDIF.
+
+      WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit OR
+           /scmtms/if_tor_const=>sc_tor_category-transp_unit.
+
+      WHEN OTHERS.
+        MESSAGE i009(zgtt_sts) WITH <ls_root>-tor_cat INTO lv_dummy ##needed.
+        zcl_gtt_sts_tools=>throw_exception( ).
+    ENDCASE.
+
   ENDMETHOD.
 ENDCLASS.

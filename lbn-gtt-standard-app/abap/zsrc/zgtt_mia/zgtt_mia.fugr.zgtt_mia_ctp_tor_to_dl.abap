@@ -55,11 +55,11 @@ FUNCTION zgtt_mia_ctp_tor_to_dl.
       ENDIF.
 
     CATCH cx_udm_message INTO DATA(lo_udm_message).
-      zcl_gtt_mia_tools=>log_exception(
+      zcl_gtt_tools=>log_exception(
         EXPORTING
           io_udm_message = lo_udm_message
-          iv_object      = zif_gtt_mia_ef_constants=>cs_logs-object-tor_ctp
-          iv_subobject   = zif_gtt_mia_ef_constants=>cs_logs-subobject-tor_ctp ).
+          iv_object      = zif_gtt_ef_constants=>cs_logs-object-tor_ctp
+          iv_subobject   = zif_gtt_ef_constants=>cs_logs-subobject-tor_ctp ).
     CATCH cx_root.
   ENDTRY.
 

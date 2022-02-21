@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_AE_FILLER_SHH_LS</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Actual Event filler for Loading Start</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

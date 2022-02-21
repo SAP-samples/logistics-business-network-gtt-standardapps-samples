@@ -59,6 +59,8 @@ private section.
         req_doc_no            TYPE tt_req_doc_number,
         req_doc_first_stop    TYPE tt_stop,
         req_doc_last_stop     TYPE tt_stop,
+        resource_tp_line_cnt  TYPE tt_resource_tp_line_cnt,
+        resource_tp_id        TYPE tt_resource_tp_id,
       END OF ts_freight_booking .
 
   constants:
@@ -120,6 +122,15 @@ private section.
       !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
     changing
       !CT_TRACK_ID_DATA type ZIF_GTT_STS_EF_TYPES=>TT_ENH_TRACK_ID_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_IMO_TRACK
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL
+    changing
+      !CT_TRACKED_OBJECT_TYPE type TT_TRACKED_OBJECT_TYPE
+      !CT_TRACKED_OBJECT_ID type TT_TRACKED_OBJECT_ID
     raising
       CX_UDM_MESSAGE .
 ENDCLASS.
@@ -344,6 +355,14 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
         ct_tracked_object_type = cs_freight_booking-tracked_object_type
         ct_tracked_object_id   = cs_freight_booking-tracked_object_id ).
 
+    get_imo_track(
+      EXPORTING
+        ir_data                = ir_data
+        iv_old_data            = iv_old_data
+      CHANGING
+        ct_tracked_object_type = cs_freight_booking-tracked_object_type
+        ct_tracked_object_id   = cs_freight_booking-tracked_object_id ).
+
     get_flight_number_track(
       EXPORTING
         ir_data                = ir_data
@@ -466,6 +485,14 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
       APPEND '' TO <ls_freight_booking>-req_doc_line_no.
     ENDIF.
 
+    get_resource_info(
+      EXPORTING
+        iv_old_data             = iv_old_data
+        ir_root                 = lr_maintabref
+      CHANGING
+        ct_resource_tp_line_cnt = <ls_freight_booking>-resource_tp_line_cnt
+        ct_resource_tp_id       = <ls_freight_booking>-resource_tp_id ).
+
   ENDMETHOD.
 
 
@@ -502,25 +529,6 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
 
     lv_fotrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_number.
     lv_restrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type      = is_app_object-appobjtype
-            iv_app       = 'STS'
-          IMPORTING
-            ev_shptrxcod = lv_tmp_fotrxcod
-            ev_restrxcod = lv_tmp_restrxcod.
-
-        IF lv_tmp_fotrxcod IS NOT INITIAL.
-          lv_fotrxcod = lv_tmp_fotrxcod.
-        ENDIF.
-
-        IF lv_tmp_restrxcod IS NOT INITIAL.
-          lv_restrxcod = lv_tmp_restrxcod.
-        ENDIF.
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
 
     lr_root_new = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_header_new ).
     ASSIGN lr_root_new->* TO <lt_root_new>.
@@ -709,20 +717,6 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
 
     lv_restrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_resource.
 
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type      = is_app_object-appobjtype
-            iv_app       = 'STS'
-          IMPORTING
-            ev_restrxcod = lv_tmp_restrxcod.
-
-        IF lv_tmp_restrxcod IS NOT INITIAL.
-          lv_restrxcod = lv_tmp_restrxcod.
-        ENDIF.
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
-
     ASSIGN is_app_object-maintabref->* TO <ls_tor_root>.
     IF sy-subrc = 0.
       DATA(lv_tabledef_tor_item) = SWITCH #( iv_old_data
@@ -748,6 +742,33 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
                     appobjid    = is_app_object-appobjid
                     trxcod      = lv_restrxcod
                     trxid       =  |{ lv_tor_id }{ <ls_tor_item>-flight_code }| ) TO ct_track_id_data.
+        ENDIF.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_imo_track.
+
+    FIELD-SYMBOLS:
+      <lt_tor_item> TYPE /scmtms/t_em_bo_tor_item,
+      <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    ASSIGN ir_data->* TO <ls_tor_root>.
+    IF sy-subrc = 0.
+      DATA(lr_item) = mo_ef_parameters->get_appl_table(
+                        SWITCH #( iv_old_data WHEN abap_false THEN zif_gtt_sts_constants=>cs_tabledef-fo_item_new
+                                              ELSE zif_gtt_sts_constants=>cs_tabledef-fo_item_old ) ).
+      ASSIGN lr_item->* TO <lt_tor_item>.
+      IF sy-subrc = 0.
+        ASSIGN <lt_tor_item>[ item_cat       = /scmtms/if_tor_const=>sc_tor_item_category-booking
+                              parent_node_id = <ls_tor_root>-node_id ]-imo_id TO FIELD-SYMBOL(<lv_imo_id>).
+        IF sy-subrc = 0.
+          IF <lv_imo_id> IS NOT INITIAL.
+            APPEND cs_track_id-imo TO ct_tracked_object_id.
+            APPEND <lv_imo_id>     TO ct_tracked_object_type.
+          ENDIF.
         ENDIF.
       ENDIF.
     ENDIF.

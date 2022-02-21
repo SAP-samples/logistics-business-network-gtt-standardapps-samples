@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_AE_FILLER_SHH_BH</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Abstract class of Shipment header Actual Event filler</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

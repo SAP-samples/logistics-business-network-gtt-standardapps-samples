@@ -1,31 +1,29 @@
-CLASS zcl_gtt_mia_ctp_tools DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_CTP_TOOLS definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    CLASS-METHODS get_delivery_head_planned_evt
-      IMPORTING
-        !iv_appsys    TYPE logsys
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
-        !is_likp      TYPE zif_gtt_mia_app_types=>ts_likpvb
-        !it_lips      TYPE zif_gtt_mia_app_types=>tt_lipsvb
-      EXPORTING
-        !et_exp_event TYPE /saptrx/bapi_trk_ee_tab
-      RAISING
-        cx_udm_message .
-
-    CLASS-METHODS get_delivery_item_planned_evt
-      IMPORTING
-        !iv_appsys    TYPE logsys
-        !is_aotype    TYPE zif_gtt_mia_ctp_tor_types=>ts_aotype
-        !is_likp      TYPE zif_gtt_mia_app_types=>ts_likpvb
-        !is_lips      TYPE zif_gtt_mia_app_types=>ts_lipsvb
-      EXPORTING
-        !et_exp_event TYPE /saptrx/bapi_trk_ee_tab
-      RAISING
-        cx_udm_message .
-
+  class-methods GET_DELIVERY_HEAD_PLANNED_EVT
+    importing
+      !IV_APPSYS type LOGSYS
+      !IS_AOTYPE type ZIF_GTT_CTP_TYPES=>TS_AOTYPE
+      !IS_LIKP type ZIF_GTT_MIA_APP_TYPES=>TS_LIKPVB
+      !IT_LIPS type ZIF_GTT_MIA_APP_TYPES=>TT_LIPSVB
+    exporting
+      !ET_EXP_EVENT type /SAPTRX/BAPI_TRK_EE_TAB
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_DELIVERY_ITEM_PLANNED_EVT
+    importing
+      !IV_APPSYS type LOGSYS
+      !IS_AOTYPE type ZIF_GTT_CTP_TYPES=>TS_AOTYPE
+      !IS_LIKP type ZIF_GTT_MIA_APP_TYPES=>TS_LIKPVB
+      !IS_LIPS type ZIF_GTT_MIA_APP_TYPES=>TS_LIPSVB
+    exporting
+      !ET_EXP_EVENT type /SAPTRX/BAPI_TRK_EE_TAB
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -78,10 +76,11 @@ CLASS ZCL_GTT_MIA_CTP_TOOLS IMPLEMENTATION.
         OTHERS                    = 5.
 
     IF sy-subrc <> 0.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
+
 
   METHOD get_delivery_item_planned_evt.
 
@@ -131,9 +130,8 @@ CLASS ZCL_GTT_MIA_CTP_TOOLS IMPLEMENTATION.
         OTHERS                    = 5.
 
     IF sy-subrc <> 0.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
-
 ENDCLASS.

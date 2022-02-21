@@ -1,48 +1,45 @@
-CLASS zcl_gtt_mia_event_rel_dl_hd DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_mia_event_rel_dl_main
-  CREATE PUBLIC .
+class ZCL_GTT_MIA_EVENT_REL_DL_HD definition
+  public
+  inheriting from ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+  create public .
 
-  PUBLIC SECTION.
-  PROTECTED SECTION.
+public section.
+protected section.
 
-    METHODS get_field_name
-      REDEFINITION .
-
-    METHODS get_object_status
-      REDEFINITION .
-
-    METHODS get_old_appobjid
-      REDEFINITION.
-
+  methods GET_FIELD_NAME
+    redefinition .
+  methods GET_OBJECT_STATUS
+    redefinition .
+  methods GET_OLD_APPOBJID
+    redefinition .
   PRIVATE SECTION.
 ENDCLASS.
 
 
 
-CLASS zcl_gtt_mia_event_rel_dl_hd IMPLEMENTATION.
+CLASS ZCL_GTT_MIA_EVENT_REL_DL_HD IMPLEMENTATION.
 
 
-  METHOD get_field_name.
+  METHOD GET_FIELD_NAME.
 
     CASE iv_milestone.
-      WHEN zif_gtt_mia_app_constants=>cs_milestone-dl_put_away.
+      WHEN zif_gtt_ef_constants=>cs_milestone-dl_put_away.
         rv_field_name   = COND #( WHEN iv_internal = abap_true
                                     THEN 'KOSTA'
                                     ELSE 'KOSTK' ).
-      WHEN zif_gtt_mia_app_constants=>cs_milestone-dl_packing.
+      WHEN zif_gtt_ef_constants=>cs_milestone-dl_packing.
         rv_field_name   = COND #( WHEN iv_internal = abap_true
                                     THEN 'PKSTA'
                                     ELSE 'PKSTK' ).
-      WHEN zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt.
+      WHEN zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt.
         rv_field_name   = COND #( WHEN iv_internal = abap_true
                                     THEN 'WBSTA'
                                     ELSE 'WBSTK' ).
-      WHEN zif_gtt_mia_app_constants=>cs_milestone-dl_pod.
+      WHEN zif_gtt_ef_constants=>cs_milestone-dl_pod.
         rv_field_name   = 'PDSTK'.
       WHEN OTHERS.
-        MESSAGE e009(zgtt_mia) WITH iv_milestone INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        MESSAGE e009(zgtt) WITH iv_milestone INTO DATA(lv_dummy).
+        zcl_gtt_tools=>throw_exception( ).
     ENDCASE.
 
     IF iv_internal = abap_true.
@@ -52,7 +49,7 @@ CLASS zcl_gtt_mia_event_rel_dl_hd IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_object_status.
+  METHOD GET_OBJECT_STATUS.
 
 *    TYPES: tt_vbuk  TYPE STANDARD TABLE OF vbuk.
 
@@ -64,7 +61,7 @@ CLASS zcl_gtt_mia_event_rel_dl_hd IMPLEMENTATION.
 
     DATA(lv_fname)  = get_field_name( iv_milestone = iv_milestone ).
 
-    DATA(lv_vbeln)  = zcl_gtt_mia_tools=>get_field_of_structure(
+    DATA(lv_vbeln)  = zcl_gtt_tools=>get_field_of_structure(
                         ir_struct_data = ms_app_objects-maintabref
                         iv_field_name  = 'VBELN' ).
 
@@ -84,24 +81,25 @@ CLASS zcl_gtt_mia_event_rel_dl_hd IMPLEMENTATION.
         IF <lv_value> IS ASSIGNED.
           rv_value  = <lv_value>.
         ELSE.
-          MESSAGE e001(zgtt_mia) WITH lv_fname 'VBUP' INTO lv_dummy.
-          zcl_gtt_mia_tools=>throw_exception( ).
+          MESSAGE e001(zgtt) WITH lv_fname 'VBUP' INTO lv_dummy.
+          zcl_gtt_tools=>throw_exception( ).
         ENDIF.
       ELSE.
-        MESSAGE e005(zgtt_mia)
+        MESSAGE e005(zgtt)
           WITH 'VBUK' lv_vbeln
           INTO lv_dummy.
-        zcl_gtt_mia_tools=>throw_exception( ).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'VBUK' INTO lv_dummy.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'VBUK' INTO lv_dummy.
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
 
-  METHOD get_old_appobjid.
-    rv_appobjid  = zcl_gtt_mia_tools=>get_field_of_structure(
+
+  METHOD GET_OLD_APPOBJID.
+    rv_appobjid  = zcl_gtt_tools=>get_field_of_structure(
                      ir_struct_data = ms_app_objects-maintabref
                      iv_field_name  = 'VBELN' ).
   ENDMETHOD.

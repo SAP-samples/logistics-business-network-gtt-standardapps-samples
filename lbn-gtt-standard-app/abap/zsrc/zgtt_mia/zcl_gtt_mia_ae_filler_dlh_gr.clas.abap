@@ -1,137 +1,137 @@
-class ZCL_GTT_MIA_AE_FILLER_DLH_GR definition
-  public
-  create public .
+CLASS zcl_gtt_mia_ae_filler_dlh_gr DEFINITION
+  PUBLIC
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  interfaces ZIF_GTT_MIA_AE_FILLER .
+    INTERFACES zif_gtt_ae_filler .
 
-  types:
-    lt_ekbe_t TYPE SORTED TABLE OF ekbe
-                 WITH UNIQUE KEY table_line .
-  types:
-    lt_ekbz_t TYPE SORTED TABLE OF ekbz
-                   WITH UNIQUE KEY table_line .
+    TYPES:
+      lt_ekbe_t TYPE SORTED TABLE OF ekbe
+                     WITH UNIQUE KEY table_line .
+    TYPES:
+      lt_ekbz_t TYPE SORTED TABLE OF ekbz
+                       WITH UNIQUE KEY table_line .
 
-  methods CONSTRUCTOR
-    importing
-      !IO_AE_PARAMETERS type ref to ZIF_GTT_MIA_AE_PARAMETERS .
-  methods GET_FULL_QUANTITY_FOR_GR
-    importing
-      !IS_LIPS type LIPS
-      !IS_MSEG type MSEG
-    returning
-      value(RV_QUANTITY) type MENGE_D
-    raising
-      CX_UDM_MESSAGE .
+    METHODS constructor
+      IMPORTING
+        !io_ae_parameters TYPE REF TO zif_gtt_ae_parameters .
+    METHODS get_full_quantity_for_gr
+      IMPORTING
+        !is_lips           TYPE lips
+        !is_mseg           TYPE mseg
+      RETURNING
+        VALUE(rv_quantity) TYPE menge_d
+      RAISING
+        cx_udm_message .
   PROTECTED SECTION.
-private section.
+  PRIVATE SECTION.
 
-  types:
-    BEGIN OF ts_dl_item_id,
-      vbeln TYPE vbeln_vl,
-      posnr TYPE posnr_vl,
-      mseg  TYPE mseg,
-    END OF ts_dl_item_id .
-  types:
-    tt_vbeln    TYPE STANDARD TABLE OF vbeln_vl .
-  types:
-    tt_pos     TYPE STANDARD TABLE OF ts_dl_item_id .
-  types:
-    tt_lips  TYPE STANDARD TABLE OF lips .
+    TYPES:
+      BEGIN OF ts_dl_item_id,
+        vbeln TYPE vbeln_vl,
+        posnr TYPE posnr_vl,
+        mseg  TYPE mseg,
+      END OF ts_dl_item_id .
+    TYPES:
+      tt_vbeln    TYPE STANDARD TABLE OF vbeln_vl .
+    TYPES:
+      tt_pos     TYPE STANDARD TABLE OF ts_dl_item_id .
+    TYPES:
+      tt_lips  TYPE STANDARD TABLE OF lips .
 
-  data MO_AE_PARAMETERS type ref to ZIF_GTT_MIA_AE_PARAMETERS .
-  data MV_ARCHIVED type BOOLE_D .
+    DATA mo_ae_parameters TYPE REF TO zif_gtt_ae_parameters .
+    DATA mv_archived TYPE boole_d .
 
-  methods GET_DELIVERY_IDS
-    importing
-      !IR_MD_POS type ref to DATA
-    exporting
-      !ET_VBELN type TT_VBELN
-      !ET_VBELP type TT_POS
-    raising
-      CX_UDM_MESSAGE .
-  methods IS_APPROPRIATE_DEFINITION
-    importing
-      !IS_EVENTS type TRXAS_EVT_CTAB_WA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  methods IS_APPROPRIATE_MD_TYPE
-    importing
-      !IR_MD_HEAD type ref to DATA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  methods IS_APPROPRIATE_DL_ITEM
-    importing
-      !IR_MD_POS type ref to DATA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  methods IS_APPROPRIATE_DL_TYPE
-    importing
-      !IR_MD_POS type ref to DATA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  methods IS_CREATION_MODE
-    importing
-      !IS_EVENTS type TRXAS_EVT_CTAB_WA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  methods IS_REVERAL_DOCUMENT
-    importing
-      !IR_MD_POS type ref to DATA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  methods GET_ITEMS_BY_DELIVERY_IDS
-    importing
-      !IT_VBELN type TT_VBELN
-    exporting
-      !ET_LIPS type TT_LIPS .
-  methods GET_PO_HEADER
-    importing
-      !I_EBELN type EBELN
-    exporting
-      !ES_EKKO type EKKO
-    raising
-      CX_UDM_MESSAGE .
-  methods GET_PO_ITEM
-    importing
-      !I_EBELN type EBELN
-      !I_EBELP type EBELP
-      !IS_EKKO type EKKO
-    exporting
-      !ES_EKPO type EKPO
-    raising
-      CX_UDM_MESSAGE .
-  methods GET_PO_ITEM_HISTORY
-    importing
-      !I_EBELN type EBELN
-      !I_EBELP type EBELP
-      !IS_EKKO type EKKO
-      !IS_EKPO type EKPO
-    exporting
-      !ET_EKBE type ZCL_GTT_MIA_AE_FILLER_DLH_GR=>LT_EKBE_T
-      !ET_EKBZ type ZCL_GTT_MIA_AE_FILLER_DLH_GR=>LT_EKBZ_T
-    raising
-      CX_UDM_MESSAGE .
-  methods GET_GOODS_RECEIPT_QUANTITY
-    importing
-      !IR_GOODS_RECEIPT type ref to DATA
-    returning
-      value(RV_MENGE) type MENGE_D
-    raising
-      CX_UDM_MESSAGE .
+    METHODS get_delivery_ids
+      IMPORTING
+        !ir_md_pos TYPE REF TO data
+      EXPORTING
+        !et_vbeln  TYPE tt_vbeln
+        !et_vbelp  TYPE tt_pos
+      RAISING
+        cx_udm_message .
+    METHODS is_appropriate_definition
+      IMPORTING
+        !is_events       TYPE trxas_evt_ctab_wa
+      RETURNING
+        VALUE(rv_result) TYPE abap_bool
+      RAISING
+        cx_udm_message .
+    METHODS is_appropriate_md_type
+      IMPORTING
+        !ir_md_head      TYPE REF TO data
+      RETURNING
+        VALUE(rv_result) TYPE abap_bool
+      RAISING
+        cx_udm_message .
+    METHODS is_appropriate_dl_item
+      IMPORTING
+        !ir_md_pos       TYPE REF TO data
+      RETURNING
+        VALUE(rv_result) TYPE abap_bool
+      RAISING
+        cx_udm_message .
+    METHODS is_appropriate_dl_type
+      IMPORTING
+        !ir_md_pos       TYPE REF TO data
+      RETURNING
+        VALUE(rv_result) TYPE abap_bool
+      RAISING
+        cx_udm_message .
+    METHODS is_creation_mode
+      IMPORTING
+        !is_events       TYPE trxas_evt_ctab_wa
+      RETURNING
+        VALUE(rv_result) TYPE abap_bool
+      RAISING
+        cx_udm_message .
+    METHODS is_reveral_document
+      IMPORTING
+        !ir_md_pos       TYPE REF TO data
+      RETURNING
+        VALUE(rv_result) TYPE abap_bool
+      RAISING
+        cx_udm_message .
+    METHODS get_items_by_delivery_ids
+      IMPORTING
+        !it_vbeln TYPE tt_vbeln
+      EXPORTING
+        !et_lips  TYPE tt_lips .
+    METHODS get_po_header
+      IMPORTING
+        !i_ebeln TYPE ebeln
+      EXPORTING
+        !es_ekko TYPE ekko
+      RAISING
+        cx_udm_message .
+    METHODS get_po_item
+      IMPORTING
+        !i_ebeln TYPE ebeln
+        !i_ebelp TYPE ebelp
+        !is_ekko TYPE ekko
+      EXPORTING
+        !es_ekpo TYPE ekpo
+      RAISING
+        cx_udm_message .
+    METHODS get_po_item_history
+      IMPORTING
+        !i_ebeln TYPE ebeln
+        !i_ebelp TYPE ebelp
+        !is_ekko TYPE ekko
+        !is_ekpo TYPE ekpo
+      EXPORTING
+        !et_ekbe TYPE zcl_gtt_mia_ae_filler_dlh_gr=>lt_ekbe_t
+        !et_ekbz TYPE zcl_gtt_mia_ae_filler_dlh_gr=>lt_ekbz_t
+      RAISING
+        cx_udm_message .
+    METHODS get_goods_receipt_quantity
+      IMPORTING
+        !ir_goods_receipt TYPE REF TO data
+      RETURNING
+        VALUE(rv_menge)   TYPE menge_d
+      RAISING
+        cx_udm_message .
 ENDCLASS.
 
 
@@ -170,290 +170,8 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
        ) ).
       ENDLOOP.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'MSEG' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD is_appropriate_definition.
-
-    rv_result = boolc( is_events-maintabdef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_header ).
-
-  ENDMETHOD.
-
-
-  METHOD is_appropriate_dl_item.
-
-    DATA: lt_vbeln TYPE tt_vbeln,
-          lt_lips  TYPE STANDARD TABLE OF lips.
-
-    rv_result   = abap_false.
-
-    get_delivery_ids(
-      EXPORTING
-        ir_md_pos = ir_md_pos
-      IMPORTING
-        et_vbeln  = lt_vbeln ).
-
-    IF lt_vbeln[] IS NOT INITIAL.
-      get_items_by_delivery_ids(
-        EXPORTING
-          it_vbeln =  lt_vbeln
-        IMPORTING
-          et_lips  =  lt_lips
-      ).
-      LOOP AT lt_lips ASSIGNING FIELD-SYMBOL(<ls_lips>).
-        rv_result   = boolc( sy-subrc = 0 AND
-                             zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
-                               ir_struct = REF #( <ls_lips> ) ) = abap_true ).
-        IF rv_result = abap_true.
-          EXIT.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD is_appropriate_dl_type.
-
-    DATA: lt_vbeln TYPE tt_vbeln,
-          lt_likp  TYPE STANDARD TABLE OF likp.
-
-    rv_result   = abap_false.
-
-    get_delivery_ids(
-      EXPORTING
-        ir_md_pos = ir_md_pos
-      IMPORTING
-        et_vbeln  = lt_vbeln ).
-
-    IF lt_vbeln[] IS NOT INITIAL.
-      SELECT *
-        INTO TABLE lt_likp
-        FROM likp
-        FOR ALL ENTRIES IN lt_vbeln
-        WHERE vbeln = lt_vbeln-table_line.
-
-      LOOP AT lt_likp ASSIGNING FIELD-SYMBOL(<ls_likp>).
-        rv_result   = boolc( sy-subrc = 0 AND
-                             zcl_gtt_mia_dl_tools=>is_appropriate_dl_type(
-                               ir_struct = REF #( <ls_likp> ) ) = abap_true ).
-        IF rv_result = abap_true.
-          EXIT.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD is_appropriate_md_type.
-
-    DATA: lv_md_type  TYPE mkpf-blart.
-
-    lv_md_type  = zcl_gtt_mia_tools=>get_field_of_structure(
-                    ir_struct_data = ir_md_head
-                    iv_field_name  = 'BLART' ).
-
-    rv_result   = boolc( lv_md_type = zif_gtt_mia_app_constants=>cs_md_type-goods_receipt ).
-
-  ENDMETHOD.
-
-
-  METHOD is_creation_mode.
-
-    DATA: lv_mblnr TYPE mkpf-mblnr,
-          lv_mjahr TYPE mkpf-mjahr.
-
-    IF is_events-update_indicator = zif_gtt_mia_ef_constants=>cs_change_mode-insert.
-      rv_result = abap_true.
-    ELSEIF is_events-update_indicator = zif_gtt_mia_ef_constants=>cs_change_mode-undefined.
-      lv_mblnr  = zcl_gtt_mia_tools=>get_field_of_structure(
-                      ir_struct_data = is_events-maintabref
-                      iv_field_name  = 'MBLNR' ).
-
-      lv_mjahr  = zcl_gtt_mia_tools=>get_field_of_structure(
-                      ir_struct_data = is_events-maintabref
-                      iv_field_name  = 'MJAHR' ).
-
-      SELECT SINGLE mblnr INTO lv_mblnr
-        FROM mkpf
-        WHERE mblnr = lv_mblnr
-          AND mjahr = lv_mjahr.
-
-      rv_result = boolc( sy-subrc <> 0 ).
-    ELSE.
-      rv_result = abap_false.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD is_reveral_document.
-
-    DATA: lv_vbeln    TYPE vbeln_vl.
-
-    FIELD-SYMBOLS: <lt_mseg>    TYPE zif_gtt_mia_app_types=>tt_mseg.
-
-    ASSIGN ir_md_pos->* TO <lt_mseg>.
-
-    IF <lt_mseg> IS ASSIGNED.
-      READ TABLE <lt_mseg> ASSIGNING FIELD-SYMBOL(<ls_mseg>) INDEX 1.
-
-      rv_result = boolc( sy-subrc = 0 AND <ls_mseg>-smbln IS NOT INITIAL ).
-
-    ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'MSEG' INTO DATA(lv_dummy).
-      zcl_gtt_mia_tools=>throw_exception( ).
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD zif_gtt_mia_ae_filler~check_relevance.
-
-    DATA: lv_mng_new    TYPE menge_d.
-
-    DATA(lr_md_pos) = mo_ae_parameters->get_appl_table(
-                        iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_segment ).
-
-    rv_result       = zif_gtt_mia_ef_constants=>cs_condition-false.
-
-    " mkpf-blart        = 'WE'
-    " update_indicator  = insert
-    IF is_appropriate_definition( is_events = is_events ) = abap_true AND
-       is_appropriate_md_type( ir_md_head = is_events-maintabref ) = abap_true AND
-       is_appropriate_dl_type( ir_md_pos  = lr_md_pos ) = abap_true AND
-       is_appropriate_dl_item( ir_md_pos  = lr_md_pos ) = abap_true AND
-       is_creation_mode( is_events = is_events ) = abap_true.
-
-      rv_result   = zif_gtt_mia_ef_constants=>cs_condition-true.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD zif_gtt_mia_ae_filler~get_event_data.
-
-    DATA:
-      lt_vbeln           TYPE tt_vbeln,
-      lt_pos             TYPE tt_pos,
-      lt_lips            TYPE tt_lips,
-      lv_tmp_dlvhdtrxcod TYPE /saptrx/trxcod,
-      lv_dlvhdtrxcod     TYPE /saptrx/trxcod,
-      lv_tmp_dlvittrxcod TYPE /saptrx/trxcod,
-      lv_dlvittrxcod     TYPE /saptrx/trxcod.
-
-    DATA(lr_md_pos) = mo_ae_parameters->get_appl_table(
-      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_segment ).
-
-    DATA(lv_reversal) = is_reveral_document( ir_md_pos = lr_md_pos ).
-
-    lv_dlvhdtrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_number.
-    lv_dlvittrxcod = zif_gtt_mia_app_constants=>cs_trxcod-dl_position.
-
-    TRY.
-        CALL FUNCTION 'ZGTT_SOF_GET_TRACKID'
-          EXPORTING
-            iv_type        = is_events-eventtype
-            iv_app         = 'MIA'
-          IMPORTING
-            ev_dlvhdtrxcod = lv_tmp_dlvhdtrxcod
-            ev_dlvittrxcod = lv_tmp_dlvittrxcod.
-
-        IF lv_tmp_dlvhdtrxcod IS NOT INITIAL.
-          lv_dlvhdtrxcod = lv_tmp_dlvhdtrxcod.
-        ENDIF.
-
-        IF lv_tmp_dlvittrxcod IS NOT INITIAL.
-          lv_dlvittrxcod = lv_tmp_dlvittrxcod.
-        ENDIF.
-
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
-
-    get_delivery_ids(
-      EXPORTING
-        ir_md_pos = lr_md_pos
-      IMPORTING
-        et_vbeln  = lt_vbeln
-        et_vbelp  = lt_pos ).
-
-    get_items_by_delivery_ids(
-      EXPORTING
-        it_vbeln = lt_vbeln
-      IMPORTING
-        et_lips  = lt_lips
-    ).
-
-    " Goods receipt for Item
-    LOOP AT lt_lips ASSIGNING FIELD-SYMBOL(<ls_lips>).
-      IF  zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = REF #( <ls_lips> ) ) = abap_false.
-        CONTINUE.
-      ENDIF.
-      LOOP AT lt_pos INTO DATA(ls_pos) WHERE vbeln = <ls_lips>-vbeln
-                                              AND posnr = <ls_lips>-posnr.
-        EXIT.
-      ENDLOOP.
-
-      IF sy-subrc <> 0.
-        CONTINUE.
-      ENDIF.
-      DATA(lv_evtcnt) = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
-      DATA(lv_quantity) = get_full_quantity_for_gr( is_lips = <ls_lips> is_mseg = ls_pos-mseg ).
-
-      ct_trackingheader = VALUE #( BASE ct_trackingheader (
-        language    = sy-langu
-        trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
-                        ir_lips = NEW lips( vbeln = <ls_lips>-vbeln posnr = <ls_lips>-posnr  ) )
-        trxcod      = lv_dlvittrxcod
-        evtcnt      = lv_evtcnt
-        evtid       = zif_gtt_mia_app_constants=>cs_milestone-dl_goods_receipt
-        evtdat      = sy-datum
-        evttim      = sy-uzeit
-        evtzon      = zcl_gtt_mia_tools=>get_system_time_zone( )
-      ) ).
-
-      ct_eventid_map  = VALUE #( BASE ct_eventid_map (
-        eventid     = is_events-eventid
-        evtcnt      = lv_evtcnt
-      ) ).
-
-      ct_trackparameters  = VALUE #( BASE ct_trackparameters (
-        evtcnt      = lv_evtcnt
-        param_name  = zif_gtt_mia_app_constants=>cs_event_param-quantity
-        param_value = zcl_gtt_mia_tools=>get_pretty_value( iv_value = lv_quantity )
-      ) ).
-
-      ct_tracklocation  = VALUE #( BASE ct_tracklocation (
-        evtcnt      = lv_evtcnt
-        locid1  = zcl_gtt_mia_tools=>get_pretty_location_id(
-                              iv_locid   = <ls_lips>-werks
-                              iv_loctype = zif_gtt_mia_ef_constants=>cs_loc_types-plant )
-        locid2 = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
-                        ir_lips = NEW lips( vbeln = <ls_lips>-vbeln posnr = <ls_lips>-posnr  ) )
-      ) ).
-
-
-    ENDLOOP.
-
-
-  ENDMETHOD.
-
-
-  METHOD get_items_by_delivery_ids.
-
-    CLEAR: et_lips[].
-    IF it_vbeln[] IS NOT INITIAL.
-     SELECT *
-        INTO TABLE et_lips
-        FROM lips
-        FOR ALL ENTRIES IN it_vbeln
-        WHERE vbeln = it_vbeln-table_line.
-
+      MESSAGE e002(zgtt) WITH 'MSEG' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -575,13 +293,28 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
                                 THEN - <lv_quantity>
                                 ELSE <lv_quantity> ).
       ELSE.
-        MESSAGE e001(zgtt_mia) WITH 'MENGE' 'Goods Receipt' INTO lv_dummy ##NO_TEXT.
-        zcl_gtt_mia_tools=>throw_exception( ).
+        MESSAGE e001(zgtt) WITH 'MENGE' 'Goods Receipt' INTO lv_dummy ##NO_TEXT.
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.
     ELSE.
-      MESSAGE e002(zgtt_mia) WITH 'Goods Receipt' INTO lv_dummy ##NO_TEXT.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      MESSAGE e002(zgtt) WITH 'Goods Receipt' INTO lv_dummy ##NO_TEXT.
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_items_by_delivery_ids.
+
+    CLEAR: et_lips[].
+    IF it_vbeln[] IS NOT INITIAL.
+      SELECT *
+         INTO TABLE et_lips
+         FROM lips
+         FOR ALL ENTRIES IN it_vbeln
+         WHERE vbeln = it_vbeln-table_line.
+
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -627,8 +360,8 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
           EXIT.
         ENDDO.
         IF es_ekko IS INITIAL.
-          MESSAGE e005(zgtt_mia) WITH 'EKKO' i_ebeln INTO DATA(lv_dummy).
-          zcl_gtt_mia_tools=>throw_exception( ).
+          MESSAGE e005(zgtt) WITH 'EKKO' i_ebeln INTO DATA(lv_dummy).
+          zcl_gtt_tools=>throw_exception( ).
         ENDIF.
       ENDIF.                                                "^_1624571
     ENDIF.
@@ -666,18 +399,18 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
         ENDTRY.
       ENDIF.
       IF lines( lt_items ) EQ 0.
-        MESSAGE e005(zgtt_mia) WITH 'EKPO' |{ i_ebeln }{ i_ebelp }|
+        MESSAGE e005(zgtt) WITH 'EKPO' |{ i_ebeln }{ i_ebelp }|
          INTO DATA(lv_dummy).
-        zcl_gtt_mia_tools=>throw_exception( ).
+        zcl_gtt_tools=>throw_exception( ).
       ENDIF.                                                "^_1624571
     ENDIF.
     READ TABLE lt_items WITH KEY ebeln = i_ebeln
                                  ebelp = i_ebelp
                         INTO es_ekpo.
     IF sy-subrc NE 0.
-      MESSAGE e005(zgtt_mia) WITH 'EKPO' |{ i_ebeln }{ i_ebelp }|
+      MESSAGE e005(zgtt) WITH 'EKPO' |{ i_ebeln }{ i_ebelp }|
           INTO lv_dummy.
-      zcl_gtt_mia_tools=>throw_exception( ).
+      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
   ENDMETHOD.
 
@@ -770,6 +503,249 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
       INSERT ls_ekbz INTO TABLE et_ekbz.
       CLEAR ls_ekbz.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD is_appropriate_definition.
+
+    rv_result = boolc( is_events-maintabdef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_header ).
+
+  ENDMETHOD.
+
+
+  METHOD is_appropriate_dl_item.
+
+    DATA: lt_vbeln TYPE tt_vbeln,
+          lt_lips  TYPE STANDARD TABLE OF lips.
+
+    rv_result   = abap_false.
+
+    get_delivery_ids(
+      EXPORTING
+        ir_md_pos = ir_md_pos
+      IMPORTING
+        et_vbeln  = lt_vbeln ).
+
+    IF lt_vbeln[] IS NOT INITIAL.
+      get_items_by_delivery_ids(
+        EXPORTING
+          it_vbeln = lt_vbeln
+        IMPORTING
+          et_lips  = lt_lips
+      ).
+      LOOP AT lt_lips ASSIGNING FIELD-SYMBOL(<ls_lips>).
+        rv_result   = boolc( sy-subrc = 0 AND
+                             zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
+                               ir_struct = REF #( <ls_lips> ) ) = abap_true ).
+        IF rv_result = abap_true.
+          EXIT.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD is_appropriate_dl_type.
+
+    DATA: lt_vbeln TYPE tt_vbeln,
+          lt_likp  TYPE STANDARD TABLE OF likp.
+
+    rv_result   = abap_false.
+
+    get_delivery_ids(
+      EXPORTING
+        ir_md_pos = ir_md_pos
+      IMPORTING
+        et_vbeln  = lt_vbeln ).
+
+    IF lt_vbeln[] IS NOT INITIAL.
+      SELECT *
+        INTO TABLE lt_likp
+        FROM likp
+        FOR ALL ENTRIES IN lt_vbeln
+        WHERE vbeln = lt_vbeln-table_line.
+
+      LOOP AT lt_likp ASSIGNING FIELD-SYMBOL(<ls_likp>).
+        rv_result   = boolc( sy-subrc = 0 AND
+                             zcl_gtt_mia_dl_tools=>is_appropriate_dl_type(
+                               ir_struct = REF #( <ls_likp> ) ) = abap_true ).
+        IF rv_result = abap_true.
+          EXIT.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD is_appropriate_md_type.
+
+    DATA: lv_md_type  TYPE mkpf-blart.
+
+    lv_md_type = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_md_head
+      iv_field_name  = 'BLART' ).
+
+    rv_result   = boolc( lv_md_type = zif_gtt_mia_app_constants=>cs_md_type-goods_receipt ).
+
+  ENDMETHOD.
+
+
+  METHOD is_creation_mode.
+
+    DATA: lv_mblnr TYPE mkpf-mblnr,
+          lv_mjahr TYPE mkpf-mjahr.
+
+    IF is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-insert.
+      rv_result = abap_true.
+    ELSEIF is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-undefined.
+      lv_mblnr = zcl_gtt_tools=>get_field_of_structure(
+        ir_struct_data = is_events-maintabref
+        iv_field_name  = 'MBLNR' ).
+
+      lv_mjahr = zcl_gtt_tools=>get_field_of_structure(
+        ir_struct_data = is_events-maintabref
+        iv_field_name  = 'MJAHR' ).
+
+      SELECT SINGLE mblnr INTO lv_mblnr
+        FROM mkpf
+        WHERE mblnr = lv_mblnr
+          AND mjahr = lv_mjahr.
+
+      rv_result = boolc( sy-subrc <> 0 ).
+    ELSE.
+      rv_result = abap_false.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD is_reveral_document.
+
+    DATA: lv_vbeln    TYPE vbeln_vl.
+
+    FIELD-SYMBOLS: <lt_mseg>    TYPE zif_gtt_mia_app_types=>tt_mseg.
+
+    ASSIGN ir_md_pos->* TO <lt_mseg>.
+
+    IF <lt_mseg> IS ASSIGNED.
+      READ TABLE <lt_mseg> ASSIGNING FIELD-SYMBOL(<ls_mseg>) INDEX 1.
+
+      rv_result = boolc( sy-subrc = 0 AND <ls_mseg>-smbln IS NOT INITIAL ).
+
+    ELSE.
+      MESSAGE e002(zgtt) WITH 'MSEG' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_gtt_ae_filler~check_relevance.
+
+    DATA: lv_mng_new    TYPE menge_d.
+
+    DATA(lr_md_pos) = mo_ae_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_segment ).
+
+    rv_result       = zif_gtt_ef_constants=>cs_condition-false.
+
+    " mkpf-blart        = 'WE'
+    " update_indicator  = insert
+    IF is_appropriate_definition( is_events = is_events ) = abap_true AND
+       is_appropriate_md_type( ir_md_head = is_events-maintabref ) = abap_true AND
+       is_appropriate_dl_type( ir_md_pos  = lr_md_pos ) = abap_true AND
+       is_appropriate_dl_item( ir_md_pos  = lr_md_pos ) = abap_true AND
+       is_creation_mode( is_events = is_events ) = abap_true.
+
+      rv_result   = zif_gtt_ef_constants=>cs_condition-true.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_gtt_ae_filler~get_event_data.
+
+    DATA:
+      lt_vbeln           TYPE tt_vbeln,
+      lt_pos             TYPE tt_pos,
+      lt_lips            TYPE tt_lips,
+      lv_dlvittrxcod     TYPE /saptrx/trxcod.
+
+    DATA(lr_md_pos) = mo_ae_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_segment ).
+
+    DATA(lv_reversal) = is_reveral_document( ir_md_pos = lr_md_pos ).
+
+    lv_dlvittrxcod = zif_gtt_ef_constants=>cs_trxcod-dl_position.
+
+    get_delivery_ids(
+      EXPORTING
+        ir_md_pos = lr_md_pos
+      IMPORTING
+        et_vbeln  = lt_vbeln
+        et_vbelp  = lt_pos ).
+
+    get_items_by_delivery_ids(
+      EXPORTING
+        it_vbeln = lt_vbeln
+      IMPORTING
+        et_lips  = lt_lips
+    ).
+
+    " Goods receipt for Item
+    LOOP AT lt_lips ASSIGNING FIELD-SYMBOL(<ls_lips>).
+      IF  zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = REF #( <ls_lips> ) ) = abap_false.
+        CONTINUE.
+      ENDIF.
+      LOOP AT lt_pos INTO DATA(ls_pos) WHERE vbeln = <ls_lips>-vbeln
+                                              AND posnr = <ls_lips>-posnr.
+        EXIT.
+      ENDLOOP.
+
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
+      DATA(lv_evtcnt) = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
+      DATA(lv_quantity) = get_full_quantity_for_gr( is_lips = <ls_lips> is_mseg = ls_pos-mseg ).
+
+      ct_trackingheader = VALUE #( BASE ct_trackingheader (
+        language    = sy-langu
+        trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                        ir_lips = NEW lips( vbeln = <ls_lips>-vbeln posnr = <ls_lips>-posnr  ) )
+        trxcod      = lv_dlvittrxcod
+        evtcnt      = lv_evtcnt
+        evtid       = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt
+        evtdat      = sy-datum
+        evttim      = sy-uzeit
+        evtzon      = zcl_gtt_tools=>get_system_time_zone( )
+      ) ).
+
+      ct_eventid_map  = VALUE #( BASE ct_eventid_map (
+        eventid     = is_events-eventid
+        evtcnt      = lv_evtcnt
+      ) ).
+
+      ct_trackparameters  = VALUE #( BASE ct_trackparameters (
+        evtcnt      = lv_evtcnt
+        param_name  = zif_gtt_ef_constants=>cs_event_param-quantity
+        param_value = zcl_gtt_tools=>get_pretty_value( iv_value = lv_quantity )
+      ) ).
+
+      ct_tracklocation  = VALUE #( BASE ct_tracklocation (
+        evtcnt      = lv_evtcnt
+        locid1  = zcl_gtt_tools=>get_pretty_location_id(
+                              iv_locid   = <ls_lips>-werks
+                              iv_loctype = zif_gtt_ef_constants=>cs_loc_types-plant )
+        locid2 = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                        ir_lips = NEW lips( vbeln = <ls_lips>-vbeln posnr = <ls_lips>-posnr  ) )
+      ) ).
+
+
+    ENDLOOP.
+
 
   ENDMETHOD.
 ENDCLASS.

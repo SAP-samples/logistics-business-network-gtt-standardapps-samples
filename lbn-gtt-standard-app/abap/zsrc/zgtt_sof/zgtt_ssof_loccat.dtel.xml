@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_DTEL" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <DD04V>
+    <ROLLNAME>ZGTT_SSOF_LOCCAT</ROLLNAME>
+    <DDLANGUAGE>E</DDLANGUAGE>
+    <DOMNAME>ZGTT_SSOF_LOCCAT_DM</DOMNAME>
+    <HEADLEN>55</HEADLEN>
+    <SCRLEN1>10</SCRLEN1>
+    <SCRLEN2>20</SCRLEN2>
+    <SCRLEN3>40</SCRLEN3>
+    <DDTEXT>Location Category for GTT</DDTEXT>
+    <REPTEXT>Location Category of Shipment for GTT</REPTEXT>
+    <SCRTEXT_S>Loc. Cat.</SCRTEXT_S>
+    <SCRTEXT_M>Location Category</SCRTEXT_M>
+    <SCRTEXT_L>Location Category of Shipment for GTT</SCRTEXT_L>
+    <DTELMASTER>E</DTELMASTER>
+    <REFKIND>D</REFKIND>
+   </DD04V>
+   <I18N_LANGS>
+    <LANGU>늑</LANGU>
+    <LANGU>닱</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DDTEXT>DTEL ZGTT_LOCCAT</DDTEXT>
+     <REPTEXT>DTEL ZGTT_LOCCAT</REPTEXT>
+     <SCRTEXT_S>DTEL&gt;ZGTT_</SCRTEXT_S>
+     <SCRTEXT_M>DTEL ZGTT_LOCCAT</SCRTEXT_M>
+     <SCRTEXT_L>DTEL ZGTT_LOCCAT</SCRTEXT_L>
+    </item>
+    <item>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DDTEXT>[Ļŏċąţįŏŋ∙Ĉąţēğŏŗŷ∙ƒŏŗ∙ĢŢŢ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DDTEXT>
+     <REPTEXT>[Ļŏċąţįŏŋ∙Ĉąţēğŏŗŷ∙ŏƒ∙Ŝĥįρɱēŋţ∙ƒŏŗ∙ĢŢŢ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</REPTEXT>
+     <SCRTEXT_S>[Ļŏċ.∙Ĉąţ]</SCRTEXT_S>
+     <SCRTEXT_M>[Ļŏċąţįŏŋ∙Ĉąţēğŏŗŷ∙]</SCRTEXT_M>
+     <SCRTEXT_L>[Ļŏċąţįŏŋ∙Ĉąţēğŏŗŷ∙ŏƒ∙Ŝĥįρɱēŋţ∙ƒŏŗ∙ĢŢŢ∙]</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
+  </asx:values>
+ </asx:abap>
+</abapGit>
