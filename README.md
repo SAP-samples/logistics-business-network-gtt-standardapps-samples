@@ -72,6 +72,7 @@ You can find the sample code for SAP ERP extractors that are necessary to integr
 
 * To integrate with the global track and trace option, your SAP ERP system shall be SAP EHP1 FOR SAP NETWEAVER 7.3 or higher.
 * To implement the extractor sample code in this repository, your SAP ERP system shall be S4 HANA 1909 SP03 on premise. Note that the sample code is not validated in a lower release, and not applicable for ECC series of products.
+* The node “Interface to Global Track and Trace” in the IMG and the related GTT-specific versions of the IMG activities are in Netweaver 740 only available from SP 18 on, and in Netweaver 750 only from SP 08 on. They cannot be downloaded as a correction via note assistant. We recommend upgrading to the service package level accordingly.
 
 
 ## Download and Installation
