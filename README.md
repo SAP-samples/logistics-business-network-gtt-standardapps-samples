@@ -1,5 +1,10 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2203 Release
+1. IDOC processing out-of-sequence is fixed when updating the inbound delivery / inbound delivery item / outbound delivery / outbound delivery item after a freight unit is generated.
+2. Unit of Measure of sales order items / outbound delivery / outbound delivery items is corrected.
+
+
 ## What's New in the 2202 Release
 
 1.	Track SO Fulfillment and Track PO Fulfillment standard apps are now available for use with Version 2. You can use the two apps to track the fulfilment status of sales orders and purchase orders. The following delivered contents are updated: 
@@ -79,7 +84,7 @@ If multiple IDOC payloads are generated at the same time or in a very short peri
 
 ## How to Obtain Support
 The project is provided "as-is", with no expected support. </br>
-If your issue is concerned with global track and trace option, log your incident in SAP support system with component “SCM-LBN-GTT-TSH” for Track Shipments app and “SCM-LBN-GTT-MIA” for Monitor Inbound ASNs app. 
+If your issue is concerned with global track and trace option, log your incident in SAP support system with component “SBN-LBN-GTT-TSH” for Track Shipments app, “SBN-LBN-GTT-MIA” for Monitor Inbound ASNs app, "SBN-LBN-GTT-TSF" for Track SO Fulfillment app and "SBN-LBN-GTT-TPF" for Track PO Fulfillment app. 
 
 For additional support, [ask a question in SAP Community](https://answers.sap.com/questions/ask.html?additionalTagId=73555000100800000602).
 
