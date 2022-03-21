@@ -290,6 +290,18 @@ CONSTANTS:
 * Event Message Parameters
   gc_ev_yn_document              TYPE /saptrx/paramname     VALUE 'YN_DOCUMENT',
 
+* FU fields in delivery header
+  gc_cp_yn_fu_relevant           TYPE /saptrx/paramname     VALUE 'YN_DL_FU_RELEVANT',
+
+* FU fields in delivery item
+  gc_cp_yn_fu_line_count         TYPE /saptrx/paramname     VALUE 'YN_DL_FU_LINE_COUNT',
+  gc_cp_yn_fu_no                 TYPE /saptrx/paramname     VALUE 'YN_DL_FU_NO',
+  gc_cp_yn_fu_item_no            TYPE /saptrx/paramname     VALUE 'YN_DL_FU_ITEM_NO',
+  gc_cp_yn_fu_quantity           TYPE /saptrx/paramname     VALUE 'YN_DL_FU_QUANTITY',
+  gc_cp_yn_fu_units              TYPE /saptrx/paramname     VALUE 'YN_DL_FU_UNITS',
+  gc_cp_yn_fu_product            TYPE /saptrx/paramname     VALUE 'YN_DL_FU_PRODUCT',
+  gc_cp_yn_fu_product_descr      TYPE /saptrx/paramname     VALUE 'YN_DL_FU_PRODUCT_DESCR',
+
 * Sales Order
   gc_parvw_ag                    TYPE parvw                 VALUE 'AG', " Sold-to Party
   gc_parvw_we                    TYPE parvw                 VALUE 'WE', " Ship-to Party

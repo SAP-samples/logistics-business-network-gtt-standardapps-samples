@@ -101,7 +101,8 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
 
     DATA: lt_control  TYPE /saptrx/bapi_trk_control_tab,
           lv_count    TYPE i VALUE 0,
-          lv_appobjid TYPE /saptrx/aoid.
+          lv_appobjid TYPE /saptrx/aoid,
+          lt_tmp_fu   TYPE zif_gtt_sof_ctp_types=>tt_fu_list.
 
 
     " DL Item key data (obligatory)
@@ -134,6 +135,11 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
 
     " fill F.U. table
     LOOP AT it_fu_list ASSIGNING FIELD-SYMBOL(<ls_fu_list>).
+      IF <ls_fu_list>-change_mode = /bobf/if_frw_c=>sc_modify_delete.
+        CONTINUE.
+      ENDIF.
+      APPEND <ls_fu_list> TO lt_tmp_fu.
+
       ADD 1 TO lv_count.
 
       lt_control  = VALUE #( BASE lt_control
@@ -183,7 +189,7 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
     ENDLOOP.
 
     " add deletion sign in case of emtpy IT_FU_LIST table
-    IF sy-subcs <> 0.
+    IF lt_tmp_fu IS INITIAL.
       lt_control  = VALUE #( BASE lt_control (
           paramindex = 1
           paramname  = cs_mapping-fu_lineno
@@ -277,7 +283,10 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
       lv_dlvittrxcod     TYPE /saptrx/trxcod,
       lv_appobjid        TYPE /saptrx/aoid,
       lt_fu_id           TYPE zif_gtt_sof_ctp_types=>tt_fu_id,
-      lv_futrxcod        TYPE /saptrx/trxcod.
+      lv_futrxcod        TYPE /saptrx/trxcod,
+      ls_fu_create       TYPE zif_gtt_sof_ctp_types=>ts_fu_list,
+      ls_fu_update       TYPE zif_gtt_sof_ctp_types=>ts_fu_list,
+      ls_fu_delete       TYPE zif_gtt_sof_ctp_types=>ts_fu_list.
 
     lv_dlvittrxcod = zif_gtt_sof_constants=>cs_trxcod-out_delivery_item.
     lv_futrxcod    = zif_gtt_sof_constants=>cs_trxcod-fu_number.
@@ -300,30 +309,42 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
     DELETE ADJACENT DUPLICATES FROM lt_fu_id COMPARING tor_id.
 
     LOOP AT lt_fu_id  ASSIGNING FIELD-SYMBOL(<ls_fu_id>).
+      CLEAR:
+        ls_fu_create,
+        ls_fu_update,
+        ls_fu_delete.
 
-      READ TABLE it_fu_list INTO DATA(ls_fu_list) WITH KEY tor_id = <ls_fu_id>-tor_id.
-      IF sy-subrc = 0.
-        IF ( ls_fu_list-change_mode = /bobf/if_frw_c=>sc_modify_create ).
-          cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
-            appsys      = mv_appsys
-            appobjtype  = is_aotype-aot_type
-            appobjid    = lv_appobjid
-            trxcod      = lv_futrxcod
-            trxid       = zcl_gtt_sof_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
-            timzon      = zcl_gtt_sof_tm_tools=>get_system_time_zone( )
-          ) ).
-        ELSEIF ( ls_fu_list-change_mode = /bobf/if_frw_c=>sc_modify_delete ).
-          cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
-            appsys      = mv_appsys
-            appobjtype  = is_aotype-aot_type
-            appobjid    = lv_appobjid
-            trxcod      = lv_futrxcod
-            trxid       = zcl_gtt_sof_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
-            timzon      = zcl_gtt_sof_tm_tools=>get_system_time_zone( )
-            action      = /bobf/if_frw_c=>sc_modify_delete
-          ) ).
-        ENDIF.
+      READ TABLE it_fu_list INTO ls_fu_create WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_create.
+      READ TABLE it_fu_list INTO ls_fu_update WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_update.
+      READ TABLE it_fu_list INTO ls_fu_delete WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_delete.
+
+      IF ls_fu_create IS NOT INITIAL
+        AND ls_fu_update IS INITIAL
+        AND ls_fu_delete IS INITIAL.
+        cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
+          appsys      = mv_appsys
+          appobjtype  = is_aotype-aot_type
+          appobjid    = lv_appobjid
+          trxcod      = lv_futrxcod
+          trxid       = zcl_gtt_sof_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
+          timzon      = zcl_gtt_sof_tm_tools=>get_system_time_zone( )
+        ) ).
       ENDIF.
+
+      IF ls_fu_delete IS NOT INITIAL
+       AND ls_fu_create IS INITIAL
+       AND ls_fu_update IS INITIAL.
+        cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
+          appsys      = mv_appsys
+          appobjtype  = is_aotype-aot_type
+          appobjid    = lv_appobjid
+          trxcod      = lv_futrxcod
+          trxid       = zcl_gtt_sof_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
+          timzon      = zcl_gtt_sof_tm_tools=>get_system_time_zone( )
+          action      = /bobf/if_frw_c=>sc_modify_delete
+        ) ).
+      ENDIF.
+
     ENDLOOP.
 
   ENDMETHOD.
@@ -384,6 +405,11 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
           cs_idoc_data = ls_idoc_data ).
 
       LOOP AT <lt_dlv_item> ASSIGNING FIELD-SYMBOL(<ls_dlv_fu>).
+
+        IF <ls_dlv_fu>-lips-pstyv IS INITIAL. " Skip the the item that don't stored in DB
+          CONTINUE.
+        ENDIF.
+
         fill_idoc_appobj_ctabs(
           EXPORTING
             is_aotype    = <ls_aotype>

@@ -68,7 +68,7 @@ public section.
       !IT_VBFA type VA_VBFAVB_T
     exporting
       !ET_EXP_EVENT type /SAPTRX/BAPI_TRK_EE_TAB
-    exceptions
+    raising
       CX_UDM_MESSAGE .
   class-methods GET_DELIVERY_ITEM_PLANNED_EVT
     importing
@@ -232,6 +232,7 @@ CLASS ZCL_GTT_SOF_TM_TOOLS IMPLEMENTATION.
         OTHERS                    = 5.
 
     IF sy-subrc <> 0.
+      MESSAGE e013(zgtt_ssof) WITH 'ZGTT_SSOF_EE_DE_HD' INTO DATA(lv_dummy).
       zcl_gtt_sof_tm_tools=>throw_exception( ).
     ENDIF.
 
@@ -308,6 +309,7 @@ CLASS ZCL_GTT_SOF_TM_TOOLS IMPLEMENTATION.
         OTHERS                    = 5.
 
     IF sy-subrc <> 0.
+      MESSAGE e013(zgtt_ssof) WITH 'ZGTT_SSOF_EE_DE_ITM' INTO DATA(lv_dummy).
       zcl_gtt_sof_tm_tools=>throw_exception( ).
     ENDIF.
 

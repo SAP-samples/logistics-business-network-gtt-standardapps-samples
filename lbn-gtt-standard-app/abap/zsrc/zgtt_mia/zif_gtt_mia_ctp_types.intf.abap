@@ -59,7 +59,7 @@ INTERFACE zif_gtt_mia_ctp_types
     END OF ts_delivery_chng .
   TYPES:
     tt_delivery_chng TYPE SORTED TABLE OF ts_delivery_chng
-                            WITH UNIQUE KEY vbeln posnr tor_id .
+                            WITH UNIQUE KEY vbeln posnr tor_id item_id.
   TYPES:
     tt_tor_type TYPE SORTED TABLE OF /scmtms/tor_type
                        WITH UNIQUE KEY table_line .

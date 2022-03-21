@@ -765,7 +765,7 @@ CLASS ZCL_GTT_STS_BO_FB_READER IMPLEMENTATION.
         ASSIGN <lt_tor_item>[ item_cat       = /scmtms/if_tor_const=>sc_tor_item_category-booking
                               parent_node_id = <ls_tor_root>-node_id ]-imo_id TO FIELD-SYMBOL(<lv_imo_id>).
         IF sy-subrc = 0.
-          IF <lv_imo_id> IS NOT INITIAL.
+          IF <lv_imo_id> IS NOT INITIAL AND <lv_imo_id> <> 'IMO'.
             APPEND cs_track_id-imo TO ct_tracked_object_id.
             APPEND <lv_imo_id>     TO ct_tracked_object_type.
           ENDIF.

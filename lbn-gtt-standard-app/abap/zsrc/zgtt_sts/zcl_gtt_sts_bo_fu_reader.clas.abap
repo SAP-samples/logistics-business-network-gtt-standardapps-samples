@@ -603,8 +603,9 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
     SORT <lt_tor_item> BY item_id.
 
     LOOP AT <lt_tor_item> ASSIGNING FIELD-SYMBOL(<ls_tor_item>) USING KEY parent_node_track_rel
-      WHERE parent_node_id = <ls_tor_root>-node_id AND
-            item_cat = /scmtms/if_tor_const=>sc_tor_item_category-product.
+      WHERE parent_node_id = <ls_tor_root>-node_id
+        AND item_cat = /scmtms/if_tor_const=>sc_tor_item_category-product
+        AND change_mode <> /bobf/if_frw_c=>sc_modify_delete.
 
       lv_item_id = <ls_tor_item>-item_id+4(6).
       APPEND lv_item_id TO cs_freight_unit-item_id.

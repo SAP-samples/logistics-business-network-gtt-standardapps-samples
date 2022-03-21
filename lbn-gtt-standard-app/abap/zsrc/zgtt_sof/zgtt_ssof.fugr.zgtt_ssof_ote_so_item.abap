@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_OTE_SO_ITEM.
+FUNCTION zgtt_ssof_ote_so_item.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -138,7 +138,11 @@ FUNCTION ZGTT_SSOF_OTE_SO_ITEM.
 
 *   Quantity unit
     ls_control_data-paramname = gc_cp_yn_qty_unit.
-    ls_control_data-value     = <ls_xvbap>-vrkme.
+    zcl_gtt_sof_toolkit=>convert_unit_output(
+      EXPORTING
+        iv_input  = <ls_xvbap>-vrkme
+      RECEIVING
+        rv_output = ls_control_data-value ).
     APPEND ls_control_data TO e_control_data.
 
 *   Net value

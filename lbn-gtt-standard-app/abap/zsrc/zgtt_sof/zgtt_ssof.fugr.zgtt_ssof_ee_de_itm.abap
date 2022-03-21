@@ -247,6 +247,7 @@ FUNCTION ZGTT_SSOF_EE_DE_ITM.
         EXPORTING
           iv_vbeln    = <ls_xlips>-vbeln  " Delivery
           iv_posnr    = <ls_xlips>-posnr  " Item
+          iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
         IMPORTING
           et_relation = lt_relation ).
 

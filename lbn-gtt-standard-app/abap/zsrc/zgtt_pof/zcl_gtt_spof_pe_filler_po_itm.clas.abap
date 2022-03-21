@@ -1,15 +1,15 @@
-CLASS zcl_gtt_spof_pe_filler_po_itm DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_GTT_SPOF_PE_FILLER_PO_ITM definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    INTERFACES zif_gtt_pe_filler .
+  interfaces ZIF_GTT_PE_FILLER .
 
-    METHODS constructor
-      IMPORTING
-        !io_ef_parameters TYPE REF TO zif_gtt_ef_parameters
-        !io_bo_reader     TYPE REF TO zif_gtt_tp_reader .
+  methods CONSTRUCTOR
+    importing
+      !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS
+      !IO_BO_READER type ref to ZIF_GTT_TP_READER .
   PROTECTED SECTION.
 private section.
 
@@ -51,13 +51,6 @@ private section.
       !IV_FIELDNAME type CLIKE
     returning
       value(RV_VALUE) type CHAR50
-    raising
-      CX_UDM_MESSAGE .
-  methods ADD_PO_ITEM_COMPLETED_EVENT
-    importing
-      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
-    changing
-      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
     raising
       CX_UDM_MESSAGE .
   methods ADD_DLV_ITEM_COMPLETED_EVENT
@@ -246,30 +239,6 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD add_po_item_completed_event.
-
-    DATA: lv_gr_conf TYPE abap_bool.
-
-    lv_gr_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_app_objects-maintabref ).
-
-    IF lv_gr_conf EQ abap_true.
-
-      ct_expeventdata = VALUE #( BASE ct_expeventdata (
-                appsys            = mo_ef_parameters->get_appsys(  )
-                appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
-                language          = sy-langu
-                appobjid          = is_app_objects-appobjid
-                milestone         = zif_gtt_ef_constants=>cs_milestone-po_itm_completed
-                locid2            = zcl_gtt_spof_po_tools=>get_tracking_id_po_itm( ir_ekpo = is_app_objects-maintabref )
-                milestonenum      = zcl_gtt_tools=>get_next_sequence_id(
-                                    it_expeventdata = ct_expeventdata )
-              ) ).
-
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD is_appropriate_dl.
 
     FIELD-SYMBOLS:
@@ -385,12 +354,6 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
         ct_expeventdata = ct_expeventdata ).
 
     add_goods_receipt_event(
-      EXPORTING
-        is_app_objects  = is_app_objects
-      CHANGING
-        ct_expeventdata = ct_expeventdata ).
-
-    add_po_item_completed_event(
       EXPORTING
         is_app_objects  = is_app_objects
       CHANGING

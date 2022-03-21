@@ -153,7 +153,7 @@ CLASS ZCL_GTT_CTP_SND IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD INITIATE_AOTYPES.
+  METHOD initiate_aotypes.
 
     DATA: lt_aotype_rst TYPE zif_gtt_ctp_types=>tt_aotype_rst.
 
@@ -164,24 +164,26 @@ CLASS ZCL_GTT_CTP_SND IMPLEMENTATION.
         et_aotype = lt_aotype_rst ).
 
     " Prepare AOT list
-    SELECT trk_obj_type  AS obj_type
-           aotype        AS aot_type
-           trxservername AS server_name
-      INTO TABLE mt_aotype
-      FROM /saptrx/aotypes
-      WHERE trk_obj_type  = lv_objtype
-        AND aotype       IN lt_aotype_rst
-        AND torelevant    = abap_true.
+    IF lt_aotype_rst IS NOT INITIAL.
+      SELECT trk_obj_type  AS obj_type
+             aotype        AS aot_type
+             trxservername AS server_name
+        INTO TABLE mt_aotype
+        FROM /saptrx/aotypes
+        WHERE trk_obj_type  = lv_objtype
+          AND aotype       IN lt_aotype_rst
+          AND torelevant    = abap_true.
 
-    IF sy-subrc <> 0.
-      MESSAGE e008(zgtt) INTO DATA(lv_dummy).
-     " zcl_gtt_spof_tools=>throw_exception( ).
+      IF sy-subrc <> 0.
+        MESSAGE e008(zgtt) INTO DATA(lv_dummy).
+        " zcl_gtt_spof_tools=>throw_exception( ).
+      ENDIF.
     ENDIF.
 
   ENDMETHOD.
 
 
-  METHOD INITIATE_EVTYPES.
+  METHOD initiate_evtypes.
 
     DATA: lt_evtype_rst TYPE zif_gtt_ctp_types=>tt_evtype_rst.
     DATA(lv_objtype)  = get_object_type(  ).
@@ -191,17 +193,19 @@ CLASS ZCL_GTT_CTP_SND IMPLEMENTATION.
         et_evtype = lt_evtype_rst ).
 
     " Prepare AOT list
-    SELECT trk_obj_type evtype
-           trxservername eventdatafunc
-      INTO TABLE mt_evtype
-      FROM /saptrx/evtypes
-      WHERE trk_obj_type  = lv_objtype
-        AND evtype       IN lt_evtype_rst
-        AND torelevant    = abap_true.
+    IF lt_evtype_rst IS NOT INITIAL.
+      SELECT trk_obj_type evtype
+             trxservername eventdatafunc
+        INTO TABLE mt_evtype
+        FROM /saptrx/evtypes
+        WHERE trk_obj_type  = lv_objtype
+          AND evtype       IN lt_evtype_rst
+          AND torelevant    = abap_true.
 
-    IF sy-subrc <> 0.
-      MESSAGE e008(zgtt) INTO DATA(lv_dummy).
-     " zcl_gtt_spof_tools=>throw_exception( ).
+      IF sy-subrc <> 0.
+        MESSAGE e008(zgtt) INTO DATA(lv_dummy).
+        " zcl_gtt_spof_tools=>throw_exception( ).
+      ENDIF.
     ENDIF.
   ENDMETHOD.
 

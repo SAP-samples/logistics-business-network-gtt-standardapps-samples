@@ -407,6 +407,11 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
           cs_idoc_data = ls_idoc_data ).
 
       LOOP AT <lt_dlv_item> ASSIGNING FIELD-SYMBOL(<ls_dlv_fu>).
+
+        " Skip for new created delivery item.
+        IF <ls_dlv_fu>-lips-pstyv IS INITIAL.
+          CONTINUE.
+        ENDIF.
         fill_idoc_appobj_ctabs(
           EXPORTING
             is_aotype    = <ls_aotype>

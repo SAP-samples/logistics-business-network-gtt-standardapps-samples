@@ -276,6 +276,11 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
           cs_idoc_data = ls_idoc_data ).
 
       LOOP AT <lt_dlv> ASSIGNING FIELD-SYMBOL(<ls_dlv>).
+
+        IF <ls_dlv>-likp-lfart IS INITIAL. " Skip cross TP if DLV not stored in DB
+          CONTINUE.
+        ENDIF.
+
         fill_idoc_appobj_ctabs(
           EXPORTING
             is_aotype    = <ls_aotype>

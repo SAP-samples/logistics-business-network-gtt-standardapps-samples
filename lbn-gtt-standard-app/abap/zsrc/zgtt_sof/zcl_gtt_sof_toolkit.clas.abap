@@ -70,9 +70,11 @@ public section.
     importing
       !IV_VBELN type VBELN_VL
       !IV_POSNR type POSNR_VL optional
+      !IV_VBTYP type VBTYPL
     exporting
       !ET_RELATION type TT_TOR_DATA
-      !ET_ROOT_KEY type /BOBF/T_FRW_KEY .
+      !ET_ROOT_KEY type /BOBF/T_FRW_KEY
+      !ET_FU_ITEM type /SCMTMS/T_TOR_ITEM_TR_K .
   methods CHECK_INTEGRATION_MODE
     importing
       !IV_VSTEL type VSTEL
@@ -85,6 +87,11 @@ public section.
       !IV_TIMEZONE type TTZZ-TZONE
     changing
       !CV_TIMESTAMP type TIMESTAMP .
+  class-methods CONVERT_UNIT_OUTPUT
+    importing
+      !IV_INPUT type CLIKE
+    returning
+      value(RV_OUTPUT) type MSEH3 .
 protected section.
 
   class-data GO_ME type ref to ZCL_GTT_SOF_TOOLKIT .
@@ -218,7 +225,7 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD GET_RELATION.
+  METHOD get_relation.
 
     DATA:
       lo_srvmgr_tor  TYPE REF TO /bobf/if_tra_service_manager,
@@ -231,11 +238,13 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
       lv_sys         TYPE tbdls-logsys,
       lt_fu          TYPE /scmtms/t_tor_root_k,
       ls_relation    TYPE ts_tor_data,
-      ls_root_key    TYPE /bobf/s_frw_key.
+      ls_root_key    TYPE /bobf/s_frw_key,
+      lt_fu_item     TYPE /scmtms/t_tor_item_tr_k.
 
     CLEAR:
       et_relation,
-      et_root_key.
+      et_root_key,
+      et_fu_item.
 
     CALL FUNCTION 'OWN_LOGICAL_SYSTEM_GET'
       IMPORTING
@@ -245,7 +254,13 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
         OTHERS                         = 2.
 
     ls_base_doc-base_btd_logsys = lv_sys.
-    ls_base_doc-base_btd_tco = /scmtms/if_common_c=>c_btd_tco-outbounddelivery.
+
+*   Type Code
+    CALL METHOD /scmtms/cl_logint_cmn_reuse=>get_tco_for_doc
+      EXPORTING
+        iv_vbtyp   = iv_vbtyp
+      IMPORTING
+        ev_btd_tco = ls_base_doc-base_btd_tco.
 
     me->conversion_alpha_input(
       EXPORTING
@@ -274,11 +289,15 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
 ***********************************************************************
     lo_srvmgr_tor->convert_altern_key(
       EXPORTING
-        iv_node_key          = /scmtms/if_tor_c=>sc_node-item_tr
-        iv_altkey_key        = /scmtms/if_tor_c=>sc_alternative_key-item_tr-base_document
-        it_key               = lt_base_doc
+        iv_node_key   = /scmtms/if_tor_c=>sc_node-item_tr
+        iv_altkey_key = /scmtms/if_tor_c=>sc_alternative_key-item_tr-base_document
+        it_key        = lt_base_doc
       IMPORTING
-        et_result            = lt_result ).  " Key table with explicit index
+        et_result     = lt_result ).  " Key table with explicit index
+
+    IF lt_result IS INITIAL.
+      RETURN.
+    ENDIF.
 
 ***********************************************************************
 **  FU Root Assocation                                                *
@@ -311,6 +330,40 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
       APPEND ls_root_key TO et_root_key.
       CLEAR ls_root_key.
     ENDLOOP.
+
+    IF et_fu_item IS REQUESTED.
+
+      lo_srvmgr_tor->retrieve(
+        EXPORTING
+          iv_node_key  = /scmtms/if_tor_c=>sc_node-item_tr
+          it_key       = lt_item_tr_key
+          iv_fill_data = abap_true
+        IMPORTING
+          et_data      = lt_fu_item ).
+
+      LOOP AT lt_fu_item INTO DATA(ls_fu_item) WHERE item_cat = /scmtms/if_tor_const=>sc_tor_item_category-product.
+        READ TABLE et_root_key INTO ls_root_key WITH KEY key = ls_fu_item-root_key.
+        IF sy-subrc = 0.
+          APPEND ls_fu_item TO et_fu_item.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD convert_unit_output.
+
+    CLEAR:rv_output.
+
+    CALL FUNCTION 'CONVERSION_EXIT_CUNIT_OUTPUT'
+      EXPORTING
+        input    = iv_input
+        language = sy-langu
+      IMPORTING
+        output   = rv_output.
+
+    CONDENSE rv_output NO-GAPS.
 
   ENDMETHOD.
 ENDCLASS.

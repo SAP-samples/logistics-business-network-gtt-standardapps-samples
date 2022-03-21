@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_OTE_DE_HD.
+FUNCTION zgtt_ssof_ote_de_hd.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -46,13 +46,16 @@ FUNCTION ZGTT_SSOF_OTE_DE_HD.
     lt_address      TYPE STANDARD TABLE OF gtys_address,
     ls_address      TYPE gtys_address,
     lv_dlv_datetime TYPE timestamp,
-    lv_tmp_datetime TYPE char20.
+    lv_tmp_datetime TYPE char20,
+    lo_gtt_toolkit  TYPE REF TO zcl_gtt_sof_toolkit.
 
   FIELD-SYMBOLS:
     <ls_xlikp> TYPE likpvb,
     <ls_xvbuk> TYPE vbukvb,
     <ls_xlips> TYPE lipsvb,
     <ls_xvbpa> TYPE vbpavb.
+
+  lo_gtt_toolkit = zcl_gtt_sof_toolkit=>get_instance( ).
 
 * <1> Read necessary application tables from table reference
 * Read Header Status Data New
@@ -188,7 +191,11 @@ FUNCTION ZGTT_SSOF_OTE_DE_HD.
 
 *Total Weight uom (LIKP-GEWEI)
     ls_control_data-paramname = gc_cp_yn_de_tot_weight_uom.
-    ls_control_data-value     = <ls_xlikp>-gewei.
+    zcl_gtt_sof_toolkit=>convert_unit_output(
+      EXPORTING
+        iv_input  = <ls_xlikp>-gewei
+      RECEIVING
+        rv_output = ls_control_data-value ).
     APPEND ls_control_data TO e_control_data.
 
 *Volume (LIKP-VOLUM)
@@ -199,7 +206,11 @@ FUNCTION ZGTT_SSOF_OTE_DE_HD.
 
 *Volume unit (LIKP-VOLEH)
     ls_control_data-paramname = gc_cp_yn_de_vol_uom.
-    ls_control_data-value     = <ls_xlikp>-voleh.
+    zcl_gtt_sof_toolkit=>convert_unit_output(
+      EXPORTING
+        iv_input  = <ls_xlikp>-voleh
+      RECEIVING
+        rv_output = ls_control_data-value ).
     APPEND ls_control_data TO e_control_data.
 
     READ TABLE lt_xvbuk ASSIGNING <ls_xvbuk> WITH KEY vbeln = <ls_xlikp>-vbeln.
@@ -390,6 +401,31 @@ FUNCTION ZGTT_SSOF_OTE_DE_HD.
     ls_control_data-paramname =  gc_cp_yn_de_incov.
     ls_control_data-value     = <ls_xlikp>-incov.
     APPEND ls_control_data TO e_control_data.
+
+*   fu relevant flag
+    lo_gtt_toolkit->check_integration_mode(
+      EXPORTING
+        iv_vstel        = <ls_xlikp>-vstel                 " Shipping Point / Receiving Point
+        iv_lfart        = <ls_xlikp>-lfart                 " Delivery Type
+        iv_vsbed        = <ls_xlikp>-vsbed                 " Shipping Conditions
+      IMPORTING
+        ev_internal_int = DATA(lv_internal_int) ).        " Data element for domain BOOLE: TRUE (='X') and FALSE (=' ')
+
+    IF lv_internal_int = abap_true.
+      lo_gtt_toolkit->get_relation(
+        EXPORTING
+          iv_vbeln    = <ls_xlikp>-vbeln  " Delivery
+          iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
+        IMPORTING
+          et_relation = DATA(lt_relation) ).
+
+      IF lt_relation IS NOT INITIAL.
+        ls_control_data-paramname = gc_cp_yn_fu_relevant.
+        ls_control_data-value     = abap_true.
+        APPEND ls_control_data TO e_control_data.
+      ENDIF.
+
+    ENDIF.
 
 *   Actual Business Time zone
     CALL FUNCTION 'GET_SYSTEM_TIMEZONE'

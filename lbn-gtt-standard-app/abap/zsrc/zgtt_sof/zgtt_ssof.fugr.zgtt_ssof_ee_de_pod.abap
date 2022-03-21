@@ -183,7 +183,7 @@ FUNCTION ZGTT_SSOF_EE_DE_POD.
     IF sy-subrc = 0.
       lv_podmg = ls_tvpod-podmg.     "Actual quantity accepted in sales unit per delivery item
     ELSE.
-      lv_podmg = <ls_xlips>-g_lfimg. "Actual quantity delivered (in sales units)
+      lv_podmg = <ls_xlips>-lfimg.   "Actual quantity delivered (in sales units)
     ENDIF.
     CLEAR ls_parameters.
     ls_parameters-evtcnt = ls_events-eventid.

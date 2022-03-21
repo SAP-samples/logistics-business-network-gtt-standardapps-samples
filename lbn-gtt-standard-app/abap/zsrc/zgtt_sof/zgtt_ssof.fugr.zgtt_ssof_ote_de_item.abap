@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_OTE_DE_ITEM.
+FUNCTION zgtt_ssof_ote_de_item.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -27,6 +27,7 @@ FUNCTION ZGTT_SSOF_OTE_DE_ITEM.
     <ls_xvbpa> TYPE vbpavb.
 
   DATA:
+    lv_count        TYPE i VALUE 0,
     ls_app_objects  TYPE trxas_appobj_ctab_wa,
     ls_control_data TYPE /saptrx/control_data,
 *    item status table
@@ -193,7 +194,11 @@ FUNCTION ZGTT_SSOF_OTE_DE_ITEM.
 
 *   Unit Of Measure
     ls_control_data-paramname = gc_cp_yn_qty_unit.
-    ls_control_data-value     = <ls_xlips>-vrkme.
+    zcl_gtt_sof_toolkit=>convert_unit_output(
+      EXPORTING
+        iv_input  = <ls_xlips>-vrkme
+      RECEIVING
+        rv_output = ls_control_data-value ).
     APPEND ls_control_data TO e_control_data.
 
 *   EAN/UPC
@@ -209,7 +214,11 @@ FUNCTION ZGTT_SSOF_OTE_DE_ITEM.
 
 *   Unit Of Measure
     ls_control_data-paramname = gc_cp_yn_de_gross_weight_uom.
-    ls_control_data-value     = <ls_xlips>-gewei.
+    zcl_gtt_sof_toolkit=>convert_unit_output(
+      EXPORTING
+        iv_input  = <ls_xlips>-gewei
+      RECEIVING
+        rv_output = ls_control_data-value ).
     APPEND ls_control_data TO e_control_data.
 
 *   Net Weight
@@ -226,7 +235,11 @@ FUNCTION ZGTT_SSOF_OTE_DE_ITEM.
 
 *   Unit Of Measure
     ls_control_data-paramname = gc_cp_yn_de_vol_uom.
-    ls_control_data-value     = <ls_xlips>-voleh.
+    zcl_gtt_sof_toolkit=>convert_unit_output(
+      EXPORTING
+        iv_input  = <ls_xlips>-voleh
+      RECEIVING
+        rv_output = ls_control_data-value ).
     APPEND ls_control_data TO e_control_data.
 
 *   Dangerous Goods
@@ -474,8 +487,10 @@ FUNCTION ZGTT_SSOF_OTE_DE_ITEM.
         EXPORTING
           iv_vbeln    = <ls_xlips>-vbeln  " Delivery
           iv_posnr    = <ls_xlips>-posnr  " Item
+          iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
         IMPORTING
-          et_relation = lt_relation ).
+          et_relation = lt_relation
+          et_fu_item  = DATA(lt_fu_item) ).
 
       LOOP AT lt_relation INTO ls_relation.
         lv_tabix = sy-tabix.
@@ -496,6 +511,62 @@ FUNCTION ZGTT_SSOF_OTE_DE_ITEM.
         ls_control_data-value = ''.
         APPEND ls_control_data TO e_control_data.
       ENDIF.
+
+*     freightUnitItemTPs
+      LOOP AT lt_fu_item INTO DATA(ls_fu_item).
+        CLEAR ls_relation.
+        READ TABLE lt_relation INTO ls_relation WITH KEY freight_unit_root_key = ls_fu_item-root_key.
+        ADD 1 TO lv_count.
+        ls_control_data-paramindex = lv_count.
+        ls_control_data-paramname = gc_cp_yn_fu_line_count.
+        ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+          iv_value = lv_count ).
+        APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_count.
+        ls_control_data-paramname = gc_cp_yn_fu_no.
+        ls_control_data-value = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
+        APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_count.
+        ls_control_data-paramname = gc_cp_yn_fu_item_no.
+        ls_control_data-value = ls_fu_item-item_id.
+        APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_count.
+        ls_control_data-paramname = gc_cp_yn_fu_quantity.
+        ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+          iv_value = ls_fu_item-qua_pcs_val ).
+        APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_count.
+        ls_control_data-paramname = gc_cp_yn_fu_units.
+        zcl_gtt_sof_toolkit=>convert_unit_output(
+          EXPORTING
+            iv_input  = ls_fu_item-qua_pcs_uni
+          RECEIVING
+            rv_output = ls_control_data-value ).
+        APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_count.
+        ls_control_data-paramname = gc_cp_yn_fu_product.
+        ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+          iv_value = ls_fu_item-product_id ).
+        APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_count.
+        ls_control_data-paramname = gc_cp_yn_fu_product_descr.
+        ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+          iv_value = ls_fu_item-item_descr ).
+        APPEND ls_control_data TO e_control_data.
+      ENDLOOP.
+      IF sy-subrc NE 0.
+        ls_control_data-paramindex = '1'.
+        ls_control_data-paramname = gc_cp_yn_fu_line_count.
+        ls_control_data-value = ''.
+        APPEND ls_control_data TO e_control_data.
+      ENDIF.
+
     ENDIF.
     CLEAR ls_control_data-paramindex.
 

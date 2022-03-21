@@ -80,6 +80,12 @@
      <MSGNR>012</MSGNR>
      <TEXT>No application object type is found (it_app_objects)</TEXT>
     </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZGTT_SSOF</ARBGB>
+     <MSGNR>013</MSGNR>
+     <TEXT>Error occurred during the call of function module &amp;1</TEXT>
+    </T100>
    </T100>
   </asx:values>
  </asx:abap>
