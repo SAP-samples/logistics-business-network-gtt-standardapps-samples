@@ -67,14 +67,14 @@ FUNCTION ZGTT_SSOF_EE_DE_GI_REL.
 * <4> Check Status - If Goods Issue Status is completed
   lv_aot_relevance = gc_false.
   READ TABLE lt_xvbuk ASSIGNING <ls_xvbuk>
-       WITH KEY vbeln = <ls_xlikp>-vbeln
-  BINARY SEARCH.
+       WITH KEY vbeln = <ls_xlikp>-vbeln.
+
   CHECK sy-subrc IS INITIAL.
   IF <ls_xvbuk>-wbstk = 'C'.
 *   Check Status Before - If GI Status is completed
     READ TABLE lt_yvbuk ASSIGNING <ls_yvbuk>
-         WITH KEY vbeln = <ls_xlikp>-vbeln
-    BINARY SEARCH.
+         WITH KEY vbeln = <ls_xlikp>-vbeln.
+
     IF sy-subrc IS INITIAL.
       IF <ls_yvbuk>-wbstk <> 'C'.
         lv_aot_relevance = gc_true.

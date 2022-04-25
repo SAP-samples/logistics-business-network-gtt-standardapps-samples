@@ -778,8 +778,8 @@ FORM check_for_changes
     CHANGING lt_yvbap.
   READ TABLE lt_yvbap INTO ls_yvbap
     WITH KEY vbeln = is_xvbap-vbeln
-             posnr = is_xvbap-posnr
-  BINARY SEARCH.
+             posnr = is_xvbap-posnr.
+
   IF sy-subrc IS INITIAL.
     MOVE-CORRESPONDING is_xvbap TO ls_vbap_new.
     MOVE-CORRESPONDING ls_yvbap TO ls_vbap_old.
@@ -939,8 +939,8 @@ FORM check_for_changes_dlv
     CHANGING lt_ylips.
   READ TABLE lt_ylips INTO ls_ylips
     WITH KEY vbeln = is_xlips-vbeln
-             posnr = is_xlips-posnr
-  BINARY SEARCH.
+             posnr = is_xlips-posnr.
+
   IF sy-subrc IS INITIAL.
     MOVE-CORRESPONDING is_xlips TO ls_lips_new.
     MOVE-CORRESPONDING ls_ylips TO ls_lips_old.
@@ -958,13 +958,13 @@ FORM check_for_changes_dlv
              gc_bpt_delivery_item_stat_new
     CHANGING lt_xvbup.
   READ TABLE lt_xvbup INTO ls_xvbup WITH KEY vbeln = is_xlips-vbeln
-                                             posnr = is_xlips-posnr BINARY SEARCH.
+                                             posnr = is_xlips-posnr .
   PERFORM read_appl_table
     USING    i_all_appl_tables
              gc_bpt_delivery_item_stat_old
     CHANGING lt_yvbup.
   READ TABLE lt_yvbup INTO ls_yvbup WITH KEY vbeln = is_xlips-vbeln
-                                             posnr = is_xlips-posnr BINARY SEARCH.
+                                             posnr = is_xlips-posnr .
   IF sy-subrc IS INITIAL.
     MOVE-CORRESPONDING ls_xvbup TO ls_vbup_new.
     MOVE-CORRESPONDING ls_yvbup TO ls_vbup_old.

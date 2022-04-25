@@ -62,16 +62,15 @@ CLASS ZCL_GTT_SOF_CTP_DAT_TOR_TO_DLI IMPLEMENTATION.
     LOOP AT it_delivery_chng ASSIGNING FIELD-SYMBOL(<ls_delivery_chng>).
       READ TABLE et_delivery_item ASSIGNING FIELD-SYMBOL(<ls_delivery_item>)
         WITH KEY vbeln = <ls_delivery_chng>-vbeln
-                 posnr = <ls_delivery_chng>-posnr
-                 BINARY SEARCH.
+                 posnr = <ls_delivery_chng>-posnr.
 
       IF sy-subrc <> 0.
         CLEAR: ls_delivery_item.
         ls_delivery_item-vbeln  = <ls_delivery_chng>-vbeln.
         ls_delivery_item-posnr  = <ls_delivery_chng>-posnr.
-        INSERT ls_delivery_item INTO et_delivery_item INDEX sy-tabix.
+        APPEND ls_delivery_item to et_delivery_item.
 
-        ASSIGN et_delivery_item[ sy-tabix ] TO <ls_delivery_item>.
+        ASSIGN et_delivery_item[ vbeln = <ls_delivery_chng>-vbeln posnr = <ls_delivery_chng>-posnr ] TO <ls_delivery_item>.
       ENDIF.
 
       <ls_delivery_item>-fu_list  = VALUE #( BASE <ls_delivery_item>-fu_list (

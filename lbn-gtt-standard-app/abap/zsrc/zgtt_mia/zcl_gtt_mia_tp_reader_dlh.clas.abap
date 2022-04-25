@@ -10,110 +10,112 @@ public section.
     importing
       !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
   PROTECTED SECTION.
-private section.
+PRIVATE SECTION.
 
-  types:
+  TYPES:
     BEGIN OF ts_dl_header,
-        vbeln     TYPE likp-vbeln,
-        lifnr     TYPE likp-lifnr,
-        lifnr_lt  TYPE /saptrx/loc_id_type,
-        werks     TYPE likp-werks,
-        werks_lt  TYPE /saptrx/loc_id_type,
-        bldat     TYPE likp-bldat,
-        lfdat     TYPE likp-lfdat,
-        lfdat_ts  TYPE timestamp,
-        erdat     TYPE timestamp,
-        btgew     TYPE likp-btgew,
-        ntgew     TYPE likp-ntgew,
-        gewei     TYPE likp-gewei,
-        volum     TYPE likp-volum,
-        voleh     TYPE likp-voleh,
-        lgnum     TYPE likp-lgnum,
-        lgtor     TYPE likp-lgtor,
-        lgnum_txt TYPE /saptrx/paramval200,
-        bolnr     TYPE likp-bolnr,
-        proli     TYPE likp-proli,
-        incov     TYPE likp-incov,
-        inco1     TYPE likp-inco1,
-        inco2_l   TYPE likp-inco2_l,
-        fu_relev  TYPE abap_bool,
-        lifex     TYPE likp-lifex,
-      END OF ts_dl_header .
+      vbeln       TYPE likp-vbeln,
+      lifnr       TYPE likp-lifnr,
+      lifnr_lt    TYPE /saptrx/loc_id_type,
+      werks       TYPE likp-werks,
+      werks_lt    TYPE /saptrx/loc_id_type,
+      bldat       TYPE likp-bldat,
+      lfdat       TYPE likp-lfdat,
+      lfdat_ts    TYPE timestamp,
+      erdat       TYPE timestamp,
+      btgew       TYPE likp-btgew,
+      ntgew       TYPE likp-ntgew,
+      gewei       TYPE likp-gewei,
+      volum       TYPE likp-volum,
+      voleh       TYPE likp-voleh,
+      lgnum       TYPE likp-lgnum,
+      lgtor       TYPE likp-lgtor,
+      lgnum_txt   TYPE /saptrx/paramval200,
+      bolnr       TYPE likp-bolnr,
+      proli       TYPE likp-proli,
+      incov       TYPE likp-incov,
+      inco1       TYPE likp-inco1,
+      inco2_l     TYPE likp-inco2_l,
+      fu_relev    TYPE abap_bool,
+      lifex       TYPE likp-lifex,
+      dlv_version TYPE c LENGTH 4,
+    END OF ts_dl_header .
 
-  constants:
+  CONSTANTS:
     BEGIN OF cs_mapping,
-        " Header section
-        vbeln     TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
-        lifnr     TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_ID',
-        lifnr_lt  TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_LOC_TYPE',
-        werks     TYPE /saptrx/paramname VALUE 'YN_DL_RECEIVING_LOCATION',
-        werks_lt  TYPE /saptrx/paramname VALUE 'YN_DL_RECEIVING_LOC_TYPE',
-        bldat     TYPE /saptrx/paramname VALUE 'YN_DL_DOCUMENT_DATE',
-        lfdat     TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATE',
-        lfdat_ts  TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATETIME',
-        erdat     TYPE /saptrx/paramname VALUE 'YN_DL_CREATION_DATE',     "MIA
-        btgew     TYPE /saptrx/paramname VALUE 'YN_DL_TOTAL_WEIGHT',
-        ntgew     TYPE /saptrx/paramname VALUE 'YN_DL_NET_WEIGHT',
-        gewei     TYPE /saptrx/paramname VALUE 'YN_DL_WEIGHT_UNITS',
-        volum     TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME',
-        voleh     TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME_UNITS',
-        lgnum     TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE',
-        lgnum_txt TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE_DESC',
-        lgtor     TYPE /saptrx/paramname VALUE 'YN_DL_DOOR',
-        bolnr     TYPE /saptrx/paramname VALUE 'YN_DL_BILL_OF_LADING',
-        proli     TYPE /saptrx/paramname VALUE 'YN_DL_DANGEROUS_GOODS',
-        incov     TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_VERSION',
-        inco1     TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS',
-        inco2_l   TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_LOCATION',
-        fu_relev  TYPE /saptrx/paramname VALUE 'YN_DL_FU_RELEVANT',
-        lifex     TYPE /saptrx/paramname VALUE 'YN_DL_ASN_NUMBER',
-      END OF cs_mapping .
-  data MO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
+      " Header section
+      vbeln       TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
+      lifnr       TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_ID',
+      lifnr_lt    TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_LOC_TYPE',
+      werks       TYPE /saptrx/paramname VALUE 'YN_DL_RECEIVING_LOCATION',
+      werks_lt    TYPE /saptrx/paramname VALUE 'YN_DL_RECEIVING_LOC_TYPE',
+      bldat       TYPE /saptrx/paramname VALUE 'YN_DL_DOCUMENT_DATE',
+      lfdat       TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATE',
+      lfdat_ts    TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATETIME',
+      erdat       TYPE /saptrx/paramname VALUE 'YN_DL_CREATION_DATE',     "MIA
+      btgew       TYPE /saptrx/paramname VALUE 'YN_DL_TOTAL_WEIGHT',
+      ntgew       TYPE /saptrx/paramname VALUE 'YN_DL_NET_WEIGHT',
+      gewei       TYPE /saptrx/paramname VALUE 'YN_DL_WEIGHT_UNITS',
+      volum       TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME',
+      voleh       TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME_UNITS',
+      lgnum       TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE',
+      lgnum_txt   TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE_DESC',
+      lgtor       TYPE /saptrx/paramname VALUE 'YN_DL_DOOR',
+      bolnr       TYPE /saptrx/paramname VALUE 'YN_DL_BILL_OF_LADING',
+      proli       TYPE /saptrx/paramname VALUE 'YN_DL_DANGEROUS_GOODS',
+      incov       TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_VERSION',
+      inco1       TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS',
+      inco2_l     TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_LOCATION',
+      fu_relev    TYPE /saptrx/paramname VALUE 'YN_DL_FU_RELEVANT',
+      lifex       TYPE /saptrx/paramname VALUE 'YN_DL_ASN_NUMBER',
+      dlv_version TYPE /saptrx/paramname VALUE 'YN_DL_DELIVERY_VERSION',
+    END OF cs_mapping .
+  DATA mo_ef_parameters TYPE REF TO zif_gtt_ef_parameters .
 
-  methods FILL_HEADER_FROM_LIKP_STRUCT
-    importing
-      !IR_LIKP type ref to DATA
-    changing
-      !CS_DL_HEADER type TS_DL_HEADER
-    raising
-      CX_UDM_MESSAGE .
-  methods FILL_HEADER_FROM_LIPS_TABLE
-    importing
-      !IR_LIPS_NEW type ref to DATA
-      !IR_LIPS_OLD type ref to DATA optional
-      !IV_VBELN type VBELN_VL
-    changing
-      !CS_DL_HEADER type TS_DL_HEADER
-    raising
-      CX_UDM_MESSAGE .
-  methods FILL_HEADER_LOCATION_TYPES
-    changing
-      !CS_DL_HEADER type TS_DL_HEADER .
-  methods FORMAT_HEADER_LOCATION_IDS
-    changing
-      !CS_DL_HEADER type TS_DL_HEADER .
-  methods GET_LIKP_STRUCT_OLD
-    importing
-      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
-      !IV_VBELN type VBELN_VL
-    returning
-      value(RR_LIKP) type ref to DATA
-    raising
-      CX_UDM_MESSAGE .
-  methods IS_OBJECT_CHANGED
-    importing
-      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  methods ADD_DELIVERY_ITEM_TRACKING
-    importing
-      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
-    changing
-      !CT_TRACK_ID_DATA type ZIF_GTT_EF_TYPES=>TT_TRACK_ID_DATA
-    raising
-      CX_UDM_MESSAGE .
+  METHODS fill_header_from_likp_struct
+    IMPORTING
+      !ir_likp      TYPE REF TO data
+    CHANGING
+      !cs_dl_header TYPE ts_dl_header
+    RAISING
+      cx_udm_message .
+  METHODS fill_header_from_lips_table
+    IMPORTING
+      !ir_lips_new  TYPE REF TO data
+      !ir_lips_old  TYPE REF TO data OPTIONAL
+      !iv_vbeln     TYPE vbeln_vl
+    CHANGING
+      !cs_dl_header TYPE ts_dl_header
+    RAISING
+      cx_udm_message .
+  METHODS fill_header_location_types
+    CHANGING
+      !cs_dl_header TYPE ts_dl_header .
+  METHODS format_header_location_ids
+    CHANGING
+      !cs_dl_header TYPE ts_dl_header .
+  METHODS get_likp_struct_old
+    IMPORTING
+      !is_app_object TYPE trxas_appobj_ctab_wa
+      !iv_vbeln      TYPE vbeln_vl
+    RETURNING
+      VALUE(rr_likp) TYPE REF TO data
+    RAISING
+      cx_udm_message .
+  METHODS is_object_changed
+    IMPORTING
+      !is_app_object   TYPE trxas_appobj_ctab_wa
+    RETURNING
+      VALUE(rv_result) TYPE abap_bool
+    RAISING
+      cx_udm_message .
+  METHODS add_delivery_item_tracking
+    IMPORTING
+      !is_app_object    TYPE trxas_appobj_ctab_wa
+    CHANGING
+      !ct_track_id_data TYPE zif_gtt_ef_types=>tt_track_id_data
+    RAISING
+      cx_udm_message .
 ENDCLASS.
 
 

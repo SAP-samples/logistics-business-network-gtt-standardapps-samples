@@ -267,7 +267,7 @@ METHOD IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT .
           tvbup = lt_vbup.
       IF lt_vbap IS NOT INITIAL.
         READ TABLE lt_vbap INTO ls_vbap WITH KEY vbeln = ls_vbap_delta-vbeln
-                                                 posnr = ls_vbap_delta-posnr BINARY SEARCH.
+                                                 posnr = ls_vbap_delta-posnr.
         SELECT SINGLE * INTO ls_vbak FROM vbak WHERE vbeln = ls_vbap-vbeln
                                                  AND auart = zif_gtt_sof_constants=>cs_relevance-auart.
         CHECK sy-subrc EQ 0.

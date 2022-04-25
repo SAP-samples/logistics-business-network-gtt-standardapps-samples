@@ -27,8 +27,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-1> Sales Document: Header Status and Admin Data New
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'DELIVERY_HDR_STATUS_NEW'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'DELIVERY_HDR_STATUS_NEW'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -39,8 +39,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-2> Sales Document: Header Status and Admin Data Old
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'DELIVERY_HDR_STATUS_OLD'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'DELIVERY_HDR_STATUS_OLD'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -77,8 +77,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-1> Sales Document: Delivery Item Data New
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'DELIVERY_ITEM_NEW'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'DELIVERY_ITEM_NEW'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -89,8 +89,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-2> Sales Document: Delivery Item Data Old
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'DELIVERY_ITEM_OLD'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'DELIVERY_ITEM_OLD'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -127,8 +127,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-1> Sales Document: Delivery Item Data New
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'HU_ITEM_NEW'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'HU_ITEM_NEW'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -139,8 +139,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-2> Sales Document: Delivery Item Data Old
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'HU_ITEM_OLD'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'HU_ITEM_OLD'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -177,8 +177,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-1> Sales Document: Delivery Item Data New
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'DELIVERY_ITEM_STATUS_NEW'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'DELIVERY_ITEM_STATUS_NEW'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -189,8 +189,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-2> Sales Document: Delivery Item Data Old
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'DELIVERY_ITEM_STATUS_OLD'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'DELIVERY_ITEM_STATUS_OLD'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -226,8 +226,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-1> Sales Document: Shipment Header Data New
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'SHIPMENT_HEADER_NEW'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'SHIPMENT_HEADER_NEW'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -238,8 +238,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-2> Sales Document: Shipment Header Data Old
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'SHIPMENT_HEADER_OLD'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'SHIPMENT_HEADER_OLD'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -276,8 +276,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-1> Sales Document: Shipment Header Data New
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'SHIPMENT_LEG_NEW'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'SHIPMENT_LEG_NEW'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.
@@ -288,8 +288,8 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
 
 * <1-2> Sales Document: Shipment Header Data Old
   READ TABLE i_all_appl_tables INTO ls_one_app_tables
-  WITH KEY tabledef = 'SHIPMENT_LEG_OLD'
-  BINARY SEARCH.
+  WITH KEY tabledef = 'SHIPMENT_LEG_OLD'.
+
   IF NOT sy-subrc IS INITIAL.
     RAISE idata_determination_error.
   ELSE.

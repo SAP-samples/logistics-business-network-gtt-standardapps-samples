@@ -374,9 +374,9 @@ FUNCTION zgtt_ssof_ote_de_item.
 *Destination address
     READ TABLE lt_xvbpa ASSIGNING <ls_xvbpa> WITH KEY vbeln = <ls_xlikp>-vbeln
                                                       posnr = '000000'
-                                                      parvw = 'WE' BINARY SEARCH.
+                                                      parvw = 'WE'.
     CLEAR: lt_address, ls_address.
-    IF <ls_xvbpa> IS NOT INITIAL.
+    IF <ls_xvbpa> IS ASSIGNED AND <ls_xvbpa> IS NOT INITIAL.
       CALL FUNCTION 'ADDRESS_INTO_PRINTFORM'
         EXPORTING
           address_type            = '1'
@@ -398,7 +398,7 @@ FUNCTION zgtt_ssof_ote_de_item.
     APPEND ls_control_data TO e_control_data.
 *Destination country, Destination email, Destination telephone
     CLEAR: lv_countryiso, ls_sd_addr.
-    IF <ls_xvbpa> IS NOT INITIAL.
+    IF <ls_xvbpa> IS ASSIGNED AND <ls_xvbpa> IS NOT INITIAL.
       CALL FUNCTION 'SD_ADDRESS_GET'
         EXPORTING
           fif_address_number = <ls_xvbpa>-adrnr
@@ -424,7 +424,11 @@ FUNCTION zgtt_ssof_ote_de_item.
 
 *   Ship-to Party
     ls_control_data-paramname = gc_cp_yn_so_ship_to.
-    ls_control_data-value     = <ls_xvbpa>-kunnr.
+    IF <ls_xvbpa> IS ASSIGNED.
+      ls_control_data-value     = <ls_xvbpa>-kunnr.
+    ELSE.
+      CLEAR ls_control_data-value.
+    ENDIF.
     APPEND ls_control_data TO e_control_data.
 
 *   Ship-to Party type

@@ -135,12 +135,11 @@ CLASS ZCL_GTT_SOF_CTP_DAT_TOR_TO_DLH IMPLEMENTATION.
               READ TABLE <ls_delivery>-lips
                 WITH KEY vbeln = ls_lips-vbeln
                          posnr = ls_lips-posnr
-                         TRANSPORTING NO FIELDS
-                         BINARY SEARCH.
+                         TRANSPORTING NO FIELDS.
 
               " no row -> add it
               IF sy-subrc <> 0.
-                INSERT ls_lips INTO <ls_delivery>-lips INDEX sy-tabix.
+                APPEND ls_lips to <ls_delivery>-lips.
               ENDIF.
             ENDIF.
           ENDLOOP.
@@ -167,12 +166,11 @@ CLASS ZCL_GTT_SOF_CTP_DAT_TOR_TO_DLH IMPLEMENTATION.
     " collect DLV Headers from DLV Items
     LOOP AT it_delivery_chng ASSIGNING FIELD-SYMBOL(<ls_delivery_chng>).
       READ TABLE mt_delivery TRANSPORTING NO FIELDS
-        WITH KEY vbeln  = <ls_delivery_chng>-vbeln
-        BINARY SEARCH.
+        WITH KEY vbeln  = <ls_delivery_chng>-vbeln.
 
       IF sy-subrc <> 0.
         ls_dlv_head-vbeln = <ls_delivery_chng>-vbeln.
-        INSERT ls_dlv_head INTO mt_delivery INDEX sy-tabix.
+        APPEND ls_dlv_head TO mt_delivery.
       ENDIF.
     ENDLOOP.
 
@@ -187,8 +185,8 @@ CLASS ZCL_GTT_SOF_CTP_DAT_TOR_TO_DLH IMPLEMENTATION.
 
     LOOP AT mt_delivery ASSIGNING FIELD-SYMBOL(<ls_delivery>).
       TRY.
-          <ls_delivery>-fu_relevant   = zcl_gtt_sof_tm_tools=>is_fu_relevant(
-                                          it_lips = CORRESPONDING #( <ls_delivery>-lips ) ).
+          <ls_delivery>-fu_relevant = zcl_gtt_sof_tm_tools=>is_fu_relevant(
+            it_lips = CORRESPONDING #( <ls_delivery>-lips ) ).
         CATCH cx_udm_message.
       ENDTRY.
     ENDLOOP.

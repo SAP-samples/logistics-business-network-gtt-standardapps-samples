@@ -87,8 +87,8 @@ FUNCTION ZGTT_SSOF_EE_DE_PICKING_REL.
                     WHERE vbeln = <ls_xlikp>-vbeln.
     READ TABLE lt_yvlips ASSIGNING <ls_yvlips>
           WITH KEY vbeln = <ls_xvlips>-vbeln
-                   posnr = <ls_xvlips>-posnr
-    BINARY SEARCH.
+                   posnr = <ls_xvlips>-posnr.
+
     IF sy-subrc IS INITIAL.
       IF <ls_xvlips>-pikmg <> <ls_yvlips>-pikmg.
         lv_aot_relevance = gc_true.

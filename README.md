@@ -1,5 +1,9 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2204 Release
+1. Fix the issue of extractor short dump caused by the missing partner function "Ship-to party" in the outbound delivery.
+2. Remove "binary search" in Read Table statement in the Track SO Fulfillment extractor code.
+
 ## What's New in the 2203 Release
 1. IDOC processing out-of-sequence is fixed when updating the inbound delivery / inbound delivery item / outbound delivery / outbound delivery item after a freight unit is generated.
 2. Unit of Measure of sales order items / outbound delivery / outbound delivery items is corrected.
@@ -70,10 +74,9 @@ You can find the sample code for SAP ERP extractors that are necessary to integr
  
 ## Requirements
 
-* To integrate with the global track and trace option, your SAP ERP system shall be SAP EHP1 FOR SAP NETWEAVER 7.3 or higher.
+* To integrate with the global track and trace option, your SAP ERP system shall be SAP EHP1 FOR SAP NETWEAVER 7.3 or higher with SAP Notes 2370356, 2937175, 2974952, 2959576 and 3010748 being implemented.
 * To implement the extractor sample code in this repository, your SAP ERP system shall be S4 HANA 1909 SP03 on premise. Note that the sample code is not validated in a lower release, and not applicable for ECC series of products.
-* The node “Interface to Global Track and Trace” in the IMG and the related GTT-specific versions of the IMG activities are in Netweaver 740 only available from SP 18 on, and in Netweaver 750 only from SP 08 on. They cannot be downloaded as a correction via note assistant. We recommend upgrading to the service package level accordingly.
-
+* The node “Interface to Global Track and Trace” in the IMG and the related GTT-specific versions of the IMG activities are available in the software component version SAP_BW 750 from SP 12 on. They cannot be downloaded as a correction via note assistant. We recommend upgrading to the service package level accordingly.
 
 ## Download and Installation
 Click the link below to find the detailed installation guide. You can also find the guide in the “Document” folder.

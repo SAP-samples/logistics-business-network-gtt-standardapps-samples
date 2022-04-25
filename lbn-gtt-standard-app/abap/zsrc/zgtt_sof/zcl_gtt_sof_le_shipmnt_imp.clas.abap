@@ -186,7 +186,7 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
     IF lt_vtsp_delta IS NOT INITIAL.
       LOOP AT lt_vtsp_delta INTO ls_vtsp_delta.
         READ TABLE lt_vttp_delta_tmp INTO ls_vttp_delta WITH KEY tknum = ls_vtsp_delta-tknum
-                                                                 tpnum = ls_vtsp_delta-tpnum BINARY SEARCH.
+                                                                 tpnum = ls_vtsp_delta-tpnum.
         IF sy-subrc EQ 0.
           MOVE ls_vttp_delta-vbeln TO ls_likp_delta-vbeln.
           COLLECT ls_likp_delta INTO lt_likp_delta.
@@ -204,7 +204,7 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
         LOOP AT lt_vtsp_delta_tmp INTO ls_vtsp_delta WHERE tknum = ls_vtts_delta-tknum
                                                        AND tsnum = ls_vtts_delta-tsnum.
           READ TABLE lt_vttp_delta_tmp INTO ls_vttp_delta WITH KEY tknum = ls_vtsp_delta-tknum
-                                                                   tpnum = ls_vtsp_delta-tpnum BINARY SEARCH.
+                                                                   tpnum = ls_vtsp_delta-tpnum.
           IF sy-subrc EQ 0.
             MOVE ls_vttp_delta-vbeln TO ls_likp_delta-vbeln.
             COLLECT ls_likp_delta INTO lt_likp_delta.
@@ -213,7 +213,7 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
       ENDLOOP.
       LOOP AT lt_vtts_delta INTO ls_vtts_delta WHERE updkz <> 'I' AND updkz <> 'D'.
         READ TABLE im_shipments_before_update-old_vtts INTO ls_vtts_old WITH KEY tknum = ls_vtts_delta-tknum
-                                                                                 tsnum = ls_vtts_delta-tsnum BINARY SEARCH.
+                                                                                 tsnum = ls_vtts_delta-tsnum.
         CHECK sy-subrc IS INITIAL.
         IF  ls_vtts_delta-knota NE ls_vtts_old-knota OR
             ls_vtts_delta-vstel NE ls_vtts_old-vstel OR
@@ -233,7 +233,7 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
           LOOP AT lt_vtsp_delta_tmp INTO ls_vtsp_delta WHERE tknum = ls_vtts_delta-tknum
                                                          AND tsnum = ls_vtts_delta-tsnum.
             READ TABLE lt_vttp_delta_tmp INTO ls_vttp_delta WITH KEY tknum = ls_vtsp_delta-tknum
-                                                                     tpnum = ls_vtsp_delta-tpnum BINARY SEARCH.
+                                                                     tpnum = ls_vtsp_delta-tpnum.
             IF sy-subrc EQ 0.
               MOVE ls_vttp_delta-vbeln TO ls_likp_delta-vbeln.
               COLLECT ls_likp_delta INTO lt_likp_delta.

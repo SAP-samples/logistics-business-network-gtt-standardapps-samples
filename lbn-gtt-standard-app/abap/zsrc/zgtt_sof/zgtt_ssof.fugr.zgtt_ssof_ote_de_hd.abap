@@ -337,9 +337,9 @@ FUNCTION zgtt_ssof_ote_de_hd.
 *Destination address
     READ TABLE lt_xvbpa ASSIGNING <ls_xvbpa> WITH KEY vbeln = <ls_xlikp>-vbeln
                                                       posnr = '000000'
-                                                      parvw = 'WE' BINARY SEARCH.
+                                                      parvw = 'WE'.
     CLEAR: lt_address, ls_address.
-    IF <ls_xvbpa> IS NOT INITIAL.
+    IF <ls_xvbpa> IS ASSIGNED AND <ls_xvbpa> IS NOT INITIAL.
       CALL FUNCTION 'ADDRESS_INTO_PRINTFORM'
         EXPORTING
           address_type            = '1'
@@ -361,7 +361,7 @@ FUNCTION zgtt_ssof_ote_de_hd.
     APPEND ls_control_data TO e_control_data.
 *Destination country, Destination email, Destination telephone
     CLEAR: lv_countryiso, ls_sd_addr.
-    IF <ls_xvbpa> IS NOT INITIAL.
+    IF <ls_xvbpa> IS ASSIGNED AND <ls_xvbpa> IS NOT INITIAL.
       CALL FUNCTION 'SD_ADDRESS_GET'
         EXPORTING
           fif_address_number = <ls_xvbpa>-adrnr

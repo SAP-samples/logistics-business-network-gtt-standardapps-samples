@@ -92,8 +92,8 @@ FUNCTION ZGTT_SSOF_EE_DE_POD_REL.
                     AND   pdsta IS NOT INITIAL.
     READ TABLE lt_yvbup ASSIGNING <ls_yvbup>
           WITH KEY vbeln = <ls_xvlips>-vbeln
-                   posnr = <ls_xvlips>-posnr
-          BINARY SEARCH.
+                   posnr = <ls_xvlips>-posnr.
+
     IF sy-subrc IS INITIAL.
       IF <ls_xvbup>-pdsta <> <ls_yvbup>-pdsta.
         lv_aot_relevance = gc_true.
