@@ -1,5 +1,9 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2205 Release
+1. Fix the issue of not sending "Shipping Type" and "Traffic Direction" to the GTT system after saving the freight order.
+2. Fix the timestamp localization issue after synchronizing ETA of the inbound delivery to the ERP system.
+
 ## What's New in the 2204 Release
 1. Fix the issue of extractor short dump caused by the missing partner function "Ship-to party" in the outbound delivery.
 2. Remove "binary search" in Read Table statement in the Track SO Fulfillment extractor code.
@@ -49,7 +53,7 @@ The location type in the following tracked processes is changed from "Supplier" 
 *	Remove the freight unit’s first stop and last stop in the freight order extractor </br>
 *	Fill in "additionalMatchKey = TMFU" if the event is propagated from freight units to freight orders and sent to the GTT system via the freight order's actual event extractor.</br>
 2.	Remove the leading zero in the document number and tracking ID of inbound delivery orders, inbound delivery items , freight orders, freight units, and shipments.</br>
-3.  Regarding to removing leading zero changes, some adjustments are required for the extractor configurations.</br>
+3. Regarding removing leading zero changes, some adjustments are required for the extractor configurations.</br>
   For more details, please refer to file [SAP ERP Sample Code Configuration Guide for Fulfillment Tracking Apps.pdf](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/master/lbn-gtt-standard-app/Documents/SAP%20ERP%20Sample%20Code%20Configuration%20Guide%20for%20Fulfillment%20Tracking%20Apps.pdf) (In page 3 from step 2 to step 7).</br>
 
 

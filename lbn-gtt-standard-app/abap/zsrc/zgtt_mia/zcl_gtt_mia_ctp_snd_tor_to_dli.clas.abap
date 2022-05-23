@@ -246,7 +246,9 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
             <ls_exp_event>-appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
               ir_lips = REF #( is_lips ) ).
             <ls_exp_event>-language       = sy-langu.
-            <ls_exp_event>-evt_exp_tzone  = zcl_gtt_tools=>get_system_time_zone(  ).
+            IF <ls_exp_event>-evt_exp_tzone IS INITIAL.
+              <ls_exp_event>-evt_exp_tzone  = zcl_gtt_tools=>get_system_time_zone(  ).
+            ENDIF.
           ENDLOOP.
 
           cs_idoc_data-exp_event = VALUE #( BASE cs_idoc_data-exp_event

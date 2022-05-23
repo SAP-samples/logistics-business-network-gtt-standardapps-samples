@@ -129,13 +129,19 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
 
     IF lt_torid IS NOT INITIAL.
       LOOP AT lt_torid INTO ls_torid.
+        DATA(lv_tzonrc) = zcl_gtt_tools=>get_field_of_structure(
+          ir_struct_data = is_app_objects-mastertabref
+          iv_field_name  = 'TZONRC' ).
+
         ct_expeventdata = VALUE #( BASE ct_expeventdata (
                appsys            = mo_ef_parameters->get_appsys(  )
                appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
                language          = sy-langu
                appobjid          = is_app_objects-appobjid
                milestone         = zif_gtt_ef_constants=>cs_milestone-fu_completed
-               evt_exp_tzone     = zcl_gtt_tools=>get_system_time_zone( )
+               evt_exp_tzone     = COND #( WHEN lv_tzonrc IS NOT INITIAL
+                                   THEN lv_tzonrc
+                                   ELSE zcl_gtt_tools=>get_system_time_zone( ) )
                evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
                                      ir_data = is_app_objects-mastertabref )
                locid2            = zcl_gtt_mia_tm_tools=>get_formated_tor_id( ir_data = REF #( ls_torid )  )
@@ -157,13 +163,18 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
         ir_struct_data = is_app_objects-maintabref
         iv_field_name  = 'WERKS' ).
 
+      DATA(lv_tzonrc) = zcl_gtt_tools=>get_field_of_structure(
+            ir_struct_data = is_app_objects-mastertabref
+            iv_field_name  = 'TZONRC' ).
       ct_expeventdata = VALUE #( BASE ct_expeventdata (
         appsys            = mo_ef_parameters->get_appsys(  )
         appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
         language          = sy-langu
         appobjid          = is_app_objects-appobjid
         milestone         = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt
-        evt_exp_tzone     = zcl_gtt_tools=>get_system_time_zone( )
+        evt_exp_tzone     = COND #( WHEN lv_tzonrc IS NOT INITIAL
+                                   THEN lv_tzonrc
+                                   ELSE zcl_gtt_tools=>get_system_time_zone( ) )
         evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
                               ir_data = is_app_objects-mastertabref )
         locid1            = zcl_gtt_tools=>get_pretty_location_id(
@@ -182,13 +193,19 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
 
     IF io_relevance->is_enabled(
              iv_milestone   = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt ) = abap_true.
+
+      DATA(lv_tzonrc) = zcl_gtt_tools=>get_field_of_structure(
+        ir_struct_data = is_app_objects-mastertabref
+        iv_field_name  = 'TZONRC' ).
       ct_expeventdata = VALUE #( BASE ct_expeventdata (
               appsys            = mo_ef_parameters->get_appsys(  )
               appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
               language          = sy-langu
               appobjid          = is_app_objects-appobjid
               milestone         = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt
-              evt_exp_tzone     = zcl_gtt_tools=>get_system_time_zone( )
+              evt_exp_tzone     = COND #( WHEN lv_tzonrc IS NOT INITIAL
+                                   THEN lv_tzonrc
+                                   ELSE zcl_gtt_tools=>get_system_time_zone( ) )
               evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
                                     ir_data = is_app_objects-mastertabref )
               milestonenum      = iv_milestonenum
@@ -235,6 +252,9 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
       lv_werks = zcl_gtt_tools=>get_field_of_structure(
         ir_struct_data = is_app_objects-maintabref
         iv_field_name  = 'WERKS' ).
+      DATA(lv_tzonrc) = zcl_gtt_tools=>get_field_of_structure(
+        ir_struct_data = is_app_objects-mastertabref
+        iv_field_name  = 'TZONRC' ).
 
       ct_expeventdata = VALUE #( BASE ct_expeventdata (
         appsys            = mo_ef_parameters->get_appsys(  )
@@ -242,7 +262,9 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
         language          = sy-langu
         appobjid          = is_app_objects-appobjid
         milestone         = zif_gtt_ef_constants=>cs_milestone-dl_put_away
-        evt_exp_tzone     = zcl_gtt_tools=>get_system_time_zone( )
+        evt_exp_tzone     = COND #( WHEN lv_tzonrc IS NOT INITIAL
+                                   THEN lv_tzonrc
+                                   ELSE zcl_gtt_tools=>get_system_time_zone( ) )
         evt_exp_datetime  = zcl_gtt_mia_dl_tools=>get_delivery_date(
                               ir_data = is_app_objects-mastertabref )
         locid1            = zcl_gtt_tools=>get_pretty_location_id(

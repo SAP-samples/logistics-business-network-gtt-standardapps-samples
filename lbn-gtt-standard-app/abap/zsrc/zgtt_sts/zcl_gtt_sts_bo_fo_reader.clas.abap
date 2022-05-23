@@ -184,6 +184,8 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
     SHIFT cs_fo_header-mtr    LEFT DELETING LEADING '0'.
     SHIFT cs_fo_header-tor_id LEFT DELETING LEADING '0'.
     cs_fo_header-trmodcod = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = cs_fo_header-trmodcod ).
+    cs_fo_header-shipping_type  = <ls_root>-shipping_type.
+    cs_fo_header-traffic_direct = <ls_root>-traffic_direct.
 
   ENDMETHOD.
 

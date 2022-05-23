@@ -104,10 +104,13 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
 
     FIELD-SYMBOLS: <ls_vttk>  TYPE vttkvb.
 
+    DATA: lv_local_ts TYPE timestamp.
+
     ASSIGN is_app_objects-maintabref->* TO <ls_vttk>.
 
     IF <ls_vttk> IS ASSIGNED.
       " CHECK IN
+
       ct_expeventdata = VALUE #( BASE ct_expeventdata (
         appsys            = mo_ef_parameters->get_appsys(  )
         appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype

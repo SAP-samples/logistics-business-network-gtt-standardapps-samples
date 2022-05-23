@@ -646,7 +646,7 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ls_trackingheader-sndnam = /scmtms/cl_scem_int_c=>gc_sendername_tm.
 
       " lt_tor_execinfo is SORTED by parent_node_id event_code
-      READ TABLE lt_tor_execinfo BINARY SEARCH TRANSPORTING NO FIELDS
+      READ TABLE lt_tor_execinfo TRANSPORTING NO FIELDS
         WITH KEY parent_node_id = <ls_tor_root>-node_id
                  event_code     = iv_event_code.
 
