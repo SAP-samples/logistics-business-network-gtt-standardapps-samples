@@ -61,12 +61,34 @@ private section.
       !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
     raising
       CX_UDM_MESSAGE .
+  methods ADD_PLANNED_DELIVERY_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_PLANNED_DELIVERY_DATETIME
+    importing
+      !I_DELIVERY_DATE type EINDT
+    returning
+      value(RV_DATETIME) type /SAPTRX/EVENT_EXP_DATETIME
+    raising
+      CX_UDM_MESSAGE .
   methods IS_APPROPRIATE_DL
     importing
       !I_VBELN type VBELN_VL
       !I_POSNR type POSNR_VL
     returning
       value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_LATEST_DELIVERY_DATE
+    importing
+      !IR_EKPO type ref to DATA
+      !IR_EKET type ref to DATA
+    returning
+      value(RV_EINDT) type EINDT
     raising
       CX_UDM_MESSAGE .
 ENDCLASS.
@@ -359,6 +381,12 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
+    add_planned_delivery_event(
+      EXPORTING
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
     add_dlv_item_completed_event(
       EXPORTING
         is_app_objects  = is_app_objects
@@ -367,5 +395,93 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
+  ENDMETHOD.
+
+
+  METHOD add_planned_delivery_event.
+    DATA: lv_loekz       TYPE ekpo-loekz,
+          lv_conf        TYPE abap_bool,
+          lv_latest_date TYPE eindt.
+
+    lv_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_app_objects-maintabref ).
+
+    IF lv_conf EQ abap_true.
+      lv_latest_date = get_latest_delivery_date(
+        EXPORTING
+          ir_ekpo  = is_app_objects-maintabref
+          ir_eket  = mo_ef_parameters->get_appl_table(
+                        iv_tabledef = zif_gtt_spof_app_constants=>cs_tabledef-po_sched_new )
+      ).
+      ct_expeventdata = VALUE #( BASE ct_expeventdata (
+        appsys            = mo_ef_parameters->get_appsys(  )
+        appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
+        language          = sy-langu
+        appobjid          = is_app_objects-appobjid
+        milestone         = zif_gtt_ef_constants=>cs_milestone-po_planned_delivery
+        evt_exp_tzone     = COND #( WHEN lv_latest_date IS NOT INITIAL
+                                      THEN zcl_gtt_tools=>get_system_time_zone( ) )
+        evt_exp_datetime  = COND #( WHEN lv_latest_date IS NOT INITIAL
+                                      THEN get_planned_delivery_datetime( i_delivery_date = lv_latest_date ) )
+        milestonenum      = zcl_gtt_tools=>get_next_sequence_id(
+                                      it_expeventdata = ct_expeventdata )
+      ) ).
+
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_latest_delivery_date.
+    DATA: lv_eindt_max TYPE eket-eindt,
+          lv_eindt_set TYPE abap_bool VALUE abap_false.
+
+    FIELD-SYMBOLS: <lt_eket> TYPE zif_gtt_spof_app_types=>tt_ueket,
+                   <ls_eket> TYPE zif_gtt_spof_app_types=>ts_ueket.
+
+    CLEAR: rv_eindt.
+
+    DATA(lv_ebeln) = CONV ebeln( zcl_gtt_tools=>get_field_of_structure(
+                         ir_struct_data = ir_ekpo
+                         iv_field_name  = 'EBELN'
+              ) ).
+
+    DATA(lv_ebelp) = CONV ebelp( zcl_gtt_tools=>get_field_of_structure(
+                         ir_struct_data = ir_ekpo
+                         iv_field_name  = 'EBELP'
+              ) ).
+    ASSIGN ir_eket->* TO <lt_eket>.
+    IF <lt_eket> IS ASSIGNED.
+      " keep Latest Delivery Date in schedule lines per item.
+      LOOP AT <lt_eket> ASSIGNING <ls_eket>
+         WHERE ebeln  = lv_ebeln
+          AND ebelp  = lv_ebelp
+          AND  kz <> zif_gtt_ef_constants=>cs_change_mode-delete
+        GROUP BY ( ebeln = <ls_eket>-ebeln
+                   ebelp = <ls_eket>-ebelp )
+        ASCENDING
+        ASSIGNING FIELD-SYMBOL(<ls_eket_group>).
+
+        CLEAR: lv_eindt_max.
+
+        LOOP AT GROUP <ls_eket_group> ASSIGNING FIELD-SYMBOL(<ls_eket_items>).
+          lv_eindt_max    = COND #( WHEN <ls_eket_items>-eindt > lv_eindt_max
+                                      THEN <ls_eket_items>-eindt
+                                      ELSE lv_eindt_max ).
+        ENDLOOP.
+
+        IF lv_eindt_set = abap_false.
+          rv_eindt  = lv_eindt_max.
+          lv_eindt_set        = abap_true.
+        ELSEIF rv_eindt < lv_eindt_max.
+          rv_eindt = lv_eindt_max.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+  ENDMETHOD.
+
+
+  METHOD get_planned_delivery_datetime.
+    rv_datetime = zcl_gtt_tools=>get_local_timestamp(
+      iv_date = i_delivery_date
+      iv_time = CONV t( '235959' ) ).
   ENDMETHOD.
 ENDCLASS.

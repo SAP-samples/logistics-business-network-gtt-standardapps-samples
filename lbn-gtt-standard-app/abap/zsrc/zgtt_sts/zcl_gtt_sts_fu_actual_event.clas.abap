@@ -132,11 +132,7 @@ CLASS ZCL_GTT_STS_FU_ACTUAL_EVENT IMPLEMENTATION.
                       stop_cat       = lv_stop_category ] TO <ls_stop> ##WARN_OK.
     ENDIF.
 
-
-    IF iv_event_code = /scmtms/if_tor_const=>sc_tor_event-delay OR
-       iv_event_code = /scmtms/if_tor_const=>sc_tor_event-delay_fu.
-      DATA(lv_reference_event) = is_execinfo-ref_event_code.
-    ENDIF.
+    DATA(lv_reference_event) = is_execinfo-ref_event_code.
 
     IF iv_event_code = /scmtms/if_tor_const=>sc_tor_event-pod OR
        lv_reference_event = /scmtms/if_tor_const=>sc_tor_event-pod.

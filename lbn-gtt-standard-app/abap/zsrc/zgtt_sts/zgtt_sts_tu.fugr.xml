@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_FUGR" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <AREAT>GTT STS Extractors for TU Tracking</AREAT>
+   <INCLUDES>
+    <SOBJ_NAME>LZGTT_STS_TUTOP</SOBJ_NAME>
+    <SOBJ_NAME>SAPLZGTT_STS_TU</SOBJ_NAME>
+   </INCLUDES>
+   <FUNCTIONS>
+    <item>
+     <FUNCNAME>ZGTT_STS_TRK_TU</FUNCNAME>
+     <SHORT_TEXT>Send Tracking Unit to GTT</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ROOT_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ROOT</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ROOT_BEFORE_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ROOT</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ITEM_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ITEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ITEM_BEFORE_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ITEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ROOT_FOR_DELETION</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ROOT</TYP>
+      </RSIMP>
+     </IMPORT>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ROOT_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Root (EM Integration)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ROOT_BEFORE_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Root (EM Integration)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ITEM_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Item (EM Integration)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ITEM_BEFORE_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Item (EM Integration)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ROOT_FOR_DELETION</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Root (EM Integration)</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+   </FUNCTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

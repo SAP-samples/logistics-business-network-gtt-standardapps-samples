@@ -9,59 +9,87 @@ public section.
   methods CONSTRUCTOR
     importing
       !IO_EF_PARAMETERS type ref to ZIF_GTT_STS_EF_PARAMETERS .
-protected section.
+PROTECTED SECTION.
 
-  types TV_TRACKED_OBJECT_TYPE type STRING .
-  types:
+  TYPES tv_tracked_object_type TYPE string .
+  TYPES:
     tt_tracked_object_type TYPE STANDARD TABLE OF tv_tracked_object_type WITH EMPTY KEY .
-  types TV_TRACKED_OBJECT_ID type CHAR20 .
-  types:
+  TYPES tv_tracked_object_id TYPE char20 .
+  TYPES:
     tt_tracked_object_id TYPE STANDARD TABLE OF tv_tracked_object_type WITH EMPTY KEY .
-  types TV_CARRIER_REF_VALUE type /SCMTMS/BTD_ID .
-  types:
+  TYPES tv_carrier_ref_value TYPE /scmtms/btd_id .
+  TYPES:
     tt_carrier_ref_value TYPE STANDARD TABLE OF tv_carrier_ref_value WITH EMPTY KEY .
-  types TV_CARRIER_REF_TYPE type CHAR35 .
-  types:
+  TYPES tv_carrier_ref_type TYPE char35 .
+  TYPES:
     tt_carrier_ref_type TYPE STANDARD TABLE OF tv_carrier_ref_type WITH EMPTY KEY .
-  types TV_SHIPPER_REF_VALUE type /SCMTMS/BTD_ID .
-  types:
+  TYPES tv_shipper_ref_value TYPE /scmtms/btd_id .
+  TYPES:
     tt_shipper_ref_value TYPE STANDARD TABLE OF tv_shipper_ref_value WITH EMPTY KEY .
-  types TV_SHIPPER_REF_TYPE type CHAR35 .
-  types:
+  TYPES tv_shipper_ref_type TYPE char35 .
+  TYPES:
     tt_shipper_ref_type TYPE STANDARD TABLE OF tv_shipper_ref_type WITH EMPTY KEY .
-  types TV_STOP_ID type STRING .
-  types:
+  TYPES tv_stop_id TYPE string .
+  TYPES:
     tt_stop_id TYPE STANDARD TABLE OF tv_stop_id WITH EMPTY KEY .
-  types TV_ORDINAL_NO type INT4 .
-  types:
+  TYPES tv_ordinal_no TYPE int4 .
+  TYPES:
     tt_ordinal_no TYPE STANDARD TABLE OF tv_ordinal_no WITH EMPTY KEY .
-  types TV_LOC_TYPE type /SAPTRX/LOC_ID_TYPE .
-  types:
+  TYPES tv_loc_type TYPE /saptrx/loc_id_type .
+  TYPES:
     tt_loc_type TYPE STANDARD TABLE OF tv_loc_type WITH EMPTY KEY .
-  types TV_LOC_ID type /SCMTMS/LOCATION_ID .
-  types:
+  TYPES tv_loc_id TYPE /scmtms/location_id .
+  TYPES:
     tt_loc_id TYPE STANDARD TABLE OF tv_loc_id WITH EMPTY KEY .
-  types:
+  TYPES:
     tt_req_doc_line_number TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
-  types:
+  TYPES:
     tt_req_doc_number      TYPE STANDARD TABLE OF char20 WITH EMPTY KEY .
-  types:
+  TYPES:
     tt_capacity_doc_line_number  TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
-  types:
+  TYPES:
     tt_capacity_doc_number TYPE STANDARD TABLE OF /scmtms/tor_id WITH EMPTY KEY .
-  types:
+  TYPES:
     tt_stop TYPE STANDARD TABLE OF /saptrx/loc_id_2 WITH EMPTY KEY .
-  types:
-    tt_resource_tp_line_cnt type STANDARD TABLE OF int4 WITH EMPTY KEY .
-  types:
-    tt_resource_tp_id type STANDARD TABLE OF string WITH EMPTY KEY .
+  TYPES:
+    tt_resource_tp_line_cnt TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
+  TYPES:
+    tt_resource_tp_id TYPE STANDARD TABLE OF string WITH EMPTY KEY .
+  TYPES:
+    tt_tu_line_no TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
+  TYPES:
+    tt_tu_type TYPE STANDARD TABLE OF char20 WITH EMPTY KEY .
+  TYPES:
+    tt_tu_value TYPE STANDARD TABLE OF char255 WITH EMPTY KEY .
+  TYPES:
+    tt_tu_number TYPE STANDARD TABLE OF char255 WITH EMPTY KEY .
+  TYPES:
+    tt_tu_first_stop TYPE STANDARD TABLE OF char255 WITH EMPTY KEY .
+  TYPES:
+    tt_tu_last_stop TYPE STANDARD TABLE OF char255 WITH EMPTY KEY .
+  TYPES:
+    BEGIN OF ts_container,
+      object_id    TYPE char20,
+      object_value TYPE /scmtms/package_id,
+    END OF ts_container .
+  TYPES:
+    tt_container TYPE TABLE OF ts_container .
+  TYPES:
+    tt_package TYPE TABLE OF ts_container.
+  TYPES:
+    BEGIN OF ts_stop_info,
+      tor_id   TYPE /scmtms/tor_id,
+      stop_num TYPE numc4,
+    END OF ts_stop_info .
+  TYPES:
+    tt_stop_info TYPE TABLE OF ts_stop_info .
 
-  constants:
+  CONSTANTS:
     BEGIN OF cs_text_type,
       cont TYPE /bobf/txc_text_type VALUE 'CONT',
       mobl TYPE /bobf/txc_text_type VALUE 'MOBL',
     END OF cs_text_type .
-  constants:
+  CONSTANTS:
     BEGIN OF cs_track_id,
       container_id  TYPE tv_tracked_object_type VALUE 'CONTAINER_ID',
       mobile_number TYPE tv_tracked_object_type VALUE 'MOBILE_NUMBER',
@@ -70,8 +98,10 @@ protected section.
       vessel        TYPE tv_tracked_object_type VALUE 'VESSEL',
       flight_number TYPE tv_tracked_object_type VALUE 'FLIGHT_NUMBER',
       imo           TYPE tv_tracked_object_type VALUE 'IMO',
+      pkg_id        TYPE tv_tracked_object_type VALUE 'PACKAGE_ID',
+      pkg_ext_id    TYPE tv_tracked_object_type VALUE 'PACKAGE_EXT_ID',
     END OF cs_track_id .
-  constants:
+  CONSTANTS:
     BEGIN OF cs_mapping,
       shipment_type         TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPMENT_TYPE',
       tor_id                TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
@@ -135,9 +165,15 @@ protected section.
       estimated_timezone    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_TIMEZONE',
       resource_tp_line_cnt  TYPE /saptrx/paramname VALUE 'YN_SHP_RESOURCE_TP_LINE_COUNT',
       resource_tp_id        TYPE /saptrx/paramname VALUE 'YN_SHP_RESOURCE_TP_ID',
+      tu_line_no            TYPE /saptrx/paramname VALUE 'YN_SHP_TU_LINE_NO',
+      tu_type               TYPE /saptrx/paramname VALUE 'YN_SHP_TU_TYPE',
+      tu_value              TYPE /saptrx/paramname VALUE 'YN_SHP_TU_VALUE',
+      tu_number             TYPE /saptrx/paramname VALUE 'YN_SHP_TU_NO',
+      tu_first_stop         TYPE /saptrx/paramname VALUE 'YN_SHP_TU_FIRST_STOP',
+      tu_last_stop          TYPE /saptrx/paramname VALUE 'YN_SHP_TU_LAST_STOP',
     END OF cs_mapping .
-  constants CS_BP_TYPE type BU_ID_TYPE value 'LBN001' ##NO_TEXT.
-  data MO_EF_PARAMETERS type ref to ZIF_GTT_STS_EF_PARAMETERS .
+  CONSTANTS cs_bp_type TYPE bu_id_type VALUE 'LBN001' ##NO_TEXT.
+  DATA mo_ef_parameters TYPE REF TO zif_gtt_sts_ef_parameters .
 
   methods GET_DATA_FROM_TEXT_COLLECTION
     importing
@@ -284,6 +320,22 @@ protected section.
       !CT_RESOURCE_TP_ID type TT_RESOURCE_TP_ID
     raising
       CX_UDM_MESSAGE .
+  METHODS get_container_id
+    IMPORTING
+      !ir_data      TYPE REF TO data
+      !iv_old_data  TYPE abap_bool DEFAULT abap_false
+    CHANGING
+      !et_container TYPE tt_container
+    RAISING
+      cx_udm_message .
+  METHODS get_stop_info
+    IMPORTING
+      !ir_data      TYPE REF TO data
+      !iv_old_data  TYPE abap_bool DEFAULT abap_false
+    CHANGING
+      !ct_stop_info TYPE tt_stop_info
+    RAISING
+      cx_udm_message .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -1037,6 +1089,123 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
         MESSAGE i009(zgtt_sts) WITH <ls_root>-tor_cat INTO lv_dummy ##needed.
         zcl_gtt_sts_tools=>throw_exception( ).
     ENDCASE.
+
+  ENDMETHOD.
+
+
+  METHOD get_container_id.
+
+    DATA:
+      ls_container TYPE ts_container,
+      lt_tmp_cont  TYPE TABLE OF /scmtms/package_id.
+
+    CLEAR:et_container.
+
+    get_data_from_text_collection(
+      EXPORTING
+        iv_old_data     = iv_old_data
+        ir_data         = ir_data
+      IMPORTING
+        er_text         = DATA(lr_text)
+        er_text_content = DATA(lr_text_content) ).
+
+    IF lr_text->* IS NOT INITIAL AND lr_text_content->* IS NOT INITIAL.
+      LOOP AT lr_text->* ASSIGNING FIELD-SYMBOL(<ls_text>).
+        READ TABLE lr_text_content->* WITH KEY parent_key
+          COMPONENTS parent_key = <ls_text>-key ASSIGNING FIELD-SYMBOL(<ls_text_content>).
+        IF sy-subrc = 0.
+          IF <ls_text>-text_type = cs_text_type-cont AND <ls_text_content>-text IS NOT INITIAL.
+            CLEAR lt_tmp_cont.
+            SPLIT <ls_text_content>-text AT zif_gtt_sts_constants=>cs_separator-semicolon INTO TABLE lt_tmp_cont.
+            DELETE lt_tmp_cont WHERE table_line IS INITIAL.
+            LOOP AT lt_tmp_cont INTO DATA(ls_tmp_cont).
+              ls_container-object_value = ls_tmp_cont.
+              ls_container-object_id = cs_track_id-container_id.
+              APPEND ls_container TO et_container.
+              CLEAR ls_tmp_cont.
+            ENDLOOP.
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_stop_info.
+
+    FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lv_stop_num  TYPE char4,
+      ls_stop_info TYPE ts_stop_info,
+      lv_seq_num   TYPE i,
+      lv_length    TYPE i,
+      lt_stop      TYPE /scmtms/t_em_bo_tor_stop.
+
+    CLEAR:ct_stop_info.
+
+    ASSIGN ir_data->* TO <ls_tor_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lv_tor_id) = <ls_tor_root>-tor_id.
+    SHIFT lv_tor_id LEFT DELETING LEADING '0'.
+
+    /scmtms/cl_tor_helper_stop=>get_stop_sequence(
+      EXPORTING
+        it_root_key     = VALUE #( ( key = <ls_tor_root>-node_id ) )
+        iv_before_image = SWITCH #( iv_old_data WHEN abap_true THEN abap_true ELSE abap_false )
+      IMPORTING
+        et_stop_seq_d   = DATA(lt_stop_seq) ).
+
+    ASSIGN lt_stop_seq[ root_key = <ls_tor_root>-node_id ] TO FIELD-SYMBOL(<ls_stop_seq>) ##WARN_OK.
+    IF sy-subrc = 0.
+      MOVE-CORRESPONDING <ls_stop_seq>-stop_seq TO lt_stop.
+      LOOP AT lt_stop ASSIGNING FIELD-SYMBOL(<ls_stop>).
+        <ls_stop>-parent_node_id = <ls_tor_root>-node_id.
+        ASSIGN <ls_stop_seq>-stop_map[ tabix = <ls_stop>-seq_num ]-stop_key TO FIELD-SYMBOL(<lv_stop_key>).
+        CHECK sy-subrc = 0.
+        <ls_stop>-node_id = <lv_stop_key>.
+      ENDLOOP.
+    ENDIF.
+
+    zcl_gtt_sts_tools=>get_stop_points(
+      EXPORTING
+        iv_root_id     = lv_tor_id
+        it_stop        = lt_stop
+      IMPORTING
+        et_stop_points = DATA(lt_stop_points) ).
+
+    LOOP AT lt_stop USING KEY parent_seqnum ASSIGNING <ls_stop>.
+      IF lv_seq_num IS INITIAL.
+        READ TABLE lt_stop_points INTO DATA(ls_stop_points)
+          WITH KEY  seq_num   = <ls_stop>-seq_num
+                    log_locid = <ls_stop>-log_locid.
+        IF sy-subrc = 0.
+          DATA(lv_first_stop) = ls_stop_points-stop_id.
+        ENDIF.
+      ENDIF.
+      lv_seq_num = <ls_stop>-seq_num.
+    ENDLOOP.
+
+    IF lv_seq_num IS NOT INITIAL.
+      DATA(lv_last_stop) = lt_stop_points[ seq_num = lv_seq_num ]-stop_id.
+    ENDIF.
+
+    lv_length = strlen( lv_first_stop ) - 4.
+    lv_stop_num = lv_first_stop+lv_length(4).
+    ls_stop_info-tor_id = lv_tor_id.
+    ls_stop_info-stop_num = lv_stop_num.
+    APPEND ls_stop_info TO ct_stop_info.
+
+    lv_length = strlen( lv_last_stop ) - 4.
+    lv_stop_num = lv_last_stop+lv_length(4).
+    ls_stop_info-tor_id = lv_tor_id.
+    ls_stop_info-stop_num = lv_stop_num.
+    APPEND ls_stop_info TO ct_stop_info.
 
   ENDMETHOD.
 ENDCLASS.

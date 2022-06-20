@@ -171,8 +171,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
 
     DO 1 TIMES.
 
-      ASSIGN lt_capa_stage[ KEY source_stop_key COMPONENTS
-        source_stop_key = lv_stop_src_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_first_num>).
+      ASSIGN lt_capa_stage[ source_stop_key = lv_stop_src_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_first_num>).
       CHECK sy-subrc = 0.
 
       ASSIGN lt_capa_stage[ dest_stop_key = lv_stop_des_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_last_num>).
@@ -180,8 +179,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
 
       lv_stage_num_difference = <lv_capa_stage_last_num> - <lv_capa_stage_first_num>.
 
-      ASSIGN lt_capa_stage_bi[ KEY source_stop_key COMPONENTS
-        source_stop_key = lv_stop_src_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_first_num_bi>).
+      ASSIGN lt_capa_stage_bi[ source_stop_key = lv_stop_src_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_first_num_bi>).
       CHECK sy-subrc = 0.
 
       ASSIGN lt_capa_stage_bi[ dest_stop_key = lv_stop_des_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_last_num_bi>).

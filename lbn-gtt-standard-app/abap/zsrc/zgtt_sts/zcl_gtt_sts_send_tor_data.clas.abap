@@ -86,6 +86,26 @@ private section.
       !CT_CAPA_ROOT_BEF_SSTRING type /SCMTMS/T_EM_BO_TOR_ROOT
     raising
       /SCMTMS/CX_EVENT_MANAGEMENT .
+  methods ADD_REQUIRED_FREIGHT_ORDER
+    changing
+      !CT_EXECINFO_SSTRING type /SCMTMS/T_EM_BO_TOR_EXECINFO
+      !CT_EXECINFO_BEFORE_SSTRING type /SCMTMS/T_EM_BO_TOR_EXECINFO
+      !CT_TENDERING_SSTRING type /SCMTMS/T_EM_BO_TOR_TEND
+      !CT_ITEM_BEFORE_SSTRING type /SCMTMS/T_EM_BO_TOR_ITEM
+      !CT_REQ_STOP_SSTRING type /SCMTMS/T_EM_BO_TOR_STOP
+      !CT_TOR_ROOT_SSTRING type /SCMTMS/T_EM_BO_TOR_ROOT
+      !CT_ITEM_SSTRING type /SCMTMS/T_EM_BO_TOR_ITEM
+      !CT_STOP_SSTRING type /SCMTMS/T_EM_BO_TOR_STOP
+      !CT_STOP_SUCC_SSTRING type /SCMTMS/T_EM_BO_TOR_STOP_SUCC
+      !CT_STOP_SUCC_BEFORE_SSTRING type /SCMTMS/T_EM_BO_TOR_STOP_SUCC
+      !CT_PARTY_SSTRING type /SCMTMS/T_EM_BO_TOR_PARTY
+      !CT_TOR_ROOT_BEFORE_SSTRING type /SCMTMS/T_EM_BO_TOR_ROOT
+      !CT_STOP_BEFORE_SSTRING type /SCMTMS/T_EM_BO_TOR_STOP
+      !CT_STOP_ADDR_SSTRING type /SCMTMS/T_EM_BO_LOC_ADDR
+      !CT_REQ_ROOT_SSTRING type /SCMTMS/T_EM_BO_TOR_ROOT
+      !CT_REQ_ROOT_BEF_SSTRING type /SCMTMS/T_EM_BO_TOR_ROOT
+    raising
+      /SCMTMS/CX_EVENT_MANAGEMENT .
 ENDCLASS.
 
 
@@ -121,14 +141,17 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
     send_deletion_idoc( lt_tor_root_for_deletion ).
 
     " F.O./F.B./F.U. to Inbound DLV CrossTP update
-    CALL FUNCTION 'ZGTT_MIA_CTP_TOR_TO_DL'
-      EXPORTING
-        it_tor_root_sstring        = it_tor_root_sstring
-        it_tor_root_before_sstring = it_tor_root_before_sstring
-        it_tor_item_sstring        = it_item_sstring
-        it_tor_item_before_sstring = it_item_before_sstring
-        it_tor_stop_sstring        = it_stop_sstring
-        it_tor_stop_addr_sstring   = it_stop_addr_sstring.
+    TRY.
+        CALL FUNCTION 'ZGTT_MIA_CTP_TOR_TO_DL'
+          EXPORTING
+            it_tor_root_sstring        = it_tor_root_sstring
+            it_tor_root_before_sstring = it_tor_root_before_sstring
+            it_tor_item_sstring        = it_item_sstring
+            it_tor_item_before_sstring = it_item_before_sstring
+            it_tor_stop_sstring        = it_stop_sstring
+            it_tor_stop_addr_sstring   = it_stop_addr_sstring.
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
     " F.O./F.B./F.U. to Outbound DLV CrossTP update
     TRY.
@@ -162,6 +185,25 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
         ct_capa_root_sstring        = it_capa_root_sstring
         ct_capa_root_bef_sstring    = it_capa_root_bef_sstring ).
 
+    add_required_freight_order(
+      CHANGING
+        ct_execinfo_sstring         = it_execinfo_sstring
+        ct_execinfo_before_sstring  = it_execinfo_before_sstring
+        ct_tendering_sstring        = it_tendering_sstring
+        ct_item_before_sstring      = it_item_before_sstring
+        ct_req_stop_sstring         = it_req_stop_sstring
+        ct_tor_root_sstring         = it_tor_root_sstring
+        ct_item_sstring             = it_item_sstring
+        ct_stop_sstring             = it_stop_sstring
+        ct_stop_succ_sstring        = it_stop_succ_sstring
+        ct_stop_succ_before_sstring = it_stop_succ_before_sstring
+        ct_party_sstring            = it_party_sstring
+        ct_tor_root_before_sstring  = it_tor_root_before_sstring
+        ct_stop_before_sstring      = it_stop_before_sstring
+        ct_stop_addr_sstring        = it_stop_addr_sstring
+        ct_req_root_sstring         = it_req_root_sstring
+        ct_req_root_bef_sstring     = it_req_root_before_sstring ).
+
     call_event_manager(
       EXPORTING
         it_tor_root_for_deletion   = lt_tor_root_for_deletion
@@ -191,6 +233,18 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
         it_tor_created_keys        = it_tor_created_keys
         it_req_stop_sstring        = it_req_stop_sstring
         it_req_tu_stop_sstring     = it_req_tu_stop_sstring ).
+
+    TRY.
+*       Send Tracking Unit to GTT
+        CALL FUNCTION 'ZGTT_STS_TRK_TU'
+          EXPORTING
+            it_tor_root_sstring        = it_tor_root_sstring
+            it_tor_root_before_sstring = it_tor_root_before_sstring
+            it_tor_item_sstring        = it_item_sstring
+            it_tor_item_before_sstring = it_item_before_sstring
+            it_tor_root_for_deletion   = lt_tor_root_for_deletion.
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
 
   ENDMETHOD.
 
@@ -437,7 +491,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
     lo_tor_srv_mgr->retrieve_by_association(
       EXPORTING
         iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-        iv_before_image = abap_true
+        iv_before_image = abap_false
         it_key          = lt_fu_root_key
         iv_association  = /scmtms/if_tor_c=>sc_association-root-capa_tor
         iv_fill_data    = abap_true
@@ -464,7 +518,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
     lo_tor_srv_mgr->retrieve_by_association(
       EXPORTING
         iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-        iv_before_image = abap_true
+        iv_before_image = abap_false
         it_key          = lt_capa_root_key
         iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
         iv_fill_data    = abap_true
@@ -1045,6 +1099,260 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
           EXPORTING
             textid = /scmtms/cx_event_management=>em_processing_failed.
     ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD add_required_freight_order.
+
+    DATA:
+      lt_fo_root_key              TYPE /bobf/t_frw_key,
+      lt_tor_root                 TYPE /scmtms/t_tor_root_k,
+      lt_tor_root_before          TYPE /scmtms/t_tor_root_k,
+      lt_req_root                 TYPE /scmtms/t_tor_root_k,
+      lt_req_root_before          TYPE /scmtms/t_tor_root_k,
+      lt_execinfo                 TYPE /scmtms/t_tor_exec_k,
+      lt_execinfo_before          TYPE /scmtms/t_tor_exec_k,
+      lt_item                     TYPE /scmtms/t_tor_item_tr_k,
+      lt_item_before              TYPE /scmtms/t_tor_item_tr_k,
+      lt_stop_succ                TYPE /scmtms/t_tor_stop_succ_k,
+      lt_stop_succ_before         TYPE /scmtms/t_tor_stop_succ_k,
+      lt_stop                     TYPE /scmtms/t_tor_stop_k,
+      lt_stop_before              TYPE /scmtms/t_tor_stop_k,
+      lt_req_stop                 TYPE /scmtms/t_tor_stop_k,
+      lt_stop_sorted              TYPE /scmtms/t_pln_stop_seq,
+      lt_tendering                TYPE /scmtms/t_tor_tend_k,
+      lt_party                    TYPE /scmtms/t_tor_party_k,
+      ls_stop_addr_sstring        TYPE /scmtms/s_em_bo_loc_addr,
+      lt_root_sstring             TYPE /scmtms/t_em_bo_tor_root,
+      lt_root_before_sstring      TYPE /scmtms/t_em_bo_tor_root,
+      lt_stop_sstring             TYPE /scmtms/t_em_bo_tor_stop,
+      lt_stop_before_sstring      TYPE /scmtms/t_em_bo_tor_stop,
+      lt_item_sstring             TYPE /scmtms/t_em_bo_tor_item,
+      lt_item_before_sstring      TYPE /scmtms/t_em_bo_tor_item,
+      lt_stop_succ_sstring        TYPE /scmtms/t_em_bo_tor_stop_succ,
+      lt_stop_succ_before_sstring TYPE /scmtms/t_em_bo_tor_stop_succ,
+      lt_party_sstring            TYPE /scmtms/t_em_bo_tor_party,
+      lt_req_root_sstring         TYPE /scmtms/t_em_bo_tor_root,
+      lt_req_root_before_sstring  TYPE /scmtms/t_em_bo_tor_root,
+      lt_execinfo_sstring         TYPE /scmtms/t_em_bo_tor_execinfo,
+      lt_execinfo_before_sstring  TYPE /scmtms/t_em_bo_tor_execinfo,
+      lt_tendering_sstring        TYPE /scmtms/t_em_bo_tor_tend,
+      lt_req_stop_sstring         TYPE /scmtms/t_em_bo_tor_stop.
+
+    DATA(lt_freight_unit_key) = VALUE /bobf/t_frw_key( FOR <ls_tor_root_sstring> IN ct_tor_root_sstring
+                                   WHERE ( tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit  )
+                                         ( key = <ls_tor_root_sstring>-node_id ) ).
+
+    DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
+      iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+        it_key         = lt_freight_unit_key
+        iv_association = /scmtms/if_tor_c=>sc_association-root-capa_tor
+      IMPORTING
+        et_key_link    = DATA(lt_capa2req_link) ).
+
+    LOOP AT lt_capa2req_link ASSIGNING FIELD-SYMBOL(<ls_capa2req_link>).
+      CHECK NOT line_exists( ct_tor_root_sstring[ node_id = <ls_capa2req_link>-target_key ] ).
+      INSERT VALUE #( key = <ls_capa2req_link>-target_key ) INTO TABLE lt_fo_root_key.
+    ENDLOOP.
+
+    IF lt_fo_root_key IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    lo_tor_srv_mgr->retrieve(
+      EXPORTING
+        iv_node_key = /scmtms/if_tor_c=>sc_node-root
+        it_key      = lt_fo_root_key
+      IMPORTING
+        et_data     = lt_tor_root ).
+    lt_root_sstring = CORRESPONDING #( lt_tor_root MAPPING node_id = key ).
+    INSERT LINES OF lt_root_sstring INTO TABLE ct_tor_root_sstring.
+
+    lo_tor_srv_mgr->retrieve(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_fo_root_key
+        iv_before_image = abap_true
+      IMPORTING
+        et_data         = lt_tor_root_before ).
+    lt_root_before_sstring = CORRESPONDING #( lt_tor_root_before MAPPING node_id = key ).
+    INSERT LINES OF lt_root_before_sstring INTO TABLE ct_tor_root_before_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+        it_key         = lt_fo_root_key
+        iv_association = /scmtms/if_tor_c=>sc_association-root-exec_valid
+        iv_fill_data   = abap_true
+      IMPORTING
+        et_data        = lt_execinfo ).
+    lt_execinfo_sstring = CORRESPONDING #( lt_execinfo MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_execinfo_sstring INTO TABLE ct_execinfo_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_fo_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-exec_valid
+        iv_before_image = abap_true
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_execinfo_before ).
+    lt_execinfo_before_sstring = CORRESPONDING #( lt_execinfo_before MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_execinfo_before_sstring INTO TABLE ct_execinfo_before_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+        it_key         = lt_fo_root_key
+        iv_association = /scmtms/if_tor_c=>sc_association-root-item_tr
+        iv_fill_data   = abap_true
+      IMPORTING
+        et_data        = lt_item ).
+    lt_item_sstring = CORRESPONDING #( lt_item MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_item_sstring INTO TABLE ct_item_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_fo_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-item_tr
+        iv_before_image = abap_true
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_item_before ).
+    lt_item_before_sstring = CORRESPONDING #( lt_item_before MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_item_before_sstring INTO TABLE ct_item_before_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+        it_key         = lt_fo_root_key
+        iv_association = /scmtms/if_tor_c=>sc_association-root-stop_successor_all
+        iv_fill_data   = abap_true
+      IMPORTING
+        et_data        = lt_stop_succ ).
+    lt_stop_succ_sstring = CORRESPONDING #( lt_stop_succ MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_stop_succ_sstring INTO TABLE ct_stop_succ_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_fo_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-stop_successor_all
+        iv_before_image = abap_true
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_stop_succ_before ).
+    lt_stop_succ_before_sstring = CORRESPONDING #( lt_stop_succ_before MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_stop_succ_before_sstring INTO TABLE ct_stop_succ_before_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+        it_key         = lt_fo_root_key
+        iv_association = /scmtms/if_tor_c=>sc_association-root-stop
+        iv_fill_data   = abap_true
+      IMPORTING
+        et_data        = lt_stop ).
+
+    /scmtms/cl_tor_helper_stop=>get_stop_sequence_linear(
+      EXPORTING
+        it_root      = lt_tor_root
+        it_stop      = lt_stop
+        it_stop_succ = lt_stop_succ
+      IMPORTING
+        et_stop_seq  = lt_stop_sorted ).
+    lt_stop_sstring = CORRESPONDING #( lt_stop_sorted MAPPING node_id = stop_key parent_node_id = root_key ).
+    INSERT LINES OF lt_stop_sstring INTO TABLE ct_stop_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        iv_before_image = abap_true
+        it_key          = lt_fo_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_stop_before ).
+    lt_stop_sstring = CORRESPONDING #( lt_stop_before MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_stop_before_sstring INTO TABLE ct_stop_before_sstring.
+
+    get_stop_postal_addr_info(
+      EXPORTING
+        it_stop                  = lt_stop
+      IMPORTING
+        et_stop_postal_addr_info = DATA(lt_stop_postal_addr_info) ).
+    LOOP AT lt_stop_postal_addr_info ASSIGNING FIELD-SYMBOL(<ls_stop_addr>).
+      MOVE-CORRESPONDING <ls_stop_addr>                       TO ls_stop_addr_sstring. "#EC ENHOK
+      MOVE-CORRESPONDING <ls_stop_addr>-stop_postal_addr_info TO ls_stop_addr_sstring. "#EC ENHOK
+      ls_stop_addr_sstring-parent_node_id = <ls_stop_addr>-stop_postal_addr_info-root_key.
+      ls_stop_addr_sstring-node_id        = <ls_stop_addr>-stop_postal_addr_info-key.
+      INSERT ls_stop_addr_sstring INTO TABLE ct_stop_addr_sstring.
+    ENDLOOP.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+        it_key         = lt_fo_root_key
+        iv_association = /scmtms/if_tor_c=>sc_association-root-tendering
+        iv_fill_data   = abap_true
+      IMPORTING
+        et_data        = lt_tendering ).
+    lt_tendering_sstring = CORRESPONDING #( lt_tendering MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_tendering_sstring INTO TABLE ct_tendering_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+        it_key         = lt_fo_root_key
+        iv_association = /scmtms/if_tor_c=>sc_association-root-party
+        iv_fill_data   = abap_true
+      IMPORTING
+        et_data        = lt_party ).
+    lt_party_sstring = CORRESPONDING #( lt_party MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_party_sstring INTO TABLE ct_party_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        iv_before_image = abap_false
+        it_key          = lt_fo_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_target_key   = DATA(lt_req_root_key)
+        et_data         = lt_req_root ).
+    lt_req_root_sstring = CORRESPONDING #( lt_req_root MAPPING node_id = key ).
+    INSERT LINES OF lt_req_root_sstring INTO TABLE ct_req_root_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        iv_before_image = abap_true
+        it_key          = lt_fo_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_req_root_before ).
+    lt_req_root_before_sstring = CORRESPONDING #( lt_req_root_before MAPPING node_id = key ).
+    INSERT LINES OF lt_req_root_before_sstring INTO TABLE ct_req_root_bef_sstring.
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        iv_before_image = abap_false
+        it_key          = lt_req_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_req_stop ).
+    lt_req_stop_sstring = CORRESPONDING #( lt_req_stop MAPPING node_id = key parent_node_id = parent_key ).
+    INSERT LINES OF lt_req_stop_sstring INTO TABLE ct_req_stop_sstring.
 
   ENDMETHOD.
 ENDCLASS.

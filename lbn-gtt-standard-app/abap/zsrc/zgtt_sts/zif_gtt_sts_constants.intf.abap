@@ -23,6 +23,7 @@ INTERFACE zif_gtt_sts_constants
       fo_number   TYPE /saptrx/trxcod VALUE 'FT1_SHIPMENT',
       fu_number   TYPE /saptrx/trxcod VALUE 'FT1_FREIGHT_UNIT',
       fo_resource TYPE /saptrx/trxcod VALUE 'FT1_RESOURCE',
+      tu_number   TYPE /saptrx/trxcod VALUE 'FT1_TRACKING_UNIT',
     END OF cs_trxcod .
   CONSTANTS:
     BEGIN OF cs_milestone,
@@ -112,5 +113,21 @@ INTERFACE zif_gtt_sts_constants
       outbound_delivery      TYPE /scmtms/btd_type_code VALUE '73',
       sales_order            TYPE /scmtms/btd_type_code VALUE '114',
     END OF cs_btd_type_code.
+  CONSTANTS:
+    BEGIN OF cs_text_type,
+      cont TYPE /bobf/txc_text_type VALUE 'CONT',
+      mobl TYPE /bobf/txc_text_type VALUE 'MOBL',
+      epkg TYPE /bobf/txc_text_type VALUE 'EPKG',
+    END OF cs_text_type .
+  CONSTANTS:
+    BEGIN OF cs_tracking_scenario,
+      fo_track TYPE zgtt_dte_scenario VALUE '01', "Maintain Reference Document on Freight Order/Freight Booking
+      tu_on_fo TYPE zgtt_dte_scenario VALUE '02', "Maintain Tracked Objects on Freight Order/Freight Booking
+      tu_on_fu TYPE zgtt_dte_scenario VALUE '03', "Maintain Tracked Objects on Freight Unit
+    END OF cs_tracking_scenario.
+  CONSTANTS:
+    BEGIN OF cs_separator,
+      semicolon type char1 VALUE ';',
+    END OF cs_separator.
 
 ENDINTERFACE.

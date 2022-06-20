@@ -702,8 +702,6 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_ITM IMPLEMENTATION.
          trxcod      = zif_gtt_ef_constants=>cs_trxcod-po_position
          trxid       = zcl_gtt_spof_po_tools=>get_tracking_id_po_itm(
                          ir_ekpo = is_app_object-maintabref )
-         start_date  = zcl_gtt_tools=>get_system_date_time( )
-         end_date    = zif_gtt_ef_constants=>cv_max_end_date
          timzon      = lv_tzone
          msrid       = space
        ) ).

@@ -1,5 +1,12 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2206 Release
+1. Timestamp localization codes are improved.
+2. The valid from/to segment (1970/9999) are removed from all the Tracking ID functions.
+3. All location types in the freight order, freight booking, and freight unit are changed to "LogisticLocation". You can either download the latest version of extractor or change location types manually in Method GET_LOCATION_TYPE of Class ZCL_GTT_STS_TOOLS. 
+4. A new tracked process “TrackingUnit” is introduced in the standard model “gttft1” for you to track the shipments and freight units that have multiple tracked objects in the TM scenario. For example, you can maintain multiple external package IDs on freight units for parcel tracking. The following content is delivered to help you with the implementation: [Implementation Guide for Tracking via Tracking Unit and Reference Document in the TM Scenario](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/master/lbn-gtt-standard-app/Documents/Implementation%20Guide%20for%20Tracking%20via%20Tracking%20Unit%20and%20Reference%20Document%20in%20the%20TM%20Scenario.pdf).
+
+
 ## What's New in the 2205 Release
 1. Fix the issue of not sending "Shipping Type" and "Traffic Direction" to the GTT system after saving the freight order.
 2. Fix the timestamp localization issue after synchronizing ETA of the inbound delivery to the ERP system.

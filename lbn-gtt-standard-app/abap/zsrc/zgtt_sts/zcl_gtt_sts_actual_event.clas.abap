@@ -6,6 +6,9 @@ public section.
 
   interfaces ZIF_GTT_STS_ACTUAL_EVENT .
 
+  types:
+    TT_TRACK_CONF type TABLE of ZGTT_TRACK_CONF .
+
   class-methods GET_TOR_ACTUAL_EVENT_CLASS
     importing
       !IS_EVENT type TRXAS_EVT_CTAB_WA
@@ -58,6 +61,7 @@ public section.
 protected section.
 
   class-data GV_EVENT_COUNT type /SAPTRX/EVTCNT .
+  class-data MT_TRACK_CONF type TT_TRACK_CONF .
 
   methods GET_MODEL_EVENT_ID
     importing
@@ -381,7 +385,59 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
     FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
     ASSIGN is_event-maintabref->* TO <ls_tor_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+*   Get configuration data
+    IF mt_track_conf IS INITIAL.
+      zcl_gtt_sts_tools=>get_track_conf(
+        IMPORTING
+          et_conf = mt_track_conf ).
+    ENDIF.
+
+    READ TABLE mt_track_conf INTO DATA(ls_track_conf)
+      WITH KEY tor_type = <ls_tor_root>-tor_type.
     IF sy-subrc = 0.
+      CASE <ls_tor_root>-tor_cat.
+        WHEN /scmtms/if_tor_const=>sc_tor_category-active.
+          CASE ls_track_conf-track_option.
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-fo_track.
+              ro_actual_event = NEW zcl_gtt_sts_fo_actual_event( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fo.
+              ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fo_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fo_actevt( ).
+            WHEN OTHERS.
+          ENDCASE.
+
+        WHEN /scmtms/if_tor_const=>sc_tor_category-booking.
+          CASE ls_track_conf-track_option.
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-fo_track.
+              ro_actual_event = NEW zcl_gtt_sts_fb_actual_event( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fo.
+              ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fb_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fb_actevt( ).
+            WHEN OTHERS.
+          ENDCASE.
+
+        WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
+          CASE ls_track_conf-track_option.
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-fo_track.
+              ro_actual_event = NEW zcl_gtt_sts_fu_actual_event( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fo.
+              ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fu_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fu_actevt( ).
+            WHEN OTHERS.
+          ENDCASE.
+        WHEN OTHERS.
+          MESSAGE i009(zsst_gtt) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
+          zcl_gtt_sts_tools=>throw_exception( ).
+      ENDCASE.
+    ELSE.
       CASE <ls_tor_root>-tor_cat.
         WHEN /scmtms/if_tor_const=>sc_tor_category-active.
           ro_actual_event = NEW zcl_gtt_sts_fo_actual_event( ).
@@ -390,7 +446,7 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
         WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
           ro_actual_event = NEW zcl_gtt_sts_fu_actual_event( ).
         WHEN OTHERS.
-          MESSAGE i009(zsst_gtt) WITH <ls_tor_root>-tor_cat INTO DATA(lv_dummy) ##needed.
+          MESSAGE i009(zsst_gtt) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
           zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ENDIF.

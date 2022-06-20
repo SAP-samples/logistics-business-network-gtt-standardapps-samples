@@ -4,6 +4,31 @@ class ZCL_GTT_STS_TOOLS definition
 
 public section.
 
+  types:
+    TT_CONF TYPE TABLE of ZGTT_TRACK_CONF .
+  types:
+    TT_CONTAINER type TABLE of /SCMTMS/PACKAGE_ID .
+  types TS_CONTAINER type /SCMTMS/PACKAGE_ID .
+  types:
+    BEGIN OF ts_capa_stop,
+      line_no    TYPE i,
+      tor_id     TYPE /scmtms/tor_id,
+      first_stop TYPE /saptrx/loc_id_2,
+      last_stop  TYPE /saptrx/loc_id_2,
+    END OF ts_capa_stop .
+  types:
+    tt_capa_stop TYPE TABLE OF ts_capa_stop .
+  types:
+    tt_req_stop TYPE TABLE OF ts_capa_stop .
+  types:
+    BEGIN OF ts_txc_key_mapping,
+      root_key TYPE /bobf/obm_node_key,
+      text_key TYPE /bobf/obm_node_key,
+      text_asc TYPE /bobf/obm_assoc_key,
+      cont_key TYPE /bobf/obm_node_key,
+      cont_asc TYPE /bobf/obm_assoc_key,
+  END OF ts_txc_key_mapping .
+
   constants:
     BEGIN OF cs_condition,
         true  TYPE sy-binpt VALUE 'T',
@@ -140,6 +165,102 @@ public section.
       !IV_LOCNO type /SAPAPO/LOCNO
     returning
       value(RV_LOCTYPE) type /SAPTRX/LOC_ID_TYPE .
+  class-methods GET_TRACK_CONF
+    exporting
+      !ET_CONF type TT_CONF .
+  class-methods GET_CONTAINER_MOBILE_ID
+    importing
+      !IR_ROOT type DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !ET_CONTAINER type TT_CONTAINER optional
+      !ET_MOBILE type TT_CONTAINER optional
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_DATA_FROM_TEXT_COLLECTION
+    importing
+      !IR_ROOT type DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ER_TEXT type ref to /BOBF/T_TXC_TXT_K
+      !ER_TEXT_CONTENT type ref to /BOBF/T_TXC_CON_K
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_PLATE_TRUCK_NUMBER
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !EV_PLATENUMBER type /SCMTMS/RESPLATENR
+      !EV_TRUCK_ID type /SCMTMS/RES_NAME
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_PACKAGE_ID
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_PACKAGE_ID type TT_CONTAINER
+      !ET_PACKAGE_ID_EXT type TT_CONTAINER
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_CAPA_STOP_INFO
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_CAPA_STOP type TT_CAPA_STOP
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_REQ_STOP_INFO
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_REQ_STOP type TT_REQ_STOP
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_TRACK_OBJ_CHANGES_V2
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IV_APPSYS type /SAPTRX/APPLSYSTEM
+      !IT_TRACK_ID_DATA_NEW type ZIF_GTT_STS_EF_TYPES=>TT_ENH_TRACK_ID_DATA
+      !IT_TRACK_ID_DATA_OLD type ZIF_GTT_STS_EF_TYPES=>TT_ENH_TRACK_ID_DATA
+    changing
+      !CT_TRACK_ID_DATA type ZIF_GTT_STS_EF_TYPES=>TT_TRACK_ID_DATA
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_CAPA_INFO
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_CAPA type /SCMTMS/T_EM_BO_TOR_ROOT
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_REQ_INFO
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL
+    exporting
+      !ET_REQ_TOR type /SCMTMS/T_EM_BO_TOR_ROOT
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_TXC_KEY_MAPPING
+    importing
+      !IV_BO_KEY type /BOBF/OBM_BO_KEY
+      !IV_NODE type /BOBF/OBM_NODE_KEY
+    exporting
+      !ES_TXC_KEY_MAPPING type TS_TXC_KEY_MAPPING .
+  class-methods GET_PACKAGE_ID_V2
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_PACKAGE_ID type TT_CONTAINER
+      !ET_PACKAGE_ID_EXT type TT_CONTAINER
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -201,18 +322,22 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
             is_root_old-tsp IS INITIAL AND is_root_new-tsp IS NOT INITIAL ).
 
     DATA(lv_execution_status_changed) = xsdbool(
-      ( is_root_old-execution <> /scmtms/if_tor_status_c=>sc_root-execution-v_in_execution        AND
-        is_root_old-execution <> /scmtms/if_tor_status_c=>sc_root-execution-v_ready_for_execution AND
-        is_root_old-execution <> /scmtms/if_tor_status_c=>sc_root-execution-v_executed )          AND
-      ( is_root_new-execution  = /scmtms/if_tor_status_c=>sc_root-execution-v_in_execution        OR
-        is_root_new-execution  = /scmtms/if_tor_status_c=>sc_root-execution-v_ready_for_execution OR
-        is_root_new-execution  = /scmtms/if_tor_status_c=>sc_root-execution-v_executed ) ).
+      ( is_root_new-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_relevant         OR
+        is_root_new-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_started          OR
+        is_root_new-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_cancelled            OR
+        is_root_new-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_ready_for_execution ) AND
+      ( is_root_old-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_in_execution        OR
+        is_root_old-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_executed            OR
+        is_root_old-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_interrupted         OR
+        is_root_old-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_ready_for_execution OR
+        is_root_old-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_loading_in_process  OR
+        is_root_old-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_capa_plan_finished  ) ).
 
     DATA(lv_lifecycle_status_changed) = xsdbool(
-      ( is_root_old-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process  AND
-        is_root_old-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) AND
-      ( is_root_new-lifecycle  = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process  OR
-        is_root_new-lifecycle  = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) ).
+      ( is_root_new-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process AND
+        is_root_new-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) AND
+      ( is_root_old-lifecycle = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process OR
+        is_root_old-lifecycle = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) ).
 
     IF lv_carrier_removed = abap_true OR lv_execution_status_changed = abap_true OR
        lv_lifecycle_status_changed = abap_true .
@@ -358,7 +483,7 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
         IF is_root-tor_id IS NOT INITIAL AND <ls_item>-platenumber IS NOT INITIAL AND lv_mtr = cs_mtr_truck.
           lv_tor_id = |{ is_root-tor_id ALPHA = OUT }|.
           CONDENSE lv_tor_id.
-          APPEND VALUE #( key = |{ <ls_item>-node_id }P|
+          APPEND VALUE #( key = <ls_item>-node_id
                   appsys      = iv_appsys
                   appobjtype  = is_app_object-appobjtype
                   appobjid    = is_app_object-appobjid
@@ -488,65 +613,14 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
 
   METHOD get_track_obj_changes.
 
-    DATA(lt_track_id_data_new) = it_track_id_data_new.
-    DATA(lt_track_id_data_old) = it_track_id_data_old.
-
-    LOOP AT lt_track_id_data_new ASSIGNING FIELD-SYMBOL(<ls_track_id_data>).
-      READ TABLE lt_track_id_data_old WITH KEY key = <ls_track_id_data>-key ASSIGNING FIELD-SYMBOL(<ls_track_id_data_old>).
-      IF sy-subrc = 0.
-        DATA(lt_fields) = CAST cl_abap_structdescr( cl_abap_typedescr=>describe_by_data(
-                                                        p_data = <ls_track_id_data> ) )->get_included_view( ).
-        DATA(lv_result) = abap_false.
-
-        LOOP AT lt_fields ASSIGNING FIELD-SYMBOL(<ls_fields>).
-          ASSIGN COMPONENT <ls_fields>-name OF STRUCTURE <ls_track_id_data> TO FIELD-SYMBOL(<lv_value1>).
-          ASSIGN COMPONENT <ls_fields>-name OF STRUCTURE <ls_track_id_data_old> TO FIELD-SYMBOL(<lv_value2>).
-
-          IF <lv_value1> IS ASSIGNED AND
-             <lv_value2> IS ASSIGNED.
-            IF <lv_value1> <> <lv_value2>.
-              lv_result   = abap_true.
-              EXIT.
-            ENDIF.
-          ENDIF.
-        ENDLOOP.
-
-        IF lv_result = abap_true.
-
-          APPEND VALUE #( appsys      = iv_appsys
-                          appobjtype  = is_app_object-appobjtype
-                          appobjid    = is_app_object-appobjid
-                          trxcod      = <ls_track_id_data>-trxcod
-                          trxid       = <ls_track_id_data>-trxid ) TO ct_track_id_data.
-
-          APPEND VALUE #( appsys      = iv_appsys
-                          appobjtype  = is_app_object-appobjtype
-                          appobjid    = is_app_object-appobjid
-                          trxcod      = <ls_track_id_data_old>-trxcod
-                          trxid       = <ls_track_id_data_old>-trxid
-                          action      = /scmtms/cl_scem_int_c=>sc_param_action-delete ) TO ct_track_id_data.
-        ENDIF.
-
-        DELETE lt_track_id_data_old WHERE key = <ls_track_id_data>-key.
-
-      ELSE.
-        APPEND VALUE #( appsys      = iv_appsys
-                        appobjtype  = is_app_object-appobjtype
-                        appobjid    = is_app_object-appobjid
-                        trxcod      = <ls_track_id_data>-trxcod
-                        trxid       = <ls_track_id_data>-trxid ) TO ct_track_id_data.
-      ENDIF.
-    ENDLOOP.
-
-    " Deleted resources
-    LOOP AT lt_track_id_data_old ASSIGNING FIELD-SYMBOL(<ls_track_id_data_del>).
-      APPEND VALUE #( appsys      = iv_appsys
-                      appobjtype  = is_app_object-appobjtype
-                      appobjid    = is_app_object-appobjid
-                      trxcod      = <ls_track_id_data_del>-trxcod
-                      trxid       = <ls_track_id_data_del>-trxid
-                      action      = /scmtms/cl_scem_int_c=>sc_param_action-delete ) TO ct_track_id_data.
-    ENDLOOP.
+    zcl_gtt_sts_tools=>get_track_obj_changes_v2(
+      EXPORTING
+        is_app_object        = is_app_object
+        iv_appsys            = iv_appsys
+        it_track_id_data_new = it_track_id_data_new
+        it_track_id_data_old = it_track_id_data_old
+      CHANGING
+        ct_track_id_data     = ct_track_id_data ).
 
   ENDMETHOD.
 
@@ -633,39 +707,732 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
 
   METHOD get_location_type.
 
-    DATA:
-      lv_loctype    TYPE /sapapo/c_loctype.
-
     CLEAR:rv_loctype.
+    rv_loctype = zif_gtt_sts_constants=>cs_location_type-logistic.
 
-    CALL FUNCTION '/SAPAPO/LOC_LOCID_GET_LOCATION'
-      EXPORTING
-        iv_locno           = iv_locno
-      IMPORTING
-        ev_loctype         = lv_loctype
-      EXCEPTIONS
-        location_not_found = 1
-        not_qualified      = 2
-        OTHERS             = 3.
+  ENDMETHOD.
 
-    IF sy-subrc = 0.
 
-      CASE lv_loctype.
-        WHEN '1001'."Plant
-          rv_loctype = zif_gtt_sts_constants=>cs_location_type-plant.
-        WHEN '1003'."Shipping Point
-          rv_loctype = zif_gtt_sts_constants=>cs_location_type-shippingpoint.
-        WHEN '1010'."Customer
-          rv_loctype = zif_gtt_sts_constants=>cs_location_type-customer.
-        WHEN '1011'."Supplier
-          rv_loctype = zif_gtt_sts_constants=>cs_location_type-supplier.
-        WHEN '1021'."Business Partner
-          rv_loctype = zif_gtt_sts_constants=>cs_location_type-bp.
-        WHEN OTHERS."Logistic Location
-          rv_loctype = zif_gtt_sts_constants=>cs_location_type-logistic.
-      ENDCASE.
+  METHOD get_capa_stop_info.
 
+    FIELD-SYMBOLS:
+      <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lv_seq_num          TYPE i,
+      lv_capa_doc_line_no TYPE i,
+      lr_srvmgr_tor       TYPE REF TO /bobf/if_tra_service_manager,
+      lt_capa             TYPE /scmtms/t_tor_root_k,
+      lt_fu_stop          TYPE /scmtms/t_tor_stop_k,
+      lt_fo_stop          TYPE /scmtms/t_em_bo_tor_stop,
+      ls_capa_stop        TYPE ts_capa_stop,
+      lt_root_key         TYPE /bobf/t_frw_key.
+
+    CLEAR et_capa_stop.
+
+    ASSIGN ir_root->* TO <ls_tor_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
+
+    DATA(lv_before_image) = SWITCH abap_bool( iv_old_data WHEN abap_true THEN abap_true
+                                                          ELSE abap_false ).
+
+    lt_root_key = VALUE #( ( key = <ls_tor_root>-node_id ) ).
+
+    lr_srvmgr_tor = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
+      iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+        iv_fill_data    = abap_true
+        iv_before_image = lv_before_image
+      IMPORTING
+        et_data         = lt_fu_stop ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-capa_tor
+        iv_fill_data    = abap_true
+        iv_before_image = lv_before_image
+      IMPORTING
+        et_data         = lt_capa
+        et_key_link     = DATA(lt_req2capa_link) ).
+
+    LOOP AT lt_req2capa_link INTO DATA(ls_req2capa_link).
+      READ TABLE lt_capa INTO DATA(ls_capa) WITH KEY key = ls_req2capa_link-target_key.
+      CHECK sy-subrc = 0.
+      /scmtms/cl_tor_helper_stop=>get_stop_sequence(
+        EXPORTING
+          it_root_key     = VALUE #( ( key = ls_req2capa_link-target_key ) )
+          iv_before_image = lv_before_image
+        IMPORTING
+          et_stop_seq_d   = DATA(lt_stop_seq) ).
+
+      ASSIGN lt_stop_seq[ root_key = ls_req2capa_link-target_key ] TO FIELD-SYMBOL(<ls_stop_seq>) ##WARN_OK.
+      IF sy-subrc = 0.
+        MOVE-CORRESPONDING <ls_stop_seq>-stop_seq TO lt_fo_stop.
+        LOOP AT lt_fo_stop ASSIGNING FIELD-SYMBOL(<ls_fo_stop>).
+          <ls_fo_stop>-parent_node_id = ls_req2capa_link-target_key.
+          ASSIGN <ls_stop_seq>-stop_map[ tabix = <ls_fo_stop>-seq_num ]-stop_key TO FIELD-SYMBOL(<lv_stop_key>).
+          CHECK sy-subrc = 0.
+          <ls_fo_stop>-node_id = <lv_stop_key>.
+        ENDLOOP.
+      ENDIF.
+
+      zcl_gtt_sts_tools=>get_stop_points(
+        EXPORTING
+          iv_root_id     = ls_capa-tor_id
+          it_stop        = lt_fo_stop
+        IMPORTING
+          et_stop_points = DATA(lt_stop_points) ).
+
+      LOOP AT lt_fo_stop USING KEY parent_seqnum ASSIGNING <ls_fo_stop>.
+        ASSIGN lt_fu_stop[ assgn_stop_key = <ls_fo_stop>-node_id  parent_key = ls_req2capa_link-source_key ] TO FIELD-SYMBOL(<ls_fu_stop>).
+        IF sy-subrc = 0.
+          IF lv_seq_num IS INITIAL.
+            READ TABLE lt_stop_points INTO DATA(ls_stop_points)
+              WITH KEY  seq_num   = <ls_fo_stop>-seq_num
+                        log_locid = <ls_fo_stop>-log_locid.
+            IF sy-subrc = 0.
+              DATA(lv_capa_doc_first_stop) = ls_stop_points-stop_id.
+            ENDIF.
+          ENDIF.
+          lv_seq_num = <ls_fo_stop>-seq_num.
+        ENDIF.
+      ENDLOOP.
+
+      IF lv_seq_num IS NOT INITIAL.
+        DATA(lv_capa_doc_last_stop) = lt_stop_points[ seq_num = lv_seq_num ]-stop_id.
+      ENDIF.
+
+      lv_capa_doc_line_no = lv_capa_doc_line_no + 1.
+      ls_capa_stop-line_no = lv_capa_doc_line_no.
+      ls_capa_stop-tor_id = |{ ls_capa-tor_id ALPHA = OUT }|.
+      ls_capa_stop-first_stop = |{ lv_capa_doc_first_stop ALPHA = OUT }|.
+      ls_capa_stop-last_stop = |{ lv_capa_doc_last_stop ALPHA = OUT }|.
+      CONDENSE ls_capa_stop-tor_id NO-GAPS.
+      CONDENSE ls_capa_stop-first_stop NO-GAPS.
+      CONDENSE ls_capa_stop-last_stop NO-GAPS.
+      APPEND ls_capa_stop TO et_capa_stop.
+
+      CLEAR: lv_seq_num, lt_stop_points.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_data_from_text_collection.
+
+    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
+    ASSIGN ir_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lv_before_image) = SWITCH abap_bool( iv_old_data WHEN abap_true THEN abap_true
+                                                          ELSE abap_false ).
+
+    DATA(lr_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+    TRY.
+        DATA(lr_bo_conf) = /bobf/cl_frw_factory=>get_configuration( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+      CATCH /bobf/cx_frw.
+        MESSAGE e011(zgtt_sts) INTO  lv_dummy.
+        zcl_gtt_sts_tools=>throw_exception( ).
+    ENDTRY.
+    DATA(lv_txt_key) = lr_bo_conf->get_content_key_mapping(
+      iv_content_cat      = /bobf/if_conf_c=>sc_content_nod
+      iv_do_content_key   = /bobf/if_txc_c=>sc_node-text
+      iv_do_root_node_key = /scmtms/if_tor_c=>sc_node-textcollection ).
+
+    DATA(lv_txt_assoc) = lr_bo_conf->get_content_key_mapping(
+      iv_content_cat      = /bobf/if_conf_c=>sc_content_ass
+      iv_do_content_key   = /bobf/if_txc_c=>sc_association-root-text
+      iv_do_root_node_key = /scmtms/if_tor_c=>sc_node-textcollection ).
+
+    DATA(lv_cont_assoc) = lr_bo_conf->get_content_key_mapping(
+      iv_content_cat      = /bobf/if_conf_c=>sc_content_ass
+      iv_do_content_key   = /bobf/if_txc_c=>sc_association-text-text_content
+      iv_do_root_node_key = /scmtms/if_tor_c=>sc_node-textcollection ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        it_key          = VALUE #( ( key = <ls_root>-node_id ) )
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-textcollection
+        iv_before_image = lv_before_image
+      IMPORTING
+        et_target_key   = DATA(lt_textcollection_key) ).
+
+    CREATE DATA er_text.
+    CREATE DATA er_text_content.
+
+    IF lt_textcollection_key IS NOT INITIAL.
+
+      lr_srvmgr_tor->retrieve_by_association(
+        EXPORTING
+          it_key          = lt_textcollection_key
+          iv_node_key     = /scmtms/if_tor_c=>sc_node-textcollection
+          iv_association  = lv_txt_assoc
+          iv_fill_data    = abap_true
+          iv_before_image = lv_before_image
+        IMPORTING
+          et_data         = er_text->* ).
+
+      IF er_text->* IS NOT INITIAL.
+
+        lr_srvmgr_tor->retrieve_by_association(
+          EXPORTING
+            it_key          = CORRESPONDING #( er_text->* )
+            iv_node_key     = lv_txt_key
+            iv_association  = lv_cont_assoc
+            iv_fill_data    = abap_true
+            iv_before_image = lv_before_image
+          IMPORTING
+            et_data         = er_text_content->* ).
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_package_id.
+*----------------------------------------------------------------------*
+* In this method we provide 3 options to get package id.
+* Option 1:
+*   Retrive the package id from ITEM_TR-PACKAGE_ID
+* Option 2:
+*   Retrive the external package id from ITEM_TR-PACKAGE_ID_EXT
+*   field PACKAGE_ID_EXT only available on S/4HANA 2020 FPS01 and afterwards
+* Option 3:(currently,we use this option)
+*   Retrive the external package id from
+*     freight unit-Items-notes-Text type = 'EPKG'
+* We recommend you to use external package id as the tracked object.
+*----------------------------------------------------------------------*
+*
+*    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
+*    DATA:
+*      lt_item       TYPE /scmtms/t_tor_item_tr_k.
+*
+*    CLEAR:
+*      et_package_id,
+*      et_package_id_ext.
+*
+*    ASSIGN ir_root->* TO <ls_root>.
+*    IF sy-subrc <> 0.
+*      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+*      zcl_gtt_sts_tools=>throw_exception( ).
+*    ENDIF.
+*
+*    DATA(lv_before_image) = SWITCH abap_bool( iv_old_data WHEN abap_true THEN abap_true
+*                                                          ELSE abap_false ).
+*
+*    DATA(lr_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+*
+*    lr_srvmgr_tor->retrieve_by_association(
+*      EXPORTING
+*        it_key          = VALUE #( ( key = <ls_root>-node_id ) )
+*        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+*        iv_association  = /scmtms/if_tor_c=>sc_association-root-item_tr
+*        iv_before_image = lv_before_image
+*        iv_fill_data    = abap_true
+*      IMPORTING
+*        et_data         = lt_item ).
+*
+*    LOOP AT lt_item INTO DATA(ls_item)
+*      WHERE item_cat = /scmtms/if_tor_const=>sc_tor_item_category-packaging.
+*
+*      IF ls_item-parent_key = <ls_root>-node_id.
+*        IF ls_item-package_id IS NOT INITIAL.
+*          APPEND ls_item-package_id TO et_package_id.
+*        ENDIF.
+**        IF ls_item-package_id_ext IS NOT INITIAL.
+**          APPEND ls_item-package_id_ext TO et_package_id_ext.
+**        ENDIF.
+*      ENDIF.
+*    ENDLOOP.
+
+    zcl_gtt_sts_tools=>get_package_id_v2(
+      EXPORTING
+        ir_root           = ir_root
+        iv_old_data       = iv_old_data
+      IMPORTING
+        et_package_id_ext = et_package_id_ext ).
+
+  ENDMETHOD.
+
+
+  METHOD get_req_stop_info.
+
+    FIELD-SYMBOLS:
+      <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lv_seq_num         TYPE i,
+      lv_req_doc_line_no TYPE i,
+      lr_srvmgr_tor      TYPE REF TO /bobf/if_tra_service_manager,
+      lt_root_key        TYPE /bobf/t_frw_key,
+      lt_fo_stop         TYPE /scmtms/t_tor_stop_k,
+      lt_req_tor         TYPE /scmtms/t_tor_root_k,
+      lt_fu_stop         TYPE /scmtms/t_em_bo_tor_stop,
+      ls_req_stop        TYPE ts_capa_stop.
+
+    CLEAR et_req_stop.
+
+    ASSIGN ir_root->* TO <ls_tor_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lv_before_image) = SWITCH abap_bool( iv_old_data WHEN abap_true THEN abap_true
+                                                          ELSE abap_false ).
+
+    lt_root_key = VALUE #( ( key = <ls_tor_root>-node_id ) ).
+
+    lr_srvmgr_tor = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
+      iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+        iv_fill_data    = abap_true
+        iv_before_image = lv_before_image
+      IMPORTING
+        et_data         = lt_fo_stop ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
+        iv_fill_data    = abap_true
+        iv_before_image = lv_before_image
+      IMPORTING
+        et_data         = lt_req_tor
+        et_key_link     = DATA(lt_req2capa_link) ).
+
+    LOOP AT lt_req2capa_link INTO DATA(ls_req2capa_link).
+      READ TABLE lt_req_tor INTO DATA(ls_req_tor) WITH KEY key = ls_req2capa_link-target_key.
+      CHECK sy-subrc = 0.
+      /scmtms/cl_tor_helper_stop=>get_stop_sequence(
+        EXPORTING
+          it_root_key     = VALUE #( ( key = ls_req2capa_link-target_key ) )
+          iv_before_image = lv_before_image
+        IMPORTING
+          et_stop_seq_d   = DATA(lt_stop_seq) ).
+
+      ASSIGN lt_stop_seq[ root_key = ls_req2capa_link-target_key ] TO FIELD-SYMBOL(<ls_stop_seq>) ##WARN_OK.
+      IF sy-subrc = 0.
+        MOVE-CORRESPONDING <ls_stop_seq>-stop_seq TO lt_fu_stop.
+        LOOP AT lt_fu_stop ASSIGNING FIELD-SYMBOL(<ls_fu_stop>).
+          <ls_fu_stop>-parent_node_id = ls_req2capa_link-target_key.
+          ASSIGN <ls_stop_seq>-stop_map[ tabix = <ls_fu_stop>-seq_num ]-stop_key TO FIELD-SYMBOL(<lv_stop_key>).
+          CHECK sy-subrc = 0.
+          <ls_fu_stop>-node_id = <lv_stop_key>.
+        ENDLOOP.
+      ENDIF.
+
+      zcl_gtt_sts_tools=>get_stop_points(
+        EXPORTING
+          iv_root_id     = ls_req_tor-tor_id
+          it_stop        = lt_fu_stop
+        IMPORTING
+          et_stop_points = DATA(lt_stop_points) ).
+
+      LOOP AT lt_fu_stop USING KEY parent_seqnum ASSIGNING <ls_fu_stop>.
+        ASSIGN lt_fo_stop[ key = <ls_fu_stop>-assgn_stop_key  parent_key = ls_req2capa_link-source_key ] TO FIELD-SYMBOL(<ls_fo_stop>).
+        IF sy-subrc = 0.
+          IF lv_seq_num IS INITIAL.
+            READ TABLE lt_stop_points INTO DATA(ls_stop_points)
+              WITH KEY  seq_num   = <ls_fu_stop>-seq_num
+                        log_locid = <ls_fu_stop>-log_locid.
+            IF sy-subrc = 0.
+              DATA(lv_req_doc_first_stop) = ls_stop_points-stop_id.
+            ENDIF.
+          ENDIF.
+          lv_seq_num = <ls_fu_stop>-seq_num.
+        ENDIF.
+      ENDLOOP.
+
+      IF lv_seq_num IS NOT INITIAL.
+        DATA(lv_req_doc_last_stop) = lt_stop_points[ seq_num = lv_seq_num ]-stop_id.
+      ENDIF.
+
+      lv_req_doc_line_no = lv_req_doc_line_no + 1.
+      ls_req_stop-line_no = lv_req_doc_line_no.
+      ls_req_stop-tor_id = |{ ls_req_tor-tor_id ALPHA = OUT }|.
+      ls_req_stop-first_stop = |{ lv_req_doc_first_stop ALPHA = OUT }|.
+      ls_req_stop-last_stop = |{ lv_req_doc_last_stop ALPHA = OUT }|.
+      CONDENSE ls_req_stop-tor_id NO-GAPS.
+      CONDENSE ls_req_stop-first_stop NO-GAPS.
+      CONDENSE ls_req_stop-last_stop NO-GAPS.
+      APPEND ls_req_stop TO et_req_stop.
+
+      CLEAR: lv_seq_num, lt_stop_points.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_track_conf.
+
+    CLEAR et_conf.
+
+    SELECT *
+      INTO TABLE et_conf
+      FROM zgtt_track_conf.
+
+  ENDMETHOD.
+
+
+  METHOD get_track_obj_changes_v2.
+
+    DATA:
+      lt_track_id_data_new TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
+      lt_track_id_data_old TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data.
+
+    lt_track_id_data_new = it_track_id_data_new.
+    lt_track_id_data_old = it_track_id_data_old.
+
+    SORT lt_track_id_data_new BY key appsys appobjtype appobjid trxcod trxid.
+    SORT lt_track_id_data_old BY key appsys appobjtype appobjid trxcod trxid.
+    DELETE ADJACENT DUPLICATES FROM lt_track_id_data_new COMPARING ALL FIELDS.
+    DELETE ADJACENT DUPLICATES FROM lt_track_id_data_old COMPARING ALL FIELDS.
+
+    LOOP AT lt_track_id_data_new INTO DATA(ls_track_id_data_new).
+      READ TABLE lt_track_id_data_old INTO DATA(ls_track_id_data_old)
+        WITH KEY key        = ls_track_id_data_new-key
+                 appsys     = ls_track_id_data_new-appsys
+                 appobjtype = ls_track_id_data_new-appobjtype
+                 appobjid   = ls_track_id_data_new-appobjid
+                 trxcod     = ls_track_id_data_new-trxcod
+                 trxid      = ls_track_id_data_new-trxid.
+      IF sy-subrc = 0.
+        DELETE lt_track_id_data_old WHERE key        = ls_track_id_data_new-key
+                                     AND  appsys     = ls_track_id_data_new-appsys
+                                     AND  appobjtype = ls_track_id_data_new-appobjtype
+                                     AND  appobjid   = ls_track_id_data_new-appobjid
+                                     AND  trxcod     = ls_track_id_data_new-trxcod
+                                     AND  trxid      = ls_track_id_data_new-trxid.
+      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_track_id_data_new INTO ls_track_id_data_new.
+      APPEND VALUE #( appsys      = iv_appsys
+                      appobjtype  = is_app_object-appobjtype
+                      appobjid    = is_app_object-appobjid
+                      trxcod      = ls_track_id_data_new-trxcod
+                      trxid       = ls_track_id_data_new-trxid ) TO ct_track_id_data.
+    ENDLOOP.
+
+    " Deleted resources
+    LOOP AT lt_track_id_data_old ASSIGNING FIELD-SYMBOL(<ls_track_id_data_del>).
+      APPEND VALUE #( appsys      = iv_appsys
+                      appobjtype  = is_app_object-appobjtype
+                      appobjid    = is_app_object-appobjid
+                      trxcod      = <ls_track_id_data_del>-trxcod
+                      trxid       = <ls_track_id_data_del>-trxid
+                      action      = /scmtms/cl_scem_int_c=>sc_param_action-delete ) TO ct_track_id_data.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_capa_info.
+
+    FIELD-SYMBOLS:
+      <ls_root>          TYPE /scmtms/s_em_bo_tor_root.
+    DATA:
+      lt_capa TYPE /scmtms/t_tor_root_k.
+
+    CLEAR et_capa.
+
+    ASSIGN ir_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lr_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
+      iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = VALUE #( ( key = <ls_root>-node_id ) )
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-capa_tor
+        iv_fill_data    = abap_true
+        iv_before_image = iv_old_data
+      IMPORTING
+        et_data         = lt_capa ).
+
+    et_capa = CORRESPONDING #( lt_capa MAPPING node_id = key tor_root_node = root_key ).
+
+  ENDMETHOD.
+
+
+  METHOD get_container_mobile_id.
+
+    DATA:
+      ls_container TYPE ts_container,
+      ls_mobile    TYPE ts_container,
+      lt_container TYPE tt_container,
+      lv_container TYPE char1024.
+
+    CLEAR:
+      et_container,
+      et_mobile.
+
+    get_data_from_text_collection(
+      EXPORTING
+        iv_old_data     = iv_old_data
+        ir_root         = ir_root
+      IMPORTING
+        er_text         = DATA(lr_text)
+        er_text_content = DATA(lr_text_content) ).
+
+    IF lr_text->* IS NOT INITIAL AND lr_text_content->* IS NOT INITIAL.
+      LOOP AT lr_text->* ASSIGNING FIELD-SYMBOL(<ls_text>).
+        READ TABLE lr_text_content->* WITH KEY parent_key
+          COMPONENTS parent_key = <ls_text>-key ASSIGNING FIELD-SYMBOL(<ls_text_content>).
+        IF sy-subrc = 0.
+          IF <ls_text>-text_type = zif_gtt_sts_constants=>cs_text_type-cont AND <ls_text_content>-text IS NOT INITIAL.
+            lv_container = <ls_text_content>-text.
+            SPLIT lv_container AT zif_gtt_sts_constants=>cs_separator-semicolon INTO TABLE lt_container.
+            APPEND LINES OF lt_container TO et_container.
+            CLEAR lt_container.
+          ENDIF.
+          IF <ls_text>-text_type = zif_gtt_sts_constants=>cs_text_type-mobl AND <ls_text_content>-text IS NOT INITIAL.
+            ls_mobile = <ls_text_content>-text.
+            APPEND ls_mobile TO et_mobile.
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+    DELETE et_container WHERE table_line IS INITIAL.
+
+  ENDMETHOD.
+
+
+  METHOD get_plate_truck_number.
+
+    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
+    DATA:
+      lt_item       TYPE /scmtms/t_tor_item_tr_k.
+
+    CLEAR:
+      ev_platenumber,
+      ev_truck_id.
+
+    ASSIGN ir_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    IF ( <ls_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking ).
+      RETURN.
+    ENDIF.
+
+    DATA(lv_before_image) = SWITCH abap_bool( iv_old_data WHEN abap_true THEN abap_true
+                                                          ELSE abap_false ).
+
+    DATA(lr_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        it_key          = VALUE #( ( key = <ls_root>-node_id ) )
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-item_tr
+        iv_before_image = lv_before_image
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_item ).
+
+    ASSIGN lt_item[ item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item ] TO FIELD-SYMBOL(<ls_item>).
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO lv_dummy.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    ev_platenumber = <ls_item>-platenumber.
+    ev_truck_id = <ls_item>-res_id.
+
+  ENDMETHOD.
+
+
+  METHOD get_req_info.
+
+    FIELD-SYMBOLS:
+      <ls_root>          TYPE /scmtms/s_em_bo_tor_root.
+    DATA:
+      lt_req TYPE /scmtms/t_tor_root_k.
+
+    CLEAR et_req_tor.
+
+    ASSIGN ir_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lr_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
+      iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = VALUE #( ( key = <ls_root>-node_id ) )
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
+        iv_fill_data    = abap_true
+        iv_before_image = iv_old_data
+      IMPORTING
+        et_data         = lt_req ).
+
+    et_req_tor = CORRESPONDING #( lt_req MAPPING node_id = key tor_root_node = root_key ).
+
+  ENDMETHOD.
+
+
+  METHOD get_package_id_v2.
+
+    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
+    DATA:
+      lt_item        TYPE /scmtms/t_tor_item_tr_k,
+      lt_txt_root    TYPE /bobf/t_txc_root_k,
+      ls_key_map     TYPE ts_txc_key_mapping,
+      lt_target_key  TYPE /bobf/t_frw_key,
+      lt_target_key2 TYPE /bobf/t_frw_key,
+      lt_text        TYPE /bobf/t_txc_txt_k,
+      lt_cont        TYPE /bobf/t_txc_con_k.
+
+    CLEAR:
+      et_package_id,
+      et_package_id_ext.
+
+    ASSIGN ir_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lv_before_image) = SWITCH abap_bool( iv_old_data WHEN abap_true THEN abap_true
+                                                          ELSE abap_false ).
+
+    DATA(lr_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        it_key          = VALUE #( ( key = <ls_root>-node_id ) )
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-item_tr
+        iv_before_image = lv_before_image
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_item ).
+
+    DELETE lt_item WHERE item_cat <> /scmtms/if_tor_const=>sc_tor_item_category-packaging.
+
+    CHECK lt_item IS NOT INITIAL.
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-item_tr
+        it_key          = CORRESPONDING #( lt_item )
+        iv_association  = /scmtms/if_tor_c=>sc_association-item_tr-itemtextcollection
+        iv_before_image = lv_before_image
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_txt_root
+        et_target_key   = lt_target_key ).
+
+    zcl_gtt_sts_tools=>get_txc_key_mapping(
+      EXPORTING
+        iv_bo_key          = /scmtms/if_tor_c=>sc_bo_key
+        iv_node            = /scmtms/if_tor_c=>sc_node-itemtextcollection
+      IMPORTING
+        es_txc_key_mapping = ls_key_map ).
+
+*   Retrieve DO text node
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = ls_key_map-root_key
+        it_key          = lt_target_key
+        iv_association  = ls_key_map-text_asc
+        iv_before_image = lv_before_image
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_text
+        et_target_key   = lt_target_key2 ).
+
+*   Retrieve DO text content nodes
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = ls_key_map-text_key
+        it_key          = lt_target_key2
+        iv_association  = ls_key_map-cont_asc
+        iv_before_image = lv_before_image
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_cont ).
+
+    LOOP AT lt_text INTO DATA(ls_text).
+      IF ls_text-text_type = zif_gtt_sts_constants=>cs_text_type-epkg.
+        READ TABLE lt_cont INTO DATA(ls_cont) WITH TABLE KEY parent_key
+         COMPONENTS parent_key = ls_text-key .
+        IF sy-subrc = 0.
+          APPEND ls_cont-text TO et_package_id_ext.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+
+    DELETE et_package_id_ext WHERE table_line IS INITIAL.
+
+  ENDMETHOD.
+
+
+  METHOD get_txc_key_mapping.
+
+    CLEAR es_txc_key_mapping.
+
+*   Get DO content mappings
+    /scmtms/cl_common_helper=>get_do_keys_4_rba(
+      EXPORTING
+        iv_host_bo_key      = iv_bo_key
+        iv_host_do_node_key = iv_node
+        iv_do_node_key      = /bobf/if_txc_c=>sc_node-root
+      IMPORTING
+        ev_node_key         = es_txc_key_mapping-root_key ).
+
+    /scmtms/cl_common_helper=>get_do_keys_4_rba(
+      EXPORTING
+        iv_host_bo_key      = iv_bo_key
+        iv_host_do_node_key = iv_node
+        iv_do_node_key      = /bobf/if_txc_c=>sc_node-text
+        iv_do_assoc_key     = /bobf/if_txc_c=>sc_association-root-text
+      IMPORTING
+        ev_node_key         = es_txc_key_mapping-text_key
+        ev_assoc_key        = es_txc_key_mapping-text_asc ).
+
+    /scmtms/cl_common_helper=>get_do_keys_4_rba(
+      EXPORTING
+        iv_host_bo_key      = iv_bo_key
+        iv_host_do_node_key = iv_node
+        iv_do_node_key      = /bobf/if_txc_c=>sc_node-text_content
+        iv_do_assoc_key     = /bobf/if_txc_c=>sc_association-text-text_content
+      IMPORTING
+        ev_node_key         = es_txc_key_mapping-cont_key
+        ev_assoc_key        = es_txc_key_mapping-cont_asc ).
 
   ENDMETHOD.
 ENDCLASS.

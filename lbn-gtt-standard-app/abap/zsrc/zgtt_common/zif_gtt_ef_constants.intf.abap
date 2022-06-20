@@ -1,7 +1,8 @@
-INTERFACE zif_gtt_ef_constants
-  PUBLIC .
+interface ZIF_GTT_EF_CONSTANTS
+  public .
 
-  CONSTANTS:
+
+  constants:
     BEGIN OF cs_trxcod, " tracking id type
       po_number   TYPE /saptrx/trxcod VALUE 'FT1_PO',
       po_position TYPE /saptrx/trxcod VALUE 'FT1_PO_ITEM',
@@ -11,8 +12,7 @@ INTERFACE zif_gtt_ef_constants
       sh_resource TYPE /saptrx/trxcod VALUE 'FT1_RESOURCE',
       fu_number   TYPE /saptrx/trxcod VALUE 'FT1_FREIGHT_UNIT',
     END OF cs_trxcod .
-
-  CONSTANTS:
+  constants:
     BEGIN OF cs_milestone,
 
       po_confirmation     TYPE /saptrx/appl_event_tag VALUE 'CONFIRMATION',
@@ -39,7 +39,7 @@ INTERFACE zif_gtt_ef_constants
       sh_pod              TYPE /saptrx/appl_event_tag VALUE 'POD',
 
     END OF cs_milestone .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_event_param,
       quantity           TYPE /saptrx/paramname VALUE 'QUANTITY',
       delivery_completed TYPE /saptrx/paramname VALUE 'DELIVERY_COMPLETED',
@@ -48,49 +48,47 @@ INTERFACE zif_gtt_ef_constants
       location_id        TYPE /saptrx/paramname VALUE 'LOCATION_ID',
       location_type      TYPE /saptrx/paramname VALUE 'LOCATION_TYPE',
     END OF cs_event_param .
-
-  CONSTANTS:
+  constants:
     BEGIN OF cs_trk_obj_type,
       esc_purord TYPE /saptrx/trk_obj_type VALUE 'ESC_PURORD',
       esc_deliv  TYPE /saptrx/trk_obj_type VALUE 'ESC_DELIV',
       esc_shipmt TYPE /saptrx/trk_obj_type VALUE 'ESC_SHIPMT',
       tms_tor    TYPE /saptrx/trk_obj_type VALUE 'TMS_TOR',
     END OF cs_trk_obj_type .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_system_fields,
       actual_bisiness_timezone  TYPE /saptrx/paramname VALUE 'ACTUAL_BUSINESS_TIMEZONE',
       actual_bisiness_datetime  TYPE /saptrx/paramname VALUE 'ACTUAL_BUSINESS_DATETIME',
       actual_technical_timezone TYPE /saptrx/paramname VALUE 'ACTUAL_TECHNICAL_TIMEZONE',
       actual_technical_datetime TYPE /saptrx/paramname VALUE 'ACTUAL_TECHNICAL_DATETIME',
     END OF cs_system_fields .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_errors,
       wrong_parameter     TYPE sotr_conc VALUE '1216f03004ce11ebbf450050c2490048',
       cdata_determination TYPE sotr_conc VALUE '1216f03004ce11ebbf460050c2490048',
       table_determination TYPE sotr_conc VALUE '1216f03004ce11ebbf470050c2490048',
       stop_processing     TYPE sotr_conc VALUE '1216f03004ce11ebbf480050c2490048',
     END OF cs_errors .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_condition,
       true  TYPE zif_gtt_ef_types=>tv_condition VALUE 'T',
       false TYPE zif_gtt_ef_types=>tv_condition VALUE 'F',
     END OF cs_condition .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_change_mode,
       insert    TYPE updkz_d VALUE 'I',
       update    TYPE updkz_d VALUE 'U',
       delete    TYPE updkz_d VALUE 'D',
       undefined TYPE updkz_d VALUE 'T',
     END OF cs_change_mode .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_parameter_id,
       key_field    TYPE zif_gtt_ef_types=>tv_parameter_id VALUE 1,
       no_empty_tag TYPE zif_gtt_ef_types=>tv_parameter_id VALUE 2,
     END OF cs_parameter_id .
-  CONSTANTS cv_aot TYPE string VALUE 'AOT' ##NO_TEXT.
-  CONSTANTS cv_max_end_date TYPE /saptrx/tid_end_date_tsloc VALUE '099991231000000' ##NO_TEXT.
-  CONSTANTS cv_structure_pkg TYPE devclass VALUE '/SAPTRX/SCEM_AI_R3' ##NO_TEXT.
-  CONSTANTS:
+  constants CV_AOT type STRING value 'AOT' ##NO_TEXT.
+  constants CV_STRUCTURE_PKG type DEVCLASS value '/SAPTRX/SCEM_AI_R3' ##NO_TEXT.
+  constants:
     BEGIN OF cs_loc_types,
       businesspartner  TYPE /saptrx/loc_id_type VALUE 'BusinessPartner' ##NO_TEXT,
       customer         TYPE /saptrx/loc_id_type VALUE 'Customer' ##NO_TEXT,
@@ -99,11 +97,11 @@ INTERFACE zif_gtt_ef_constants
       shippingpoint    TYPE /saptrx/loc_id_type VALUE 'ShippingPoint' ##NO_TEXT,
       supplier         TYPE /saptrx/loc_id_type VALUE 'Supplier' ##NO_TEXT,
     END OF cs_loc_types .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_date_types,
       timestamp TYPE char20 VALUE 'TIMESTAMP',
     END OF cs_date_types .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_logs,
 *               log_name TYPE balnrext VALUE '',
       BEGIN OF object,
@@ -117,4 +115,4 @@ INTERFACE zif_gtt_ef_constants
         tor_ctp      TYPE balsubobj VALUE 'APPSYS',
       END OF subobject,
     END OF cs_logs .
-ENDINTERFACE.
+endinterface.

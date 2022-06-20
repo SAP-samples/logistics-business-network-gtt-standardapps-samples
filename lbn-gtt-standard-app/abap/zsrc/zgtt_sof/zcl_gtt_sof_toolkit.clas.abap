@@ -317,18 +317,20 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
       IMPORTING
         et_data        = lt_fu ).
 
-    LOOP AT lt_fu INTO DATA(ls_fu) WHERE tor_cat   =  /scmtms/if_tor_const=>sc_tor_category-freight_unit
-                                     AND lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_canceled.
-      ls_relation-delivery_number = iv_vbeln.
-      ls_relation-delivery_item_number = iv_posnr.
-      ls_relation-freight_unit_number = ls_fu-tor_id.
-      ls_relation-freight_unit_root_key = ls_fu-root_key.
-      APPEND ls_relation TO et_relation.
-      CLEAR ls_relation.
+    LOOP AT lt_fu INTO DATA(ls_fu).
+      IF ls_fu-tor_cat   =  /scmtms/if_tor_const=>sc_tor_category-freight_unit
+        AND ls_fu-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_canceled.
+        ls_relation-delivery_number = iv_vbeln.
+        ls_relation-delivery_item_number = iv_posnr.
+        ls_relation-freight_unit_number = ls_fu-tor_id.
+        ls_relation-freight_unit_root_key = ls_fu-root_key.
+        APPEND ls_relation TO et_relation.
+        CLEAR ls_relation.
 
-      ls_root_key-key = ls_fu-root_key.
-      APPEND ls_root_key TO et_root_key.
-      CLEAR ls_root_key.
+        ls_root_key-key = ls_fu-root_key.
+        APPEND ls_root_key TO et_root_key.
+        CLEAR ls_root_key.
+      ENDIF.
     ENDLOOP.
 
     IF et_fu_item IS REQUESTED.
@@ -342,7 +344,7 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
           et_data      = lt_fu_item ).
 
       LOOP AT lt_fu_item INTO DATA(ls_fu_item) WHERE item_cat = /scmtms/if_tor_const=>sc_tor_item_category-product.
-        READ TABLE et_root_key INTO ls_root_key WITH KEY key = ls_fu_item-root_key.
+        READ TABLE et_root_key INTO ls_root_key WITH TABLE KEY key_sort COMPONENTS key = ls_fu_item-root_key.
         IF sy-subrc = 0.
           APPEND ls_fu_item TO et_fu_item.
         ENDIF.

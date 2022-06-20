@@ -252,7 +252,9 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
             <ls_exp_event>-appobjtype     = is_aotype-aot_type.
             <ls_exp_event>-appobjid       = lv_appobjid.
             <ls_exp_event>-language       = sy-langu.
-            <ls_exp_event>-evt_exp_tzone  = zcl_gtt_sof_tm_tools=>get_system_time_zone(  ).
+            IF <ls_exp_event>-evt_exp_tzone IS INITIAL.
+              <ls_exp_event>-evt_exp_tzone  = zcl_gtt_sof_tm_tools=>get_system_time_zone(  ).
+            ENDIF.
           ENDLOOP.
 
           cs_idoc_data-exp_event = VALUE #( BASE cs_idoc_data-exp_event
