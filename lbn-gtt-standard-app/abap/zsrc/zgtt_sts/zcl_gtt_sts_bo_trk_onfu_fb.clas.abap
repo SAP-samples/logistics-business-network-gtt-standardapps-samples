@@ -518,8 +518,6 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
         et_req_tor  = lt_req_tor ).
 
     LOOP AT lt_req_tor ASSIGNING FIELD-SYMBOL(<ls_tor_root_req>).
-      CLEAR:
-        lv_line_no.
 
       lv_tor_id = <ls_tor_root_req>-tor_id.
       SHIFT lv_tor_id LEFT DELETING LEADING '0'.
@@ -704,6 +702,9 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
         iv_old_data        = iv_old_data
       CHANGING
         cs_freight_booking = <ls_freight_booking> ).
+    IF <ls_freight_booking>-tu_line_no IS INITIAL.
+      APPEND '' TO <ls_freight_booking>-tu_line_no.
+    ENDIF.
 
   ENDMETHOD.
 

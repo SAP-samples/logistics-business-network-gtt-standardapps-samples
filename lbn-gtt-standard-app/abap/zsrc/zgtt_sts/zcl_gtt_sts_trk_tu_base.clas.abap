@@ -772,6 +772,11 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD DEL_CONDITION_CHECK.
+    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+  ENDMETHOD.
+
+
   METHOD fill_idoc_appobj_ctabs.
 
     cs_idoc_data-appobj_ctabs = VALUE #( BASE cs_idoc_data-appobj_ctabs (
@@ -987,8 +992,7 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
      appobjtype  = mv_aotype
      appobjid    = iv_appobjid
      trxcod      = zif_gtt_sts_constants=>cs_trxcod-tu_number
-     trxid       = iv_appobjid
-     timzon      = zcl_gtt_sof_tm_tools=>get_system_time_zone( )  ) ).
+     trxid       = iv_appobjid ) ).
 
   ENDMETHOD.
 
@@ -1044,6 +1048,65 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
     DELETE ADJACENT DUPLICATES FROM lt_current_resource COMPARING ALL FIELDS.
 
     et_resource = lt_current_resource.
+
+  ENDMETHOD.
+
+
+  METHOD get_container_mobile_id.
+
+    DATA:
+      ls_resource  TYPE ts_resource,
+      lt_container TYPE tt_resource,
+      lt_mobile    TYPE tt_resource,
+      lt_tmp_cont  TYPE TABLE OF /scmtms/package_id,
+      lt_tmp_mob   TYPE TABLE OF /scmtms/package_id,
+      lt_text      TYPE tt_text,
+      ls_text      TYPE ts_text.
+
+    CLEAR :
+      et_container,
+      et_mobile.
+
+    zcl_gtt_sts_tools=>get_container_mobile_id(
+      EXPORTING
+        ir_root      = REF #( is_tor_root )
+        iv_old_data  = iv_before_image
+      CHANGING
+        et_container = lt_tmp_cont
+        et_mobile    = lt_tmp_mob ).
+
+    LOOP AT lt_tmp_cont INTO DATA(ls_tmp_cont).
+      CLEAR ls_text.
+      ls_text-text_type = cs_tu_type-container_id.
+      ls_text-text_value = ls_tmp_cont.
+      APPEND ls_text TO lt_text.
+    ENDLOOP.
+
+    LOOP AT lt_tmp_mob INTO DATA(ls_tmp_mob).
+      CLEAR ls_text.
+      ls_text-text_type = cs_tu_type-mobile_number.
+      ls_text-text_value = ls_tmp_mob.
+      APPEND ls_text TO lt_text.
+    ENDLOOP.
+
+    LOOP AT lt_text INTO ls_text.
+      ls_resource-category = ls_text-text_type.
+      ls_resource-value = |{ is_tor_root-tor_id ALPHA = OUT }{ ls_text-text_value } |.
+      CONDENSE ls_resource-value NO-GAPS.
+      ls_resource-orginal_value = ls_text-text_value .
+      ls_resource-tor_id = is_tor_root-tor_id.
+      SHIFT ls_resource-tor_id LEFT DELETING LEADING '0'.
+
+      IF ls_resource-category = cs_tu_type-mobile_number.
+        APPEND ls_resource TO lt_mobile.
+      ELSEIF ls_resource-category = cs_tu_type-container_id.
+        APPEND ls_resource TO lt_container.
+      ENDIF.
+      CLEAR ls_resource.
+    ENDLOOP.
+
+    et_container = lt_container.
+    et_mobile = lt_mobile.
 
   ENDMETHOD.
 
@@ -1206,6 +1269,57 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_deleted_tu.
+
+    DATA:
+      lt_current_resource TYPE tt_resource,
+      lt_old_resource     TYPE tt_resource,
+      lv_index            TYPE i,
+      lv_exec_flg         TYPE flag,
+      lv_result           TYPE abap_bool.
+
+    get_tu_number(
+      EXPORTING
+        is_tor_root = is_tor_root
+        it_tor_item = it_tor_item
+      IMPORTING
+        et_resource = lt_current_resource ).
+
+    get_tu_number(
+      EXPORTING
+        is_tor_root     = is_tor_root_before
+        it_tor_item     = it_tor_item_before
+        iv_before_image = abap_true
+      IMPORTING
+        et_resource     = lt_old_resource ).
+
+    IF is_tor_root-change_mode <> /bobf/if_frw_c=>sc_modify_delete.
+      LOOP AT lt_current_resource ASSIGNING FIELD-SYMBOL(<fs_current_resource>).
+        READ TABLE lt_old_resource ASSIGNING FIELD-SYMBOL(<fs_old_resource>)
+          WITH KEY category      = <fs_current_resource>-category
+                   orginal_value = <fs_current_resource>-orginal_value.
+        IF sy-subrc = 0.
+          DELETE lt_old_resource WHERE category      = <fs_current_resource>-category
+                                   AND orginal_value = <fs_current_resource>-orginal_value.
+          DELETE lt_current_resource WHERE category      = <fs_current_resource>-category
+                                       AND orginal_value = <fs_current_resource>-orginal_value.
+        ENDIF.
+      ENDLOOP.
+
+    ENDIF.
+
+    LOOP AT lt_old_resource ASSIGNING <fs_old_resource>.
+      <fs_old_resource>-change_mode = cs_change_mode-delete.
+    ENDLOOP.
+
+    SORT lt_old_resource BY category orginal_value value change_mode tor_id.
+    DELETE ADJACENT DUPLICATES FROM lt_old_resource COMPARING ALL FIELDS.
+
+    et_resource = lt_old_resource.
+
+  ENDMETHOD.
+
+
   METHOD get_docref_data.
 
     DATA lt_docs TYPE /scmtms/t_tor_docref_k.
@@ -1293,6 +1407,56 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
       CLEAR ls_resource.
 
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD GET_PLATE_TRUCK_NUMBER.
+
+    DATA:
+      ls_root         TYPE /scmtms/s_em_bo_tor_root,
+      ls_resource     TYPE ts_resource,
+      lt_resource     TYPE tt_resource,
+      lt_truck_id     TYPE tt_resource,
+      lv_before_image TYPE boole_d.
+
+    CLEAR:
+      et_plate,
+      et_truck_id.
+
+    ls_root = is_tor_root.
+    lv_before_image = iv_before_image.
+
+    LOOP AT it_tor_item INTO DATA(ls_item)
+      WHERE item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item.
+
+*     Get plate number
+      IF ls_item-parent_node_id = ls_root-node_id AND ls_item-platenumber IS NOT INITIAL.
+        ls_resource-category = cs_tu_type-license_plate.
+        ls_resource-value = |{ ls_root-tor_id ALPHA = OUT }{ ls_item-platenumber } |.
+        CONDENSE ls_resource-value NO-GAPS.
+        ls_resource-orginal_value = ls_item-platenumber.
+        ls_resource-tor_id = ls_root-tor_id.
+        SHIFT ls_resource-tor_id LEFT DELETING LEADING '0'.
+        APPEND ls_resource TO lt_resource.
+        CLEAR ls_resource.
+      ENDIF.
+
+*     vehicle ID
+      IF ls_item-parent_node_id = ls_root-node_id AND ls_item-res_id IS NOT INITIAL.
+        ls_resource-category = cs_tu_type-truck_id.
+        ls_resource-value = |{ ls_root-tor_id ALPHA = OUT }{ ls_item-res_id } |.
+        CONDENSE ls_resource-value NO-GAPS.
+        ls_resource-orginal_value = ls_item-res_id.
+        ls_resource-tor_id = ls_root-tor_id.
+        SHIFT ls_resource-tor_id LEFT DELETING LEADING '0'.
+        APPEND ls_resource TO lt_truck_id.
+        CLEAR ls_resource.
+      ENDIF.
+    ENDLOOP.
+
+    et_plate = lt_resource.
+    et_truck_id = lt_truck_id.
 
   ENDMETHOD.
 
@@ -1701,6 +1865,28 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
     ENDLOOP.
 
     et_idoc_data = lt_idoc_data.
+
+  ENDMETHOD.
+
+
+  METHOD pre_condition_check.
+
+    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+
+    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete.
+      RETURN.
+    ENDIF.
+
+    IF ( is_root-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-execution OR
+        is_root-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-exec_with_extern_event_mngr ) AND
+      is_root-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-in_process AND
+      ( is_root-execution = zif_gtt_sts_constants=>cs_execution_status-in_execution OR
+        is_root-execution = zif_gtt_sts_constants=>cs_execution_status-ready_for_transp_exec ) AND
+      is_root-tspid IS NOT INITIAL AND ( is_root-tor_cat = mv_tor_cat  ).
+
+      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+
+    ENDIF.
 
   ENDMETHOD.
 
@@ -2517,197 +2703,14 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
         FROM /saptrx/trxserv
          FOR ALL ENTRIES IN mt_aotype
        WHERE trx_server_id = mt_aotype-server_name.
+      IF sy-subrc <> 0.
+        MESSAGE e008(zgtt_sts) INTO lv_dummy.
+        throw_exception( ).
+      ENDIF.
     ENDIF.
 
     mv_tor_cat = iv_tor_cat.
     mv_aotype = iv_aotype.
-
-  ENDMETHOD.
-
-
-  METHOD DEL_CONDITION_CHECK.
-    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
-  ENDMETHOD.
-
-
-  METHOD get_deleted_tu.
-
-    DATA:
-      lt_current_resource TYPE tt_resource,
-      lt_old_resource     TYPE tt_resource,
-      lv_index            TYPE i,
-      lv_exec_flg         TYPE flag,
-      lv_result           TYPE abap_bool.
-
-    get_tu_number(
-      EXPORTING
-        is_tor_root = is_tor_root
-        it_tor_item = it_tor_item
-      IMPORTING
-        et_resource = lt_current_resource ).
-
-    get_tu_number(
-      EXPORTING
-        is_tor_root     = is_tor_root_before
-        it_tor_item     = it_tor_item_before
-        iv_before_image = abap_true
-      IMPORTING
-        et_resource     = lt_old_resource ).
-
-    IF is_tor_root-change_mode <> /bobf/if_frw_c=>sc_modify_delete.
-      LOOP AT lt_current_resource ASSIGNING FIELD-SYMBOL(<fs_current_resource>).
-        READ TABLE lt_old_resource ASSIGNING FIELD-SYMBOL(<fs_old_resource>)
-          WITH KEY category      = <fs_current_resource>-category
-                   orginal_value = <fs_current_resource>-orginal_value.
-        IF sy-subrc = 0.
-          DELETE lt_old_resource WHERE category      = <fs_current_resource>-category
-                                   AND orginal_value = <fs_current_resource>-orginal_value.
-          DELETE lt_current_resource WHERE category      = <fs_current_resource>-category
-                                       AND orginal_value = <fs_current_resource>-orginal_value.
-        ENDIF.
-      ENDLOOP.
-
-    ENDIF.
-
-    LOOP AT lt_old_resource ASSIGNING <fs_old_resource>.
-      <fs_old_resource>-change_mode = cs_change_mode-delete.
-    ENDLOOP.
-
-    SORT lt_old_resource BY category orginal_value value change_mode tor_id.
-    DELETE ADJACENT DUPLICATES FROM lt_old_resource COMPARING ALL FIELDS.
-
-    et_resource = lt_old_resource.
-
-  ENDMETHOD.
-
-
-  METHOD pre_condition_check.
-
-    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
-
-    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete.
-      RETURN.
-    ENDIF.
-
-    IF ( is_root-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-execution OR
-        is_root-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-exec_with_extern_event_mngr ) AND
-      is_root-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-in_process AND
-      ( is_root-execution = zif_gtt_sts_constants=>cs_execution_status-in_execution OR
-        is_root-execution = zif_gtt_sts_constants=>cs_execution_status-ready_for_transp_exec ) AND
-      is_root-tspid IS NOT INITIAL AND ( is_root-tor_cat = mv_tor_cat  ).
-
-      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD get_container_mobile_id.
-
-    DATA:
-      ls_resource  TYPE ts_resource,
-      lt_container TYPE tt_resource,
-      lt_mobile    TYPE tt_resource,
-      lt_tmp_cont  TYPE TABLE OF /scmtms/package_id,
-      lt_tmp_mob   TYPE TABLE OF /scmtms/package_id,
-      lt_text      TYPE tt_text,
-      ls_text      TYPE ts_text.
-
-    CLEAR :
-      et_container,
-      et_mobile.
-
-    zcl_gtt_sts_tools=>get_container_mobile_id(
-      EXPORTING
-        ir_root      = REF #( is_tor_root )
-        iv_old_data  = iv_before_image
-      CHANGING
-        et_container = lt_tmp_cont
-        et_mobile    = lt_tmp_mob ).
-
-    LOOP AT lt_tmp_cont INTO DATA(ls_tmp_cont).
-      CLEAR ls_text.
-      ls_text-text_type = cs_tu_type-container_id.
-      ls_text-text_value = ls_tmp_cont.
-      APPEND ls_text TO lt_text.
-    ENDLOOP.
-
-    LOOP AT lt_tmp_mob INTO DATA(ls_tmp_mob).
-      CLEAR ls_text.
-      ls_text-text_type = cs_tu_type-mobile_number.
-      ls_text-text_value = ls_tmp_mob.
-      APPEND ls_text TO lt_text.
-    ENDLOOP.
-
-    LOOP AT lt_text INTO ls_text.
-      ls_resource-category = ls_text-text_type.
-      ls_resource-value = |{ is_tor_root-tor_id ALPHA = OUT }{ ls_text-text_value } |.
-      CONDENSE ls_resource-value NO-GAPS.
-      ls_resource-orginal_value = ls_text-text_value .
-      ls_resource-tor_id = is_tor_root-tor_id.
-      SHIFT ls_resource-tor_id LEFT DELETING LEADING '0'.
-
-      IF ls_resource-category = cs_tu_type-mobile_number.
-        APPEND ls_resource TO lt_mobile.
-      ELSEIF ls_resource-category = cs_tu_type-container_id.
-        APPEND ls_resource TO lt_container.
-      ENDIF.
-      CLEAR ls_resource.
-    ENDLOOP.
-
-    et_container = lt_container.
-    et_mobile = lt_mobile.
-
-  ENDMETHOD.
-
-
-  METHOD GET_PLATE_TRUCK_NUMBER.
-
-    DATA:
-      ls_root         TYPE /scmtms/s_em_bo_tor_root,
-      ls_resource     TYPE ts_resource,
-      lt_resource     TYPE tt_resource,
-      lt_truck_id     TYPE tt_resource,
-      lv_before_image TYPE boole_d.
-
-    CLEAR:
-      et_plate,
-      et_truck_id.
-
-    ls_root = is_tor_root.
-    lv_before_image = iv_before_image.
-
-    LOOP AT it_tor_item INTO DATA(ls_item)
-      WHERE item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item.
-
-*     Get plate number
-      IF ls_item-parent_node_id = ls_root-node_id AND ls_item-platenumber IS NOT INITIAL.
-        ls_resource-category = cs_tu_type-license_plate.
-        ls_resource-value = |{ ls_root-tor_id ALPHA = OUT }{ ls_item-platenumber } |.
-        CONDENSE ls_resource-value NO-GAPS.
-        ls_resource-orginal_value = ls_item-platenumber.
-        ls_resource-tor_id = ls_root-tor_id.
-        SHIFT ls_resource-tor_id LEFT DELETING LEADING '0'.
-        APPEND ls_resource TO lt_resource.
-        CLEAR ls_resource.
-      ENDIF.
-
-*     vehicle ID
-      IF ls_item-parent_node_id = ls_root-node_id AND ls_item-res_id IS NOT INITIAL.
-        ls_resource-category = cs_tu_type-truck_id.
-        ls_resource-value = |{ ls_root-tor_id ALPHA = OUT }{ ls_item-res_id } |.
-        CONDENSE ls_resource-value NO-GAPS.
-        ls_resource-orginal_value = ls_item-res_id.
-        ls_resource-tor_id = ls_root-tor_id.
-        SHIFT ls_resource-tor_id LEFT DELETING LEADING '0'.
-        APPEND ls_resource TO lt_truck_id.
-        CLEAR ls_resource.
-      ENDIF.
-    ENDLOOP.
-
-    et_plate = lt_resource.
-    et_truck_id = lt_truck_id.
 
   ENDMETHOD.
 ENDCLASS.

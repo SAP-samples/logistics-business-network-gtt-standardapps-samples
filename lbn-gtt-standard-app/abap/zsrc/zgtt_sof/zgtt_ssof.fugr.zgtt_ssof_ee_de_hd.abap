@@ -317,8 +317,12 @@ FUNCTION ZGTT_SSOF_EE_DE_HD.
       ls_expeventdata-locid2.
 
     ls_expeventdata-milestone        = zif_gtt_sof_constants=>cs_milestone-odlv_planned_dlv.
-    ls_expeventdata-evt_exp_datetime = |{ <ls_xlikp>-lfdat }{ <ls_xlikp>-lfuhr }|.
-    ls_expeventdata-evt_exp_tzone    = <ls_xlikp>-tzonrc.
+    ls_expeventdata-evt_exp_datetime = zcl_gtt_tools=>get_local_timestamp(
+                                          iv_date = <ls_xlikp>-lfdat
+                                          iv_time = <ls_xlikp>-lfuhr ).
+    ls_expeventdata-evt_exp_tzone    = COND #( WHEN <ls_xlikp>-tzonrc IS NOT INITIAL
+                                           THEN <ls_xlikp>-tzonrc
+                                           ELSE zcl_gtt_tools=>get_system_time_zone( ) ).
     APPEND ls_expeventdata TO e_expeventdata.
 
     READ TABLE e_expeventdata WITH KEY appobjid = ls_app_objects-appobjid TRANSPORTING NO FIELDS.

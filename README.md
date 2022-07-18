@@ -1,8 +1,16 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2207 Release
+1. For the features that are only available in the test tenants, there is now a separate test branch available where you can download the relevant codes and documents. To access it, choose "test" from the dropdown menu on the top left. 
+2. The timestamp fields in the extractor are enhanced as follows: 
+* For timestamp fields in the Control Parameters functions: use UTC time.
+* For timestamp fields in the rest of the functions: use local time and its corresponding time zone or the time zone in the ERP system. 
+3. If a tracked object is deleted in the scenario "Maintain Tracked Objects on Freight Order/Freight Booking", this tracked object is now also removed from the Tracked Objects table.
+
+
 ## What's New in the 2206 Release
 1. Timestamp localization codes are improved.
-2. The valid from/to segment (1970/9999) are removed from all the Tracking ID functions.
+2. The valid from/to segment (1970/9999) is removed from all the Tracking ID functions.
 3. All location types in the freight order, freight booking, and freight unit are changed to "LogisticLocation". You can either download the latest version of extractor or change location types manually in Method GET_LOCATION_TYPE of Class ZCL_GTT_STS_TOOLS. 
 4. A new tracked process “TrackingUnit” is introduced in the standard model “gttft1” for you to track the shipments and freight units that have multiple tracked objects in the TM scenario. For example, you can maintain multiple external package IDs on freight units for parcel tracking. The following content is delivered to help you with the implementation: [Implementation Guide for Tracking via Tracking Unit and Reference Document in the TM Scenario](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/master/lbn-gtt-standard-app/Documents/Implementation%20Guide%20for%20Tracking%20via%20Tracking%20Unit%20and%20Reference%20Document%20in%20the%20TM%20Scenario.pdf).
 
