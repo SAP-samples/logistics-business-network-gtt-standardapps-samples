@@ -25,9 +25,9 @@
       <OBJECT>ZGTT_DTE_SCENARIO</OBJECT>
       <LANGU>E</LANGU>
       <TYP>E</TYP>
-      <VERSION>0013</VERSION>
+      <VERSION>0017</VERSION>
       <MASTERLANG>X</MASTERLANG>
-      <TXTLINES>00017</TXTLINES>
+      <TXTLINES>00019</TXTLINES>
       <DOKSTATE>A</DOKSTATE>
      </DOKIL>
      <HEAD>
@@ -37,7 +37,7 @@
       <TDSPRAS>E</TDSPRAS>
       <TDFORM>S_DOCU_SHOW</TDFORM>
       <TDSTYLE>S_DOCUS1</TDSTYLE>
-      <TDVERSION>00013</TDVERSION>
+      <TDVERSION>00017</TDVERSION>
       <TDLINESIZE>072</TDLINESIZE>
      </HEAD>
      <LINES>
@@ -71,14 +71,14 @@
       </TLINE>
       <TLINE>
        <TDFORMAT>*</TDFORMAT>
-       <TDLINE>•,,Maintain document number such as Bill of Lading(T50), Reference</TDLINE>
+       <TDLINE>•,,Maintain document number such as Bill of Lading (T50), Reference</TDLINE>
       </TLINE>
       <TLINE>
-       <TDLINE>Number of Carrier(T67) on freight order.</TDLINE>
+       <TDLINE>Number of Carrier (T67) on freight order.</TDLINE>
       </TLINE>
       <TLINE>
        <TDFORMAT>*</TDFORMAT>
-       <TDLINE>•,,Maintain document number such as Master Bill of Lading(T52), Master</TDLINE>
+       <TDLINE>•,,Maintain document number such as Master Bill of Lading (T52), Master</TDLINE>
       </TLINE>
       <TLINE>
        <TDLINE>Airway Bill (T55) on freight booking.</TDLINE>
@@ -114,10 +114,24 @@
       </TLINE>
       <TLINE>
        <TDFORMAT>*</TDFORMAT>
-       <TDLINE>Maintain tracked objects such as container ID&lt;(&gt;,&lt;)&gt; external package ID</TDLINE>
+       <TDLINE>Maintain tracked objects such as container ID, external package ID on</TDLINE>
       </TLINE>
       <TLINE>
-       <TDLINE>on freight Unit.</TDLINE>
+       <TDLINE>freight unit.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>*</TDFORMAT>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>*</TDFORMAT>
+       <TDLINE>04: Maintain Tracked Objects on Container Unit</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>*</TDFORMAT>
+       <TDLINE>Maintain tracked objects such as container ID on container unit.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>*</TDFORMAT>
       </TLINE>
       <TLINE>
        <TDFORMAT>*</TDFORMAT>

@@ -1,4 +1,4 @@
-class ZCL_GTT_STS_BO_TRK_ONFU_FB definition
+class ZCL_GTT_STS_BO_TRK_ONCU_FB definition
   public
   inheriting from ZCL_GTT_STS_BO_TOR_READER
   create public .
@@ -12,6 +12,8 @@ public section.
 protected section.
 
   methods GET_DOCREF_DATA
+    redefinition .
+  methods GET_REQUIREMENT_DOC_LIST
     redefinition .
 private section.
 
@@ -151,7 +153,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
+CLASS ZCL_GTT_STS_BO_TRK_ONCU_FB IMPLEMENTATION.
 
 
   METHOD GET_DATA_FROM_ITEM.
@@ -501,7 +503,8 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
       lv_suffix        TYPE char4,
       lv_length        TYPE i,
       lv_line_no       TYPE int4,
-      lv_tmp_value     TYPE char255.
+      lv_tmp_value     TYPE char255,
+      lt_tmp_cont      TYPE TABLE OF /scmtms/package_id.
 
     zcl_gtt_sts_tools=>get_req_stop_info(
       EXPORTING
@@ -522,23 +525,16 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
       lv_tor_id = <ls_tor_root_req>-tor_id.
       SHIFT lv_tor_id LEFT DELETING LEADING '0'.
 
-      get_container_id(
+      zcl_gtt_sts_tools=>get_container_num_on_cu(
         EXPORTING
-          ir_data      = REF #( <ls_tor_root_req> )
+          ir_root      = REF #( <ls_tor_root_req> )
           iv_old_data  = iv_old_data
-        CHANGING
-          et_container = lt_container ).
-
-      zcl_gtt_sts_tools=>get_package_id(
-        EXPORTING
-          ir_root           = REF #( <ls_tor_root_req> )
-          iv_old_data       = iv_old_data
         IMPORTING
-          et_package_id_ext = DATA(lt_package_id) ).
+          et_container = lt_tmp_cont ).
 
-      LOOP AT lt_package_id INTO DATA(ls_package_id).
-        ls_container-object_id = cs_track_id-pkg_ext_id.
-        ls_container-object_value = ls_package_id.
+      LOOP AT lt_tmp_cont INTO DATA(ls_tmp_cont).
+        ls_container-object_id = cs_track_id-container_id.
+        ls_container-object_value = ls_tmp_cont.
         APPEND ls_container TO lt_container.
         CLEAR ls_container.
       ENDLOOP.
@@ -565,7 +561,6 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
           CONDENSE lv_tmp_value NO-GAPS.
           APPEND lv_tmp_value TO cs_freight_booking-tu_first_stop.
 
-
           lv_length = strlen( ls_req_stop-last_stop ) - 4.
           lv_prefix = ls_req_stop-last_stop+0(lv_length).
           lv_suffix = ls_req_stop-last_stop+lv_length(*).
@@ -585,7 +580,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
       ENDLOOP.
 
       CLEAR:
-        lt_package_id,
+        lt_tmp_cont,
         lt_container.
     ENDLOOP.
 
@@ -619,7 +614,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ZIF_GTT_STS_BO_READER~GET_DATA.
+  METHOD zif_gtt_sts_bo_reader~get_data.
 
     FIELD-SYMBOLS <ls_freight_booking> TYPE ts_freight_booking.
 
@@ -759,29 +754,19 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
         et_req_tor  = lt_req_tor_new ).
 
     LOOP AT lt_req_tor_new ASSIGNING FIELD-SYMBOL(<ls_tor_root_req_new>)
-      WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
+      WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-transp_unit.
       CLEAR:
-        lt_container,
-        lt_package_id.
+        lt_container.
 
       DATA(lv_tor_id) = |{ <ls_tor_root_req_new>-tor_id  ALPHA = OUT }|.
       CONDENSE lv_tor_id.
 
-      zcl_gtt_sts_tools=>get_container_mobile_id(
+      zcl_gtt_sts_tools=>get_container_num_on_cu(
         EXPORTING
           ir_root      = REF #( <ls_tor_root_req_new> )
           iv_old_data  = abap_false
-        CHANGING
-          et_container = lt_container ).
-
-      zcl_gtt_sts_tools=>get_package_id(
-        EXPORTING
-          ir_root           = REF #( <ls_tor_root_req_new> )
-          iv_old_data       = abap_false
         IMPORTING
-          et_package_id_ext = lt_package_id ).
-
-      APPEND LINES OF lt_package_id TO lt_container.
+          et_container = lt_container ).
 
       LOOP AT lt_container INTO DATA(ls_container).
         CLEAR lv_trxid.
@@ -799,8 +784,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
     ENDLOOP.
 
     CLEAR:
-      lt_container,
-      lt_package_id.
+      lt_container.
 
     zcl_gtt_sts_tools=>get_req_info(
       EXPORTING
@@ -810,29 +794,19 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
         et_req_tor  = lt_req_tor_old ).
 
     LOOP AT lt_req_tor_old ASSIGNING FIELD-SYMBOL(<ls_tor_root_req_old>)
-      WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
+      WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-transp_unit.
       CLEAR:
-        lt_container,
-        lt_package_id.
+        lt_container.
 
       lv_tor_id = |{ <ls_tor_root_req_old>-tor_id  ALPHA = OUT }|.
       CONDENSE lv_tor_id.
 
-      zcl_gtt_sts_tools=>get_container_mobile_id(
+      zcl_gtt_sts_tools=>get_container_num_on_cu(
         EXPORTING
           ir_root      = REF #( <ls_tor_root_req_old> )
           iv_old_data  = abap_true
-        CHANGING
-          et_container = lt_container ).
-
-      zcl_gtt_sts_tools=>get_package_id(
-        EXPORTING
-          ir_root           = REF #( <ls_tor_root_req_old> )
-          iv_old_data       = abap_true
         IMPORTING
-          et_package_id_ext = lt_package_id ).
-
-      APPEND LINES OF lt_package_id TO lt_container.
+          et_container = lt_container ).
 
       LOOP AT lt_container INTO ls_container.
         CLEAR lv_trxid.
@@ -857,6 +831,54 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
         it_track_id_data_old = lt_track_id_data_old
       CHANGING
         ct_track_id_data     = et_track_id_data ).
+
+  ENDMETHOD.
+
+
+  METHOD get_requirement_doc_list.
+
+    FIELD-SYMBOLS:
+      <ls_tor_root>        TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lt_req_tor              TYPE /scmtms/t_tor_root_k,
+      lv_freight_unit_line_no TYPE int4.
+
+    ASSIGN ir_data->* TO <ls_tor_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = VALUE #( ( key = <ls_tor_root>-node_id ) )
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
+        iv_before_image = iv_old_data
+      IMPORTING
+        et_key_link     = DATA(lt_capa2req_link) ).
+
+    lo_tor_srv_mgr->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = CORRESPONDING #( lt_capa2req_link MAPPING key = target_key )
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
+        iv_before_image = iv_old_data
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_req_tor ).
+
+    LOOP AT lt_req_tor INTO DATA(ls_req_tor).
+
+      lv_freight_unit_line_no += 1.
+      APPEND lv_freight_unit_line_no TO ct_req_doc_line_no.
+
+      APPEND |{ ls_req_tor-tor_id ALPHA = OUT }| TO ct_req_doc_no.
+
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

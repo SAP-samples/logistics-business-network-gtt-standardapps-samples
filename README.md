@@ -1,12 +1,12 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
 ## What's New in the 2207 Release
-1. For the features that are only available in the test tenants, there is now a separate test branch available where you can download the relevant codes and documents. To access it, choose "test" from the dropdown menu on the top left. 
-2. The timestamp fields in the extractor are enhanced as follows: 
+1. The information on this test branch includes standard features of the global track and trace option as well as features that are only available in the test tenants. The preview content is provided as a courtesy, without a warranty, and may be subject to change.
+2. In the TM scenario, if you maintain container numbers on container units in SAP TM, the container units can now be sent as tracking units for tracking. For implementation details, see [Implementation Guide for Tracking via Tracking Unit and Reference Document in the TM Scenario](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/Implementation%20Guide%20for%20Tracking%20via%20Tracking%20Unit%20and%20Reference%20Document%20in%20the%20TM%20Scenario.pdf).
+3. The timestamp fields in the extractor are enhanced as follows: 
 * For timestamp fields in the Control Parameters functions: use UTC time.
-* For timestamp fields in the rest of the functions: use local time and its corresponding time zone or the time zone in the ERP system. 
-3. If a tracked object is deleted in the scenario "Maintain Tracked Objects on Freight Order/Freight Booking", this tracked object is now also removed from the Tracked Objects table.
-
+* For timestamp fields in the rest of functions: use local time and its corresponding time zone or the time zone in the ERP system. 
+4. If a tracked object is deleted in the scenario "Maintain Tracked Objects on Freight Order/Freight Booking", this tracked object is now also removed from the Tracked Objects table.
 
 ## What's New in the 2206 Release
 1. Timestamp localization codes are improved.

@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZCL_GTT_STS_BO_TRK_ONCU_FO</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Business Object Freight Order Reader</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_BO_TRK_ONCU_FO</CLSNAME>
+     <CMPNAME>GET_DATA_FROM_ITEM</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Data From Item</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_BO_TRK_ONCU_FO</CLSNAME>
+     <CMPNAME>GET_DATA_FROM_ROOT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Data from Root</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_BO_TRK_ONCU_FO</CLSNAME>
+     <CMPNAME>GET_DATA_FROM_TEXTCOLL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Data From Textcollection Node</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_BO_TRK_ONCU_FO</CLSNAME>
+     <CMPNAME>GET_MAINTABREF</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Main Table Reference</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_BO_TRK_ONCU_FO</CLSNAME>
+     <CMPNAME>GET_TRACKING_UNIT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Tracking Unit</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_BO_TRK_ONCU_FO</CLSNAME>
+     <CMPNAME>TS_FO_HEADER</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>TS_FO_HEADER</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

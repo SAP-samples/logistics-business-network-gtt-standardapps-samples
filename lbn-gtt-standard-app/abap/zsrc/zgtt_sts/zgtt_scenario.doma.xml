@@ -30,6 +30,12 @@
      <DOMVALUE_L>03</DOMVALUE_L>
      <DDTEXT>Maintain Tracked Objects on Freight Unit</DDTEXT>
     </DD07V>
+    <DD07V>
+     <VALPOS>0004</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>04</DOMVALUE_L>
+     <DDTEXT>Maintain Tracked Objects on Container Unit</DDTEXT>
+    </DD07V>
    </DD07V_TAB>
   </asx:values>
  </asx:abap>

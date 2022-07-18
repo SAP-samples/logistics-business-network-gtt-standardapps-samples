@@ -124,6 +124,7 @@ INTERFACE zif_gtt_sts_constants
       fo_track TYPE zgtt_dte_scenario VALUE '01', "Maintain Reference Document on Freight Order/Freight Booking
       tu_on_fo TYPE zgtt_dte_scenario VALUE '02', "Maintain Tracked Objects on Freight Order/Freight Booking
       tu_on_fu TYPE zgtt_dte_scenario VALUE '03', "Maintain Tracked Objects on Freight Unit
+      tu_on_cu TYPE zgtt_dte_scenario VALUE '04', "Maintain Tracked Objects on Container Unit
     END OF cs_tracking_scenario.
   CONSTANTS:
     BEGIN OF cs_separator,

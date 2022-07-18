@@ -409,6 +409,8 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fo_actevt( ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fo_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_oncu_fo_actevt( ).
             WHEN OTHERS.
           ENDCASE.
 
@@ -420,6 +422,8 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fb_actevt( ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fb_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_oncu_fb_actevt( ).
             WHEN OTHERS.
           ENDCASE.
 
@@ -431,6 +435,8 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fu_actevt( ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fu_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_oncu_fu_actevt( ).
             WHEN OTHERS.
           ENDCASE.
         WHEN OTHERS.
