@@ -440,8 +440,6 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
             WHEN OTHERS.
           ENDCASE.
         WHEN OTHERS.
-          MESSAGE i009(zsst_gtt) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ELSE.
       CASE <ls_tor_root>-tor_cat.
@@ -452,8 +450,6 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
         WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
           ro_actual_event = NEW zcl_gtt_sts_fu_actual_event( ).
         WHEN OTHERS.
-          MESSAGE i009(zsst_gtt) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ENDIF.
 
@@ -516,18 +512,16 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
     lv_ref_evt = is_execinfo-ref_event_code.
 
-*   If referred event type = null, set to 'ARRIV_DEST'
-    IF lv_ref_evt IS INITIAL.
-      lv_ref_evt = zif_gtt_sts_actual_event~cs_event_id-model-shp_arrival.
-    ENDIF.
-
     IF lv_ref_evt IS NOT INITIAL.
-      lv_locno = cs_tracklocation-locid1.
-      lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
-
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_milestone
                       param_value = lv_ref_evt ) INTO TABLE ct_trackparameters.
+    ENDIF.
+
+    lv_locno = cs_tracklocation-locid1.
+    lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
+
+    IF lv_locno IS NOT INITIAL.
 
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_loctype
@@ -688,7 +682,7 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ls_trackingheader-evtid    = get_model_event_id( CONV #( iv_event_code ) ).
 
       DATA(zcl_gtt_sts_tor_actual_event) = get_tor_actual_event_class( <ls_event> ).
-
+      CHECK zcl_gtt_sts_tor_actual_event is BOUND.
       ASSIGN <ls_event>-maintabref->* TO <ls_tor_root>.
       CHECK sy-subrc = 0.
 

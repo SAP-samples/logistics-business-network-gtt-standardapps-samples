@@ -20,7 +20,9 @@ FUNCTION zgtt_sts_ee_fo_delay_rel.
   FIELD-SYMBOLS: <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
 
   TRY.
-      zcl_gtt_sts_actual_event=>get_tor_actual_event_class( i_event )->check_event_relevance(
+      data(lo_act_evt) = zcl_gtt_sts_actual_event=>get_tor_actual_event_class( i_event ).
+      CHECK lo_act_evt is BOUND.
+      lo_act_evt->check_event_relevance(
         EXPORTING
           it_all_appl_tables = i_all_appl_tables
           iv_event_code     = /scmtms/if_tor_const=>sc_tor_event-delay

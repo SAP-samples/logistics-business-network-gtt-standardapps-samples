@@ -1086,8 +1086,7 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
            /scmtms/if_tor_const=>sc_tor_category-transp_unit.
 
       WHEN OTHERS.
-        MESSAGE i009(zgtt_sts) WITH <ls_root>-tor_cat INTO lv_dummy ##needed.
-        zcl_gtt_sts_tools=>throw_exception( ).
+
     ENDCASE.
 
   ENDMETHOD.

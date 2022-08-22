@@ -83,8 +83,6 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
             WHEN OTHERS.
           ENDCASE.
         WHEN OTHERS.
-          MESSAGE i009(zgtt_sts) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ELSE.
       CASE <ls_tor_root>-tor_cat.
@@ -96,8 +94,6 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
              /scmtms/if_tor_const=>sc_tor_category-transp_unit.
           ro_bo_reader = NEW zcl_gtt_sts_bo_fu_reader( io_ef_parameters ).
         WHEN OTHERS.
-          MESSAGE i009(zgtt_sts) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ENDIF.
 
@@ -163,8 +159,6 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
             WHEN OTHERS.
           ENDCASE.
         WHEN OTHERS.
-          MESSAGE i009(zgtt_sts) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ELSE.
       CASE <ls_tor_root>-tor_cat.
@@ -176,8 +170,6 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
              /scmtms/if_tor_const=>sc_tor_category-transp_unit.
           ro_pe_filler = NEW zcl_gtt_sts_pe_fu_filler( io_ef_parameters ).
         WHEN OTHERS.
-          MESSAGE i009(zgtt_sts) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ENDIF.
 

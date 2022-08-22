@@ -223,6 +223,7 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
         CATCH cx_udm_message.
           CONTINUE.
       ENDTRY.
+      CHECK mo_bo_reader is BOUND.
       rv_result = mo_bo_reader->check_relevance( is_app_object = <ls_app_objects> ).
       IF rv_result = abap_true.
         EXIT.
@@ -248,7 +249,7 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
       mo_bo_reader = io_bo_factory->get_bo_reader(
                          is_appl_object   = <ls_app_objects>
                          io_ef_parameters = mo_ef_parameters ).
-
+      CHECK mo_bo_reader is BOUND.
       lr_bo_data = mo_bo_reader->get_data( EXPORTING is_app_object = <ls_app_objects> ).
 
       add_struct_to_control_data(
@@ -287,7 +288,7 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
       mo_pe_filler = io_factory->get_pe_filler(
                           is_appl_object   = <ls_app_objects>
                           io_ef_parameters = mo_ef_parameters ).
-
+      CHECK mo_pe_filler is BOUND.
       mo_pe_filler->get_planned_events(
         EXPORTING
           is_app_objects  = <ls_app_objects>
@@ -336,7 +337,7 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
       mo_bo_reader = io_bo_factory->get_bo_reader(
                                is_appl_object   = <ls_app_objects>
                                io_ef_parameters = mo_ef_parameters ).
-
+      CHECK mo_bo_reader is BOUND.
       mo_bo_reader->get_track_id_data(
         EXPORTING
           is_app_object    = <ls_app_objects>

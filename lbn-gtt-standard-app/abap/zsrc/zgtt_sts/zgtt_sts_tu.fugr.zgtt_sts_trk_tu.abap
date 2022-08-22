@@ -65,7 +65,7 @@ FUNCTION zgtt_sts_trk_tu.
         REPLACE ALL OCCURRENCES OF 'FU' IN lv_aotype WITH 'TU'.
       ENDIF.
 
-      CHECK lo_tu_info IS NOT INITIAL AND lv_aotype IS NOT INITIAL.
+      CHECK lo_tu_info IS BOUND AND lv_aotype IS NOT INITIAL.
 
       lo_tu_info->initiate( it_tor_root = it_tor_root_sstring
                             iv_tor_cat  = lv_tor_cat

@@ -1,5 +1,10 @@
 # Fulfillment Tracking Apps for SAP Logistics Business Network, Global Track and Trace Option
 
+## What's New in the 2208 Release
+1. When no location is provided, the location type should be set to null.
+2. The “FreightUnit” tracked process now gets values of transportation mode / carrier / shipping type from the freight unit document itself.
+3. Exceptions that occur when reporting events on container units are no longer handled.
+
 ## What's New in the 2207 Release
 1. The information on this test branch includes standard features of the global track and trace option as well as features that are only available in the test tenants. The preview content is provided as a courtesy, without a warranty, and may be subject to change.
 2. In the TM scenario, if you maintain container numbers on container units in SAP TM, the container units can now be sent as tracking units for tracking. For implementation details, see [Implementation Guide for Tracking via Tracking Unit and Reference Document in the TM Scenario](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/Implementation%20Guide%20for%20Tracking%20via%20Tracking%20Unit%20and%20Reference%20Document%20in%20the%20TM%20Scenario.pdf).
@@ -93,9 +98,8 @@ You can find the sample code for SAP ERP extractors that are necessary to integr
  
 ## Requirements
 
-* To integrate with the global track and trace option, your SAP ERP system shall be SAP EHP1 FOR SAP NETWEAVER 7.3 or higher with SAP Notes 2370356, 2937175, 2974952, 2959576 and 3010748 being implemented.
-* To implement the extractor sample code in this repository, your SAP ERP system shall be S4 HANA 1909 SP03 on premise. Note that the sample code is not validated in a lower release, and not applicable for ECC series of products.
-* The node “Interface to Global Track and Trace” in the IMG and the related GTT-specific versions of the IMG activities are available in the software component version SAP_BW 750 from SP 12 on. They cannot be downloaded as a correction via note assistant. We recommend upgrading to the service package level accordingly.
+* Make sure that you have met the requirements for the product version mentioned in the [Prerequisites](https://help.sap.com/docs/SAP_LBN_GTT_OPTION/d0802f41861a4f81a3610d873fdcf148/c9f7baf5f6e14be4ba9045786961de14.html) section of Appendix one: Connect to SAP ERP in Administration Guide for Version 2. You can find this guide at http://help.sap.com/gtt. 
+* The ABAP codes on Github to support Fulfillment Tracking apps for GTT Version 2 shall be implemented in S4 HANA 1909 SP03 on premise that is not validated in lower release, and not applicable for ECC series of products. 
 
 ## Download and Installation
 Click the link below to find the detailed installation guide. You can also find the guide in the “Document” folder.

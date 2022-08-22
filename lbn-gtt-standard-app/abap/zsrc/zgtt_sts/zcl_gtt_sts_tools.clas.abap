@@ -716,7 +716,9 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
   METHOD get_location_type.
 
     CLEAR:rv_loctype.
-    rv_loctype = zif_gtt_sts_constants=>cs_location_type-logistic.
+    IF iv_locno IS NOT INITIAL.
+      rv_loctype = zif_gtt_sts_constants=>cs_location_type-logistic.
+    ENDIF.
 
   ENDMETHOD.
 

@@ -751,31 +751,8 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FU IMPLEMENTATION.
       cs_freight_unit-total_distance_km_uom = zif_gtt_sts_constants=>cs_uom-km.
     ENDIF.
 
-    zcl_gtt_sts_tools=>get_capa_info(
-      EXPORTING
-        ir_root     = ir_maintab
-        iv_old_data = iv_old_data
-      IMPORTING
-        et_capa     = lt_capa ).
-
-    LOOP AT lt_capa ASSIGNING FIELD-SYMBOL(<fs_capa>).
-
-*     Check FO is deleted or not
-      tu_relevance_check(
-        EXPORTING
-          ir_fo_root = REF #( <fs_capa> )
-        RECEIVING
-          rv_result  = DATA(lv_chk_result) ).
-      IF lv_chk_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-        CONTINUE.
-      ENDIF.
-
-      lv_tsp_id = <fs_capa>-tspid.
-      cs_freight_unit-shipping_type = <fs_capa>-shipping_type.
-      cs_freight_unit-trmodcod      = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = <fs_capa>-trmodcod ).
-      cs_freight_unit-tspid = get_carrier_name( iv_tspid = lv_tsp_id ).
-      EXIT.
-    ENDLOOP.
+    cs_freight_unit-shipping_type = <ls_root>-shipping_type.
+    cs_freight_unit-trmodcod      = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = <ls_root>-trmodcod ).
 
   ENDMETHOD.
 
