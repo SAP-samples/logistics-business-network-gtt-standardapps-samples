@@ -173,6 +173,39 @@ ENDCLASS.
 CLASS ZCL_GTT_STS_BO_TRK_ONFU_FU IMPLEMENTATION.
 
 
+  METHOD check_fo_is_changed.
+
+    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+
+    DATA(lv_carrier_added) = xsdbool( is_tor_root_before-tsp IS INITIAL AND is_tor_root-tsp IS NOT INITIAL ).
+
+    DATA(lv_execution_status_changed) = xsdbool(
+      ( is_tor_root_before-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_relevant         OR
+        is_tor_root_before-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_started          OR
+        is_tor_root_before-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_cancelled            OR
+        is_tor_root_before-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_ready_for_execution ) AND
+      ( is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_in_execution        OR
+        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_executed            OR
+        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_interrupted         OR
+        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_ready_for_execution OR
+        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_loading_in_process  OR
+        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_capa_plan_finished  ) ).
+
+    DATA(lv_lifecycle_status_changed) = xsdbool(
+      ( is_tor_root_before-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process AND
+        is_tor_root_before-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) AND
+      ( is_tor_root-lifecycle = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process OR
+        is_tor_root-lifecycle = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) ).
+
+    IF lv_carrier_added = abap_true AND lv_execution_status_changed = abap_true.
+      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+    ELSEIF is_tor_root-tsp IS NOT INITIAL AND lv_execution_status_changed = abap_true.
+      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD CHECK_FO_ROUTE_CHANGE.
 
     FIELD-SYMBOLS <ls_header> TYPE /scmtms/s_em_bo_tor_root.
@@ -243,6 +276,69 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FU IMPLEMENTATION.
     IF lv_stage_num_difference <> lv_stage_num_difference_bi.
       rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD check_fo_status_change.
+
+    FIELD-SYMBOLS:
+       <ls_header> TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lt_capa_new    TYPE /scmtms/t_em_bo_tor_root,
+      lt_capa_old    TYPE /scmtms/t_em_bo_tor_root,
+      ls_fo_root_new TYPE /scmtms/s_em_bo_tor_root,
+      ls_fo_root_old TYPE /scmtms/s_em_bo_tor_root.
+
+    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+
+    ASSIGN is_app_object-maintabref->* TO <ls_header>.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    zcl_gtt_sts_tools=>get_capa_info(
+      EXPORTING
+        ir_root     = REF #( <ls_header> )
+        iv_old_data = abap_false
+      IMPORTING
+        et_capa     = lt_capa_new ).
+
+    zcl_gtt_sts_tools=>get_capa_info(
+      EXPORTING
+        ir_root     = REF #( <ls_header> )
+        iv_old_data = abap_true
+      IMPORTING
+        et_capa     = lt_capa_old ).
+
+    LOOP AT lt_capa_new INTO DATA(ls_capa_new).
+      READ TABLE lt_capa_old INTO DATA(ls_capa_old) WITH KEY node_id = ls_capa_new-node_id.
+      IF sy-subrc = 0.
+
+*       Check if the FO is changed from not relevant to relevant
+        check_fo_is_changed(
+          EXPORTING
+            is_tor_root_before = ls_capa_old
+            is_tor_root        = ls_capa_new
+          RECEIVING
+            rv_result          = rv_result ).
+
+        IF rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+          RETURN.
+        ENDIF.
+
+*       Check if the FO is deleted
+        rv_result = zcl_gtt_sts_tools=>check_is_fo_deleted(
+          is_root_new = ls_capa_new
+          is_root_old = ls_capa_old ).
+        IF rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+          RETURN.
+        ENDIF.
+
+      ENDIF.
+
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -555,31 +651,8 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FU IMPLEMENTATION.
       cs_freight_unit-total_distance_km_uom = zif_gtt_sts_constants=>cs_uom-km.
     ENDIF.
 
-    zcl_gtt_sts_tools=>get_capa_info(
-      EXPORTING
-        ir_root     = ir_maintab
-        iv_old_data = iv_old_data
-      IMPORTING
-        et_capa     = lt_capa ).
-
-    LOOP AT lt_capa ASSIGNING FIELD-SYMBOL(<fs_capa>).
-
-*     Check FO is deleted or not
-      tu_relevance_check(
-        EXPORTING
-          ir_fo_root = REF #( <fs_capa> )
-        RECEIVING
-          rv_result  = DATA(lv_chk_result) ).
-      IF lv_chk_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-        CONTINUE.
-      ENDIF.
-
-      lv_tsp_id = <fs_capa>-tspid.
-      cs_freight_unit-shipping_type = <fs_capa>-shipping_type.
-      cs_freight_unit-trmodcod      = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = <fs_capa>-trmodcod ).
-      cs_freight_unit-tspid = get_carrier_name( iv_tspid = lv_tsp_id ).
-      EXIT.
-    ENDLOOP.
+    cs_freight_unit-shipping_type = <ls_root>-shipping_type.
+    cs_freight_unit-trmodcod      = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = <ls_root>-trmodcod ).
 
   ENDMETHOD.
 
@@ -700,6 +773,44 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FU IMPLEMENTATION.
       CONDENSE lv_tmp_value NO-GAPS.
       APPEND lv_tmp_value TO cs_freight_unit-tu_last_stop.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD tu_relevance_check.
+
+    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+
+    ASSIGN ir_fo_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    IF <ls_root>-tsp IS INITIAL.
+      DATA(lv_carrier_removed) = abap_true.
+    ENDIF.
+
+    IF ( <ls_root>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_relevant         OR
+         <ls_root>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_started          OR
+         <ls_root>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_cancelled            OR
+         <ls_root>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_ready_for_execution ) .
+
+      DATA(lv_execution_status_changed) = abap_true.
+    ENDIF.
+
+    IF ( <ls_root>-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process AND
+        <ls_root>-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) .
+      DATA(lv_lifecycle_status_changed) = abap_true.
+    ENDIF.
+
+    IF lv_carrier_removed = abap_true OR lv_execution_status_changed = abap_true OR
+       lv_lifecycle_status_changed = abap_true .
+      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+    ENDIF.
+
 
   ENDMETHOD.
 
@@ -957,140 +1068,6 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FU IMPLEMENTATION.
         it_track_id_data_old = lt_track_id_data_old
       CHANGING
         ct_track_id_data     = et_track_id_data ).
-
-  ENDMETHOD.
-
-
-  METHOD check_fo_is_changed.
-
-    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
-
-    DATA(lv_carrier_added) = xsdbool( is_tor_root_before-tsp IS INITIAL AND is_tor_root-tsp IS NOT INITIAL ).
-
-    DATA(lv_execution_status_changed) = xsdbool(
-      ( is_tor_root_before-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_relevant         OR
-        is_tor_root_before-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_started          OR
-        is_tor_root_before-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_cancelled            OR
-        is_tor_root_before-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_ready_for_execution ) AND
-      ( is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_in_execution        OR
-        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_executed            OR
-        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_interrupted         OR
-        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_ready_for_execution OR
-        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_loading_in_process  OR
-        is_tor_root-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_capa_plan_finished  ) ).
-
-    DATA(lv_lifecycle_status_changed) = xsdbool(
-      ( is_tor_root_before-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process AND
-        is_tor_root_before-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) AND
-      ( is_tor_root-lifecycle = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process OR
-        is_tor_root-lifecycle = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) ).
-
-    IF lv_carrier_added = abap_true AND lv_execution_status_changed = abap_true.
-      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-    ELSEIF is_tor_root-tsp IS NOT INITIAL AND lv_execution_status_changed = abap_true.
-      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD check_fo_status_change.
-
-    FIELD-SYMBOLS:
-       <ls_header> TYPE /scmtms/s_em_bo_tor_root.
-
-    DATA:
-      lt_capa_new    TYPE /scmtms/t_em_bo_tor_root,
-      lt_capa_old    TYPE /scmtms/t_em_bo_tor_root,
-      ls_fo_root_new TYPE /scmtms/s_em_bo_tor_root,
-      ls_fo_root_old TYPE /scmtms/s_em_bo_tor_root.
-
-    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
-
-    ASSIGN is_app_object-maintabref->* TO <ls_header>.
-    IF sy-subrc <> 0.
-      RETURN.
-    ENDIF.
-
-    zcl_gtt_sts_tools=>get_capa_info(
-      EXPORTING
-        ir_root     = REF #( <ls_header> )
-        iv_old_data = abap_false
-      IMPORTING
-        et_capa     = lt_capa_new ).
-
-    zcl_gtt_sts_tools=>get_capa_info(
-      EXPORTING
-        ir_root     = REF #( <ls_header> )
-        iv_old_data = abap_true
-      IMPORTING
-        et_capa     = lt_capa_old ).
-
-    LOOP AT lt_capa_new INTO DATA(ls_capa_new).
-      READ TABLE lt_capa_old INTO DATA(ls_capa_old) WITH KEY node_id = ls_capa_new-node_id.
-      IF sy-subrc = 0.
-
-*       Check if the FO is changed from not relevant to relevant
-        check_fo_is_changed(
-          EXPORTING
-            is_tor_root_before = ls_capa_old
-            is_tor_root        = ls_capa_new
-          RECEIVING
-            rv_result          = rv_result ).
-
-        IF rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-          RETURN.
-        ENDIF.
-
-*       Check if the FO is deleted
-        rv_result = zcl_gtt_sts_tools=>check_is_fo_deleted(
-          is_root_new = ls_capa_new
-          is_root_old = ls_capa_old ).
-        IF rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-          RETURN.
-        ENDIF.
-
-      ENDIF.
-
-    ENDLOOP.
-
-  ENDMETHOD.
-
-
-  METHOD tu_relevance_check.
-
-    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
-
-    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
-
-    ASSIGN ir_fo_root->* TO <ls_root>.
-    IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
-
-    IF <ls_root>-tsp IS INITIAL.
-      DATA(lv_carrier_removed) = abap_true.
-    ENDIF.
-
-    IF ( <ls_root>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_relevant         OR
-         <ls_root>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_started          OR
-         <ls_root>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_cancelled            OR
-         <ls_root>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_ready_for_execution ) .
-
-      DATA(lv_execution_status_changed) = abap_true.
-    ENDIF.
-
-    IF ( <ls_root>-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_in_process AND
-        <ls_root>-lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_completed ) .
-      DATA(lv_lifecycle_status_changed) = abap_true.
-    ENDIF.
-
-    IF lv_carrier_removed = abap_true OR lv_execution_status_changed = abap_true OR
-       lv_lifecycle_status_changed = abap_true .
-      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-    ENDIF.
-
 
   ENDMETHOD.
 ENDCLASS.

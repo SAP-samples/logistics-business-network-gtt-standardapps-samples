@@ -261,6 +261,14 @@ public section.
       !ET_PACKAGE_ID_EXT type TT_CONTAINER
     raising
       CX_UDM_MESSAGE .
+  class-methods GET_CONTAINER_NUM_ON_CU
+    importing
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_CONTAINER type TT_CONTAINER
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -608,6 +616,45 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_container_num_on_cu.
+
+    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
+    DATA:
+      lt_item       TYPE /scmtms/t_tor_item_tr_k.
+
+    CLEAR:
+      et_container.
+
+    ASSIGN ir_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lv_before_image) = SWITCH abap_bool( iv_old_data WHEN abap_true THEN abap_true
+                                                          ELSE abap_false ).
+
+    DATA(lr_srvmgr_tor) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    lr_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        it_key          = VALUE #( ( key = <ls_root>-node_id ) )
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-item_tr
+        iv_before_image = lv_before_image
+        iv_fill_data    = abap_true
+      IMPORTING
+        et_data         = lt_item ).
+
+    LOOP AT lt_item INTO DATA(ls_item)
+       WHERE item_cat = /scmtms/if_tor_const=>sc_tor_item_category-tu_resource
+         AND platenumber IS NOT INITIAL.
+      APPEND ls_item-platenumber TO et_container.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
   METHOD get_data_from_text_collection.
 
     FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
@@ -774,7 +821,9 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
   METHOD get_location_type.
 
     CLEAR:rv_loctype.
-    rv_loctype = zif_gtt_sts_constants=>cs_location_type-logistic.
+    IF iv_locno IS NOT INITIAL.
+      rv_loctype = zif_gtt_sts_constants=>cs_location_type-logistic.
+    ENDIF.
 
   ENDMETHOD.
 

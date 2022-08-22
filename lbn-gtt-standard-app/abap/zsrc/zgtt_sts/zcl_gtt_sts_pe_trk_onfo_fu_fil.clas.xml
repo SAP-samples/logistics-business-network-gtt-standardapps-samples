@@ -18,6 +18,18 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Get CAPA Eventmatchkey</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_PE_TRK_ONFO_FU_FIL</CLSNAME>
+     <CMPNAME>GET_CAPA_MATCHKEY</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_PE_TRK_ONFO_FU_FIL</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_PE_TRK_ONFO_FU_FIL</CLSNAME>
+     <CMPNAME>GET_CAPA_MATCHKEY</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙ĈĀƤĀ∙Ĕʋēŋţɱąţċĥķēŷ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

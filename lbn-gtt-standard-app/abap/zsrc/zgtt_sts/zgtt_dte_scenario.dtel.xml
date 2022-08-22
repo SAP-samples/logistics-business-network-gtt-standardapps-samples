@@ -18,6 +18,28 @@
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>
+   <I18N_LANGS>
+    <LANGU>늑</LANGU>
+    <LANGU>닱</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DDTEXT>DTEL ZGTT_DTE_SCENARIO</DDTEXT>
+     <REPTEXT>DTEL ZGTT_DTE_SCENARIO</REPTEXT>
+     <SCRTEXT_S>DTEL&gt;ZGTT_</SCRTEXT_S>
+     <SCRTEXT_M>DTEL&gt;ZGTT_DTE_SCENAR</SCRTEXT_M>
+     <SCRTEXT_L>DTEL ZGTT_DTE_SCENARIO</SCRTEXT_L>
+    </item>
+    <item>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DDTEXT>[ĢŢŢ∙Ţŗąċķįŋğ∙Ŝċēŋąŗįŏ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DDTEXT>
+     <REPTEXT>[ĢŢŢ∙Ţŗąċķįŋğ∙Ŝċēŋąŗįŏ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</REPTEXT>
+     <SCRTEXT_S>[Ŝċēŋąŗįŏ]</SCRTEXT_S>
+     <SCRTEXT_M>[Ţŗąċķįŋğ∙Ŝċēŋąŗįŏ∙]</SCRTEXT_M>
+     <SCRTEXT_L>[ĢŢŢ∙Ţŗąċķįŋğ∙Ŝċēŋąŗįŏ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
    <LONGTEXTS>
     <item>
      <DOKIL>
@@ -25,9 +47,9 @@
       <OBJECT>ZGTT_DTE_SCENARIO</OBJECT>
       <LANGU>E</LANGU>
       <TYP>E</TYP>
-      <VERSION>0013</VERSION>
+      <VERSION>0017</VERSION>
       <MASTERLANG>X</MASTERLANG>
-      <TXTLINES>00017</TXTLINES>
+      <TXTLINES>00019</TXTLINES>
       <DOKSTATE>A</DOKSTATE>
      </DOKIL>
      <HEAD>
@@ -37,7 +59,7 @@
       <TDSPRAS>E</TDSPRAS>
       <TDFORM>S_DOCU_SHOW</TDFORM>
       <TDSTYLE>S_DOCUS1</TDSTYLE>
-      <TDVERSION>00013</TDVERSION>
+      <TDVERSION>00017</TDVERSION>
       <TDLINESIZE>072</TDLINESIZE>
      </HEAD>
      <LINES>
@@ -71,14 +93,14 @@
       </TLINE>
       <TLINE>
        <TDFORMAT>*</TDFORMAT>
-       <TDLINE>•,,Maintain document number such as Bill of Lading(T50), Reference</TDLINE>
+       <TDLINE>•,,Maintain document number such as Bill of Lading (T50), Reference</TDLINE>
       </TLINE>
       <TLINE>
-       <TDLINE>Number of Carrier(T67) on freight order.</TDLINE>
+       <TDLINE>Number of Carrier (T67) on freight order.</TDLINE>
       </TLINE>
       <TLINE>
        <TDFORMAT>*</TDFORMAT>
-       <TDLINE>•,,Maintain document number such as Master Bill of Lading(T52), Master</TDLINE>
+       <TDLINE>•,,Maintain document number such as Master Bill of Lading (T52), Master</TDLINE>
       </TLINE>
       <TLINE>
        <TDLINE>Airway Bill (T55) on freight booking.</TDLINE>
@@ -114,10 +136,24 @@
       </TLINE>
       <TLINE>
        <TDFORMAT>*</TDFORMAT>
-       <TDLINE>Maintain tracked objects such as container ID&lt;(&gt;,&lt;)&gt; external package ID</TDLINE>
+       <TDLINE>Maintain tracked objects such as container ID, external package ID on</TDLINE>
       </TLINE>
       <TLINE>
-       <TDLINE>on freight Unit.</TDLINE>
+       <TDLINE>freight unit.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>*</TDFORMAT>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>*</TDFORMAT>
+       <TDLINE>04: Maintain Tracked Objects on Container Unit</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>*</TDFORMAT>
+       <TDLINE>Maintain tracked objects such as container ID on container unit.</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>*</TDFORMAT>
       </TLINE>
       <TLINE>
        <TDFORMAT>*</TDFORMAT>
@@ -135,6 +171,37 @@
       </TLINE>
       <TLINE>
        <TDFORMAT>AS</TDFORMAT>
+      </TLINE>
+     </LINES>
+    </item>
+    <item>
+     <DOKIL>
+      <ID>DE</ID>
+      <OBJECT>ZGTT_DTE_SCENARIO</OBJECT>
+      <LANGU>늑</LANGU>
+      <TYP>E</TYP>
+      <VERSION>0017</VERSION>
+      <TXTLINES>00002</TXTLINES>
+      <DOKSTATE>A</DOKSTATE>
+     </DOKIL>
+     <HEAD>
+      <TDOBJECT>DOKU</TDOBJECT>
+      <TDNAME>ZGTT_DTE_SCENARIO</TDNAME>
+      <TDID>DE</TDID>
+      <TDSPRAS>늑</TDSPRAS>
+      <TDFORM>S_DOCU_SHOW</TDFORM>
+      <TDSTYLE>S_DOCUS1</TDSTYLE>
+      <TDVERSION>00017</TDVERSION>
+      <TDLINESIZE>072</TDLINESIZE>
+     </HEAD>
+     <LINES>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>Translation object:</TDLINE>
+      </TLINE>
+      <TLINE>
+       <TDFORMAT>AS</TDFORMAT>
+       <TDLINE>DE ZGTT_DTE_SCENARIO</TDLINE>
       </TLINE>
      </LINES>
     </item>

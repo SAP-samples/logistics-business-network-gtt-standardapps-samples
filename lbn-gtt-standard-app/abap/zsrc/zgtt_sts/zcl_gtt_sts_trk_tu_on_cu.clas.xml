@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_CLAS" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOCLASS>
+    <CLSNAME>ZCL_GTT_STS_TRK_TU_ON_CU</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Tracking with tracking unit on CU</DESCRIPT>
+    <STATE>1</STATE>
+    <CLSCCINCL>X</CLSCCINCL>
+    <FIXPT>X</FIXPT>
+    <UNICODE>X</UNICODE>
+   </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TRK_TU_ON_CU</CLSNAME>
+     <CMPNAME>GET_CAPA_DOC</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Capacity Document</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TRK_TU_ON_CU</CLSNAME>
+     <CMPNAME>GET_CAPA_DOC</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_TRK_TU_ON_CU</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TRK_TU_ON_CU</CLSNAME>
+     <CMPNAME>GET_CAPA_DOC</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙Ĉąρąċįţŷ∙Ďŏċűɱēŋţ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

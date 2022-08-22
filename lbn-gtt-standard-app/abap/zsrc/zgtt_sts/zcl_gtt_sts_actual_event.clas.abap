@@ -105,6 +105,15 @@ ENDCLASS.
 CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
 
+  METHOD add_additional_match_key.
+    IF iv_execution_info_source = /scmtms/if_tor_const=>sc_tor_event_source-prop_predecessor.
+      INSERT VALUE #( evtcnt      = iv_evtcnt
+                      param_name  = zif_gtt_sts_ef_constants=>cs_parameter-additional_match_key
+                      param_value = 'TMFU' ) INTO TABLE ct_trackparameters.
+    ENDIF.
+  ENDMETHOD.
+
+
   METHOD check_application_event_source.
 
     FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
@@ -409,6 +418,8 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fo_actevt( ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fo_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_oncu_fo_actevt( ).
             WHEN OTHERS.
           ENDCASE.
 
@@ -420,6 +431,8 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fb_actevt( ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fb_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_oncu_fb_actevt( ).
             WHEN OTHERS.
           ENDCASE.
 
@@ -431,11 +444,11 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfo_fu_actevt( ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_actual_event = NEW zcl_gtt_sts_trk_onfu_fu_actevt( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_actual_event = NEW zcl_gtt_sts_trk_oncu_fu_actevt( ).
             WHEN OTHERS.
           ENDCASE.
         WHEN OTHERS.
-          MESSAGE i009(zsst_gtt) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ELSE.
       CASE <ls_tor_root>-tor_cat.
@@ -446,8 +459,6 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
         WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
           ro_actual_event = NEW zcl_gtt_sts_fu_actual_event( ).
         WHEN OTHERS.
-          MESSAGE i009(zsst_gtt) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ENDIF.
 
@@ -510,18 +521,16 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
     lv_ref_evt = is_execinfo-ref_event_code.
 
-*   If referred event type = null, set to 'ARRIV_DEST'
-    IF lv_ref_evt IS INITIAL.
-      lv_ref_evt = zif_gtt_sts_actual_event~cs_event_id-model-shp_arrival.
-    ENDIF.
-
     IF lv_ref_evt IS NOT INITIAL.
-      lv_locno = cs_tracklocation-locid1.
-      lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
-
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_milestone
                       param_value = lv_ref_evt ) INTO TABLE ct_trackparameters.
+    ENDIF.
+
+    lv_locno = cs_tracklocation-locid1.
+    lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
+
+    IF lv_locno IS NOT INITIAL.
 
       INSERT VALUE #( evtcnt      = iv_evt_cnt
                       param_name  = zif_gtt_sts_ef_constants=>cs_parameter-ref_planned_event_loctype
@@ -682,7 +691,7 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ls_trackingheader-evtid    = get_model_event_id( CONV #( iv_event_code ) ).
 
       DATA(zcl_gtt_sts_tor_actual_event) = get_tor_actual_event_class( <ls_event> ).
-
+      CHECK zcl_gtt_sts_tor_actual_event is BOUND.
       ASSIGN <ls_event>-maintabref->* TO <ls_tor_root>.
       CHECK sy-subrc = 0.
 
@@ -736,14 +745,5 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
-  ENDMETHOD.
-
-
-  METHOD add_additional_match_key.
-    IF iv_execution_info_source = /scmtms/if_tor_const=>sc_tor_event_source-prop_predecessor.
-      INSERT VALUE #( evtcnt      = iv_evtcnt
-                      param_name  = zif_gtt_sts_ef_constants=>cs_parameter-additional_match_key
-                      param_value = 'TMFU' ) INTO TABLE ct_trackparameters.
-    ENDIF.
   ENDMETHOD.
 ENDCLASS.

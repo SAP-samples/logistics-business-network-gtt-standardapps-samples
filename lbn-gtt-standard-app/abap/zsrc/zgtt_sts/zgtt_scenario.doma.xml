@@ -13,24 +13,98 @@
    </DD01V>
    <DD07V_TAB>
     <DD07V>
+     <DOMNAME>ZGTT_SCENARIO</DOMNAME>
      <VALPOS>0001</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>01</DOMVALUE_L>
      <DDTEXT>Maintain Reference Document on Freight Order/Freight Booking</DDTEXT>
     </DD07V>
     <DD07V>
+     <DOMNAME>ZGTT_SCENARIO</DOMNAME>
      <VALPOS>0002</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>02</DOMVALUE_L>
      <DDTEXT>Maintain Tracked Objects on Freight Order/Freight Booking</DDTEXT>
     </DD07V>
     <DD07V>
+     <DOMNAME>ZGTT_SCENARIO</DOMNAME>
      <VALPOS>0003</VALPOS>
      <DDLANGUAGE>E</DDLANGUAGE>
      <DOMVALUE_L>03</DOMVALUE_L>
      <DDTEXT>Maintain Tracked Objects on Freight Unit</DDTEXT>
     </DD07V>
+    <DD07V>
+     <DOMNAME>ZGTT_SCENARIO</DOMNAME>
+     <VALPOS>0004</VALPOS>
+     <DDLANGUAGE>E</DDLANGUAGE>
+     <DOMVALUE_L>04</DOMVALUE_L>
+     <DDTEXT>Maintain Tracked Objects on Container Unit</DDTEXT>
+    </DD07V>
    </DD07V_TAB>
+   <I18N_LANGS>
+    <LANGU>늑</LANGU>
+    <LANGU>닱</LANGU>
+   </I18N_LANGS>
+   <DD01_TEXTS>
+    <item>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DDTEXT>DOMA ZGTT_SCENARIO</DDTEXT>
+    </item>
+    <item>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DDTEXT>[ĢŢŢ∙Ţŗąċķįŋğ∙Ŝċēŋąŗįŏ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DDTEXT>
+    </item>
+   </DD01_TEXTS>
+   <DD07_TEXTS>
+    <item>
+     <VALPOS>0001</VALPOS>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DOMVALUE_L>01</DOMVALUE_L>
+     <DDTEXT>VALU ZGTT_SCENARIO</DDTEXT>
+    </item>
+    <item>
+     <VALPOS>0001</VALPOS>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DOMVALUE_L>01</DOMVALUE_L>
+     <DDTEXT>[Μąįŋţąįŋ∙Řēƒēŗēŋċē∙Ďŏċűɱēŋţ∙ŏŋ∙Ƒŗēįğĥţ∙Ŏŗƌēŗ/Ƒŗēįğĥţ∙Ɓŏŏķį]</DDTEXT>
+    </item>
+    <item>
+     <VALPOS>0002</VALPOS>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DOMVALUE_L>02</DOMVALUE_L>
+     <DDTEXT>VALU ZGTT_SCENARIO</DDTEXT>
+    </item>
+    <item>
+     <VALPOS>0002</VALPOS>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DOMVALUE_L>02</DOMVALUE_L>
+     <DDTEXT>[Μąįŋţąįŋ∙Ţŗąċķēƌ∙Ŏƃĵēċţş∙ŏŋ∙Ƒŗēįğĥţ∙Ŏŗƌēŗ/Ƒŗēįğĥţ∙Ɓŏŏķįŋğ∙]</DDTEXT>
+    </item>
+    <item>
+     <VALPOS>0003</VALPOS>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DOMVALUE_L>03</DOMVALUE_L>
+     <DDTEXT>VALU ZGTT_SCENARIO</DDTEXT>
+    </item>
+    <item>
+     <VALPOS>0003</VALPOS>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DOMVALUE_L>03</DOMVALUE_L>
+     <DDTEXT>[Μąįŋţąįŋ∙Ţŗąċķēƌ∙Ŏƃĵēċţş∙ŏŋ∙Ƒŗēįğĥţ∙Ůŋįţ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DDTEXT>
+    </item>
+    <item>
+     <VALPOS>0004</VALPOS>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DOMVALUE_L>04</DOMVALUE_L>
+     <DDTEXT>VALU ZGTT_SCENARIO</DDTEXT>
+    </item>
+    <item>
+     <VALPOS>0004</VALPOS>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DOMVALUE_L>04</DOMVALUE_L>
+     <DDTEXT>[Μąįŋţąįŋ∙Ţŗąċķēƌ∙Ŏƃĵēċţş∙ŏŋ∙Ĉŏŋţąįŋēŗ∙Ůŋįţ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DDTEXT>
+    </item>
+   </DD07_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

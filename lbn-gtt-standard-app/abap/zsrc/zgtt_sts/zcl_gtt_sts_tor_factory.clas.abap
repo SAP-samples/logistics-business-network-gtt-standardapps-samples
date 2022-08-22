@@ -54,6 +54,8 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
               ro_bo_reader = NEW zcl_gtt_sts_bo_trk_onfo_fo( io_ef_parameters ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_bo_reader = NEW zcl_gtt_sts_bo_trk_onfu_fo( io_ef_parameters ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_bo_reader = NEW zcl_gtt_sts_bo_trk_oncu_fo( io_ef_parameters ).
             WHEN OTHERS.
           ENDCASE.
         WHEN /scmtms/if_tor_const=>sc_tor_category-booking.
@@ -64,10 +66,11 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
               ro_bo_reader = NEW zcl_gtt_sts_bo_trk_onfo_fb( io_ef_parameters ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_bo_reader = NEW zcl_gtt_sts_bo_trk_onfu_fb( io_ef_parameters ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_bo_reader = NEW zcl_gtt_sts_bo_trk_oncu_fb( io_ef_parameters ).
             WHEN OTHERS.
           ENDCASE.
-        WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit OR
-             /scmtms/if_tor_const=>sc_tor_category-transp_unit.
+        WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
           CASE ls_track_conf-track_option.
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-fo_track.
               ro_bo_reader = NEW zcl_gtt_sts_bo_fu_reader( io_ef_parameters ).
@@ -75,11 +78,11 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
               ro_bo_reader = NEW zcl_gtt_sts_bo_trk_onfo_fu( io_ef_parameters ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_bo_reader = NEW zcl_gtt_sts_bo_trk_onfu_fu( io_ef_parameters ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_bo_reader = NEW zcl_gtt_sts_bo_trk_oncu_fu( io_ef_parameters ).
             WHEN OTHERS.
           ENDCASE.
         WHEN OTHERS.
-          MESSAGE i009(zgtt_sts) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ELSE.
       CASE <ls_tor_root>-tor_cat.
@@ -91,8 +94,6 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
              /scmtms/if_tor_const=>sc_tor_category-transp_unit.
           ro_bo_reader = NEW zcl_gtt_sts_bo_fu_reader( io_ef_parameters ).
         WHEN OTHERS.
-          MESSAGE i009(zgtt_sts) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ENDIF.
 
@@ -129,6 +130,8 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
               ro_pe_filler = NEW zcl_gtt_sts_pe_trk_onfo_fo_fil( io_ef_parameters ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_pe_filler = NEW zcl_gtt_sts_pe_trk_onfu_fo_fil( io_ef_parameters ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_pe_filler = NEW zcl_gtt_sts_pe_trk_oncu_fo_fil( io_ef_parameters ).
             WHEN OTHERS.
           ENDCASE.
         WHEN /scmtms/if_tor_const=>sc_tor_category-booking.
@@ -139,10 +142,11 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
               ro_pe_filler = NEW zcl_gtt_sts_pe_trk_onfo_fb_fil( io_ef_parameters ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_pe_filler = NEW zcl_gtt_sts_pe_trk_onfu_fb_fil( io_ef_parameters ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_pe_filler = NEW zcl_gtt_sts_pe_trk_oncu_fb_fil( io_ef_parameters ).
             WHEN OTHERS.
           ENDCASE.
-        WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit OR
-             /scmtms/if_tor_const=>sc_tor_category-transp_unit.
+        WHEN /scmtms/if_tor_const=>sc_tor_category-freight_unit.
           CASE ls_track_conf-track_option.
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-fo_track.
               ro_pe_filler = NEW zcl_gtt_sts_pe_fu_filler( io_ef_parameters ).
@@ -150,11 +154,11 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
               ro_pe_filler = NEW zcl_gtt_sts_pe_trk_onfo_fu_fil( io_ef_parameters ).
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu.
               ro_pe_filler = NEW zcl_gtt_sts_pe_trk_onfu_fu_fil( io_ef_parameters ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu.
+              ro_pe_filler = NEW zcl_gtt_sts_pe_trk_oncu_fu_fil( io_ef_parameters ).
             WHEN OTHERS.
           ENDCASE.
         WHEN OTHERS.
-          MESSAGE i009(zgtt_sts) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ELSE.
       CASE <ls_tor_root>-tor_cat.
@@ -166,8 +170,6 @@ CLASS ZCL_GTT_STS_TOR_FACTORY IMPLEMENTATION.
              /scmtms/if_tor_const=>sc_tor_category-transp_unit.
           ro_pe_filler = NEW zcl_gtt_sts_pe_fu_filler( io_ef_parameters ).
         WHEN OTHERS.
-          MESSAGE i009(zgtt_sts) WITH <ls_tor_root>-tor_cat INTO lv_dummy ##needed.
-          zcl_gtt_sts_tools=>throw_exception( ).
       ENDCASE.
     ENDIF.
 

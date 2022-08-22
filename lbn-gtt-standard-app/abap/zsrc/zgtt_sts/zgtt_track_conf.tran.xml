@@ -21,6 +21,16 @@
     <TCODE>ZGTT_TRACK_CONF</TCODE>
     <PARAM>/*SM30 VIEWNAME=ZGTT_TRACK_CONF;SHOW=X;</PARAM>
    </TSTCP>
+   <I18N_TPOOL>
+    <TSTCT>
+     <SPRSL>늑</SPRSL>
+     <TTEXT>TRAN ZGTT_TRACK_CONF</TTEXT>
+    </TSTCT>
+    <TSTCT>
+     <SPRSL>닱</SPRSL>
+     <TTEXT>[Μąįŋţąįŋ∙Ţŗąċķįŋğ∙Ůŋįţ∙Ŝċēŋąŗįŏş∙∙]</TTEXT>
+    </TSTCT>
+   </I18N_TPOOL>
   </asx:values>
  </asx:abap>
 </abapGit>

@@ -50,6 +50,9 @@ FUNCTION zgtt_sts_trk_tu.
             WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_fu. "Tracking with tracking unit on FU
               lv_tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
               lo_tu_info = NEW zcl_gtt_sts_trk_tu_on_fu( ).
+            WHEN zif_gtt_sts_constants=>cs_tracking_scenario-tu_on_cu. "Maintain Tracked Objects on Container Unit
+              lv_tor_cat = /scmtms/if_tor_const=>sc_tor_category-transp_unit.
+              lo_tu_info = NEW zcl_gtt_sts_trk_tu_on_cu( ).
             WHEN OTHERS.
           ENDCASE.
         ENDIF.
@@ -62,7 +65,7 @@ FUNCTION zgtt_sts_trk_tu.
         REPLACE ALL OCCURRENCES OF 'FU' IN lv_aotype WITH 'TU'.
       ENDIF.
 
-      CHECK lo_tu_info IS NOT INITIAL AND lv_aotype IS NOT INITIAL.
+      CHECK lo_tu_info IS BOUND AND lv_aotype IS NOT INITIAL.
 
       lo_tu_info->initiate( it_tor_root = it_tor_root_sstring
                             iv_tor_cat  = lv_tor_cat

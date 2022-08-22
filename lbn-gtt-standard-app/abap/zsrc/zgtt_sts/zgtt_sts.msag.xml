@@ -81,6 +81,144 @@
      <TEXT>Configuration not found</TEXT>
     </T100>
    </T100>
+   <I18N_LANGS>
+    <LANGU>늑</LANGU>
+    <LANGU>닱</LANGU>
+   </I18N_LANGS>
+   <T100T>
+    <T100T>
+     <SPRSL>늑</SPRSL>
+     <ARBGB>ZGTT_STS</ARBGB>
+     <STEXT>MSAG ZGTT_STS</STEXT>
+    </T100T>
+    <T100T>
+     <SPRSL>닱</SPRSL>
+     <ARBGB>ZGTT_STS</ARBGB>
+     <STEXT>[ŜŜŢ∙ĢŢŢ∙Μēşşąğē∙Ĉĺąşş∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</STEXT>
+    </T100T>
+   </T100T>
+   <T100_TEXTS>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>000</MSGNR>
+     <TEXT>MESS ZGTT_STS            000</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>001</MSGNR>
+     <TEXT>MESS ZGTT_STS            001</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>002</MSGNR>
+     <TEXT>MESS ZGTT_STS            002</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>003</MSGNR>
+     <TEXT>MESS ZGTT_STS            003</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>004</MSGNR>
+     <TEXT>MESS ZGTT_STS            004</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>005</MSGNR>
+     <TEXT>MESS ZGTT_STS            005</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>006</MSGNR>
+     <TEXT>MESS ZGTT_STS            006</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>007</MSGNR>
+     <TEXT>MESS ZGTT_STS            007</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>008</MSGNR>
+     <TEXT>MESS ZGTT_STS            008</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>009</MSGNR>
+     <TEXT>MESS ZGTT_STS            009</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>010</MSGNR>
+     <TEXT>MESS ZGTT_STS            010</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>011</MSGNR>
+     <TEXT>MESS ZGTT_STS            011</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>000</MSGNR>
+     <TEXT>[&amp;1∙&amp;2∙&amp;3∙&amp;4∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>001</MSGNR>
+     <TEXT>[Ƥŗŏʋįƌēƌ∙şţŗűċţűŗē∙&amp;2∙ƌŏēş∙ŋŏţ∙ċŏŋţąįŋ∙ƒįēĺƌ∙&amp;1∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>002</MSGNR>
+     <TEXT>[Ƥŗŏʋįƌēƌ∙ŗēƒēŗēŋċē∙&amp;1∙įş∙ŋŏţ∙ƃŏűŋƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>003</MSGNR>
+     <TEXT>[Ĕŗŗŏŗ∙ŏŋ∙ğēţţįŋğ∙şŷşţēɱ∙ţįɱēžŏŋē∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>004</MSGNR>
+     <TEXT>[Ţŗąċķ∙ĬĎ∙ƒűŋċţįŏŋ∙įş∙ŋŏţ∙įɱρĺēɱēŋţēƌ∙įŋ∙&amp;1∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>005</MSGNR>
+     <TEXT>[Řēċŏŗƌ∙įş∙ŋŏţ∙ƒŏűŋƌ∙įŋ∙&amp;1∙ƒŏŗ∙ķēŷ∙&amp;2∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>006</MSGNR>
+     <TEXT>[ĢŢŢ∙įş∙ŋŏţ∙ēŋąƃĺēƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>007</MSGNR>
+     <TEXT>[Ļŏğįċąĺ∙şŷşţēɱ∙įş∙ŋŏţ∙ƌēƒįŋēƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>008</MSGNR>
+     <TEXT>[Ńŏ∙ŜŜŢ∙ēχţŗąċţŏŗş∙ąŗē∙ƒŏűŋƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>009</MSGNR>
+     <TEXT>[Ƒąċţŏŗŷ∙ƌŏēş∙ŋŏţ∙ēχįşţş∙ƒŏŗ∙ŢŎŘ∙ţŷρē∙&amp;1∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>010</MSGNR>
+     <TEXT>[Āşşįğŋɱēŋţ∙ƒąįĺēƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>011</MSGNR>
+     <TEXT>[Ĉŏŋƒįğűŗąţįŏŋ∙ŋŏţ∙ƒŏűŋƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+   </T100_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

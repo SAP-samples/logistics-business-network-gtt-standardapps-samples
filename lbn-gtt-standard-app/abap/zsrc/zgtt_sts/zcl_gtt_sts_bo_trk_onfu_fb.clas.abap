@@ -702,6 +702,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
         iv_old_data        = iv_old_data
       CHANGING
         cs_freight_booking = <ls_freight_booking> ).
+
     IF <ls_freight_booking>-tu_line_no IS INITIAL.
       APPEND '' TO <ls_freight_booking>-tu_line_no.
     ENDIF.

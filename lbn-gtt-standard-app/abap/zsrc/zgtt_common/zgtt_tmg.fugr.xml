@@ -376,6 +376,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_AOTYPE_RST-RST_ID</NAME>
+       <TEXT>Restr.ID________________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>040</LENGTH>
@@ -392,6 +393,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_AOTYPE_RST-RST_POS</NAME>
+       <TEXT>Restr.Pos_______________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>
        <LENGTH>040</LENGTH>
@@ -408,6 +410,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_AOTYPE_RST-RST_OPTION</NAME>
+       <TEXT>Option__________________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>003</COLUMN>
        <LENGTH>040</LENGTH>
@@ -424,6 +427,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_AOTYPE_RST-RST_SIGN</NAME>
+       <TEXT>Sign____________________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>004</COLUMN>
        <LENGTH>040</LENGTH>
@@ -440,6 +444,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_AOTYPE_RST-RST_LOW</NAME>
+       <TEXT>Application_Obj.Type____________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>040</LENGTH>
@@ -456,6 +461,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_AOTYPE_RST-RST_HIGH</NAME>
+       <TEXT>Application_Obj.Type____________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>006</COLUMN>
        <LENGTH>040</LENGTH>
@@ -486,6 +492,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_AOTYPE_RST-RST_ID</NAME>
+       <TEXT>__________</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>010</LENGTH>
@@ -503,6 +510,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_AOTYPE_RST-RST_POS</NAME>
+       <TEXT>___</TEXT>
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>
        <LENGTH>003</LENGTH>
@@ -521,6 +529,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_AOTYPE_RST-RST_OPTION</NAME>
+       <TEXT>__</TEXT>
        <DROPDOWN>L</DROPDOWN>
        <LINE>001</LINE>
        <COLUMN>003</COLUMN>
@@ -539,6 +548,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_AOTYPE_RST-RST_SIGN</NAME>
+       <TEXT>_</TEXT>
        <DROPDOWN>L</DROPDOWN>
        <LINE>001</LINE>
        <COLUMN>004</COLUMN>
@@ -557,6 +567,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_AOTYPE_RST-RST_LOW</NAME>
+       <TEXT>____________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>020</LENGTH>
@@ -573,6 +584,7 @@
        <CONT_NAME>TCTRL_ZGTT_AOTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_AOTYPE_RST-RST_HIGH</NAME>
+       <TEXT>____________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>006</COLUMN>
        <LENGTH>020</LENGTH>
@@ -783,6 +795,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_EVTYPE_RST-RST_ID</NAME>
+       <TEXT>Restr.ID________________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>040</LENGTH>
@@ -799,6 +812,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_EVTYPE_RST-RST_POS</NAME>
+       <TEXT>Restr.Pos_______________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>
        <LENGTH>040</LENGTH>
@@ -815,6 +829,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_EVTYPE_RST-RST_OPTION</NAME>
+       <TEXT>Option__________________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>003</COLUMN>
        <LENGTH>040</LENGTH>
@@ -831,6 +846,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_EVTYPE_RST-RST_SIGN</NAME>
+       <TEXT>Sign____________________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>004</COLUMN>
        <LENGTH>040</LENGTH>
@@ -847,6 +863,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_EVTYPE_RST-RST_LOW</NAME>
+       <TEXT>Event_Type______________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>040</LENGTH>
@@ -863,6 +880,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_EVTYPE_RST-RST_HIGH</NAME>
+       <TEXT>Event_Type______________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>006</COLUMN>
        <LENGTH>040</LENGTH>
@@ -893,6 +911,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_EVTYPE_RST-RST_ID</NAME>
+       <TEXT>__________</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>010</LENGTH>
@@ -910,6 +929,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_EVTYPE_RST-RST_POS</NAME>
+       <TEXT>___</TEXT>
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>
        <LENGTH>003</LENGTH>
@@ -928,6 +948,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_EVTYPE_RST-RST_OPTION</NAME>
+       <TEXT>__</TEXT>
        <DROPDOWN>L</DROPDOWN>
        <LINE>001</LINE>
        <COLUMN>003</COLUMN>
@@ -946,6 +967,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_EVTYPE_RST-RST_SIGN</NAME>
+       <TEXT>_</TEXT>
        <DROPDOWN>L</DROPDOWN>
        <LINE>001</LINE>
        <COLUMN>004</COLUMN>
@@ -964,6 +986,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_EVTYPE_RST-RST_LOW</NAME>
+       <TEXT>____________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>005</COLUMN>
        <LENGTH>020</LENGTH>
@@ -980,6 +1003,7 @@
        <CONT_NAME>TCTRL_ZGTT_EVTYPE_RST</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_EVTYPE_RST-RST_HIGH</NAME>
+       <TEXT>____________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>006</COLUMN>
        <LENGTH>020</LENGTH>

@@ -27,12 +27,30 @@
      <ENTRIES>
       <SOTR_TEXT>
        <CONCEPT>288023AFAE181EDBA1E496EF6F52F8F9</CONCEPT>
+       <LANGU>늑</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>SOTR *288023AFAE181EDBA1E496EF6F52F8F9</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>288023AFAE181EDBA1E496EF6F52F8F9</CONCEPT>
        <LANGU>E</LANGU>
        <LFD_NUM>0001</LFD_NUM>
        <FLAG_CNTXT>X</FLAG_CNTXT>
        <STATUS>R</STATUS>
        <LENGTH>255</LENGTH>
        <TEXT>Send TOR Data</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>288023AFAE181EDBA1E496EF6F52F8F9</CONCEPT>
+       <LANGU>닱</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>[Ŝēŋƌ∙ŢŎŘ∙Ďąţą∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
       </SOTR_TEXT>
      </ENTRIES>
     </item>
@@ -46,12 +64,30 @@
      <ENTRIES>
       <SOTR_TEXT>
        <CONCEPT>288023AFAE181EDBA1E4B727B865D9BD</CONCEPT>
+       <LANGU>늑</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>SOTR *288023AFAE181EDBA1E4B727B865D9BD</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>288023AFAE181EDBA1E4B727B865D9BD</CONCEPT>
        <LANGU>E</LANGU>
        <LFD_NUM>0001</LFD_NUM>
        <FLAG_CNTXT>X</FLAG_CNTXT>
        <STATUS>R</STATUS>
        <LENGTH>255</LENGTH>
        <TEXT>Send TOR Data</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>288023AFAE181EDBA1E4B727B865D9BD</CONCEPT>
+       <LANGU>닱</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>[Ŝēŋƌ∙ŢŎŘ∙Ďąţą∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
       </SOTR_TEXT>
      </ENTRIES>
     </item>
