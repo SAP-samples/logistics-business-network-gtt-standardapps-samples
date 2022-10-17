@@ -5,29 +5,61 @@ class ZCL_GTT_STS_TOOLS definition
 public section.
 
   types:
-    TT_CONF TYPE TABLE of ZGTT_TRACK_CONF .
+    tt_conf TYPE TABLE OF zgtt_track_conf .
   types:
-    TT_CONTAINER type TABLE of /SCMTMS/PACKAGE_ID .
+    tt_container TYPE TABLE OF /scmtms/package_id .
   types TS_CONTAINER type /SCMTMS/PACKAGE_ID .
   types:
     BEGIN OF ts_capa_stop,
-      line_no    TYPE i,
-      tor_id     TYPE /scmtms/tor_id,
-      first_stop TYPE /saptrx/loc_id_2,
-      last_stop  TYPE /saptrx/loc_id_2,
-    END OF ts_capa_stop .
+        line_no    TYPE i,
+        tor_id     TYPE /scmtms/tor_id,
+        first_stop TYPE /saptrx/loc_id_2,
+        last_stop  TYPE /saptrx/loc_id_2,
+      END OF ts_capa_stop .
   types:
     tt_capa_stop TYPE TABLE OF ts_capa_stop .
   types:
     tt_req_stop TYPE TABLE OF ts_capa_stop .
   types:
     BEGIN OF ts_txc_key_mapping,
-      root_key TYPE /bobf/obm_node_key,
-      text_key TYPE /bobf/obm_node_key,
-      text_asc TYPE /bobf/obm_assoc_key,
-      cont_key TYPE /bobf/obm_node_key,
-      cont_asc TYPE /bobf/obm_assoc_key,
-  END OF ts_txc_key_mapping .
+        root_key TYPE /bobf/obm_node_key,
+        text_key TYPE /bobf/obm_node_key,
+        text_asc TYPE /bobf/obm_assoc_key,
+        cont_key TYPE /bobf/obm_node_key,
+        cont_asc TYPE /bobf/obm_assoc_key,
+      END OF ts_txc_key_mapping .
+  types:
+    BEGIN OF ts_req2capa_info,
+        req_no              TYPE /scmtms/tor_id,
+        req_key             TYPE /bobf/conf_key,
+        req_stop_key        TYPE /bobf/conf_key,
+        req_assgn_stop_key  TYPE /bobf/conf_key,
+        req_log_locid       TYPE /scmtms/location_id,
+        cap_no              TYPE /scmtms/tor_id,
+        cap_key             TYPE /bobf/conf_key,
+        cap_stop_key        TYPE /bobf/conf_key,
+        cap_plan_trans_time TYPE /scmtms/stop_plan_date,
+        cap_seq             TYPE numc04,
+      END OF ts_req2capa_info .
+  types:
+    BEGIN OF ts_cap_stop_seq,
+        cap_no       TYPE /scmtms/tor_id,
+        cap_key      TYPE /bobf/conf_key,
+        cap_stop_key TYPE /bobf/conf_key,
+        seq          TYPE numc04,
+      END OF ts_cap_stop_seq .
+  types:
+    BEGIN OF ts_capa_list,
+        cap_no     TYPE /scmtms/tor_id,
+        first_stop TYPE char50,
+        last_stop  TYPE char50,
+      END OF ts_capa_list .
+  types:
+    tt_req2capa_info TYPE TABLE OF ts_req2capa_info .
+  types:
+    tt_cap_stop_seq  TYPE TABLE OF ts_cap_stop_seq .
+  types:
+    tt_capa_list TYPE TABLE OF ts_capa_list .
 
   constants:
     BEGIN OF cs_condition,
@@ -269,6 +301,41 @@ public section.
       !ET_CONTAINER type TT_CONTAINER
     raising
       CX_UDM_MESSAGE .
+  class-methods GET_REQCAPA_INFO_MUL
+    importing
+      !IR_ROOT type ref to DATA optional
+      !IT_ROOT_KEY type /BOBF/T_FRW_KEY optional
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_REQ2CAPA_INFO type TT_REQ2CAPA_INFO
+      !ET_CAPA_LIST type TT_CAPA_LIST
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_CAPA_INFO_MUL
+    importing
+      !IR_ROOT type ref to DATA optional
+      !IT_ROOT_KEY type /BOBF/T_FRW_KEY optional
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_CAPA type /SCMTMS/T_EM_BO_TOR_ROOT
+      !ET_CAPA_STOP type /SCMTMS/T_EM_BO_TOR_STOP
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_REQ_INFO_MUL
+    importing
+      !IR_ROOT type ref to DATA optional
+      !IT_ROOT_KEY type /BOBF/T_FRW_KEY optional
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_REQ type /SCMTMS/T_EM_BO_TOR_ROOT
+      !ET_REQ_STOP type /SCMTMS/T_EM_BO_TOR_STOP
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_CAPA2REQ_LINK_MUL
+    importing
+      !IT_ROOT_KEY type /BOBF/T_FRW_KEY
+    exporting
+      !ET_KEY_LINK type /BOBF/T_FRW_KEY_LINK .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -375,6 +442,59 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_capa2req_link_mul.
+
+    DATA:
+      lo_srvmgr_tor   TYPE REF TO /bobf/if_tra_service_manager,
+      lt_root_key_tmp TYPE /bobf/t_frw_key,
+      lt_req_key      TYPE /bobf/t_frw_key,
+      lt_req_tmp      TYPE /scmtms/t_tor_root_k,
+      lt_req          TYPE /scmtms/t_tor_root_k,
+      lt_link_tmp     TYPE /bobf/t_frw_key_link.
+
+    CLEAR:
+      et_key_link.
+
+    lo_srvmgr_tor = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+    lt_root_key_tmp = it_root_key.
+
+*   Find Capacity and requirement document links
+    DO 10 TIMES.
+
+      CLEAR:
+        lt_req_tmp,
+        lt_req_key,
+        lt_link_tmp.
+
+*     Get requirement information
+      lo_srvmgr_tor->retrieve_by_association(
+        EXPORTING
+          iv_node_key    = /scmtms/if_tor_c=>sc_node-root
+          it_key         = lt_root_key_tmp
+          iv_association = /scmtms/if_tor_c=>sc_association-root-req_tor
+          iv_fill_data   = abap_true
+        IMPORTING
+          et_data        = lt_req_tmp
+          et_target_key  = lt_req_key
+          et_key_link    = lt_link_tmp ).
+
+      CLEAR lt_root_key_tmp.
+      lt_root_key_tmp = CORRESPONDING #( lt_req_key ).
+
+*     Check the document is FU or not
+      READ TABLE lt_req_tmp TRANSPORTING NO FIELDS
+        WITH TABLE KEY tor_cat COMPONENTS tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
+
+      APPEND LINES OF lt_link_tmp TO et_key_link.
+      EXIT."Exit the loop
+    ENDDO.
+
+  ENDMETHOD.
+
+
   METHOD get_capa_info.
 
     FIELD-SYMBOLS:
@@ -404,6 +524,91 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
         et_data         = lt_capa ).
 
     et_capa = CORRESPONDING #( lt_capa MAPPING node_id = key tor_root_node = root_key ).
+
+  ENDMETHOD.
+
+
+  METHOD get_capa_info_mul.
+
+    FIELD-SYMBOLS:
+      <ls_root>  TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lo_srvmgr_tor    TYPE REF TO /bobf/if_tra_service_manager,
+      lt_root_key      TYPE /bobf/t_frw_key,
+      lt_root_key_tmp  TYPE /bobf/t_frw_key,
+      lt_capa_key      TYPE /bobf/t_frw_key,
+      lt_capa_tmp      TYPE /scmtms/t_tor_root_k,
+      lt_capa_stop_tmp TYPE /scmtms/t_tor_stop_k,
+      lt_capa          TYPE /scmtms/t_tor_root_k,
+      lt_capa_stop     TYPE /scmtms/t_tor_stop_k.
+
+    CLEAR:
+      et_capa,
+      et_capa_stop.
+
+    IF it_root_key IS NOT INITIAL.
+      lt_root_key = it_root_key.
+    ELSE.
+      ASSIGN ir_root->* TO <ls_root>.
+      IF sy-subrc <> 0.
+        MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+        zcl_gtt_sts_tools=>throw_exception( ).
+      ENDIF.
+      lt_root_key = VALUE #( ( key = <ls_root>-node_id ) ).
+    ENDIF.
+
+    lo_srvmgr_tor = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+    lt_root_key_tmp = lt_root_key.
+
+*   Find capacity document
+    DO 10 TIMES.
+
+      CLEAR:
+        lt_capa_tmp,
+        lt_capa_stop_tmp,
+        lt_capa_key.
+
+*     Get Capacity information
+      lo_srvmgr_tor->retrieve_by_association(
+        EXPORTING
+          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+          it_key          = lt_root_key_tmp
+          iv_association  = /scmtms/if_tor_c=>sc_association-root-capa_tor
+          iv_fill_data    = abap_true
+          iv_before_image = iv_old_data
+        IMPORTING
+          et_data         = lt_capa_tmp
+          et_target_key   = lt_capa_key ).
+
+      CLEAR lt_root_key_tmp.
+      lt_root_key_tmp = CORRESPONDING #( lt_capa_key ).
+
+*     Check the document is FO or not
+      READ TABLE lt_capa_tmp TRANSPORTING NO FIELDS
+        WITH TABLE KEY tor_cat COMPONENTS tor_cat = /scmtms/if_tor_const=>sc_tor_category-active.
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
+
+*     Get Capacity Stop information
+      lo_srvmgr_tor->retrieve_by_association(
+        EXPORTING
+          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+          it_key          = lt_root_key_tmp
+          iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+          iv_fill_data    = abap_true
+          iv_before_image = iv_old_data
+        IMPORTING
+          et_data         = lt_capa_stop_tmp ).
+
+      APPEND LINES OF lt_capa_tmp TO lt_capa.
+      APPEND LINES OF lt_capa_stop_tmp TO lt_capa_stop.
+      EXIT."Exit the loop
+    ENDDO.
+
+    et_capa      = CORRESPONDING #( lt_capa MAPPING node_id = key tor_root_node = root_key ).
+    et_capa_stop = CORRESPONDING #( lt_capa_stop MAPPING node_id = key parent_node_id = parent_key ).
 
   ENDMETHOD.
 
@@ -1112,6 +1317,237 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_reqcapa_info_mul.
+
+    FIELD-SYMBOLS:
+      <ls_root>  TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lo_srvmgr_tor        TYPE REF TO /bobf/if_tra_service_manager,
+      lt_root_key          TYPE /bobf/t_frw_key,
+      lt_root_key_tmp      TYPE /bobf/t_frw_key,
+      lt_req_stop          TYPE /scmtms/t_tor_stop_k,
+      lt_capa_stop_seq     TYPE TABLE OF /scmtms/s_pln_stop_seq_d,
+      lt_capa_stop_seq_tmp TYPE /scmtms/t_pln_stop_seq_d,
+      lt_capa              TYPE TABLE OF /scmtms/s_tor_root_k,
+      lt_capa_tmp          TYPE /scmtms/t_tor_root_k,
+      lt_capa_stop         TYPE TABLE OF /scmtms/s_tor_stop_k,
+      lt_capa_stop_tmp     TYPE /scmtms/t_tor_stop_k,
+      lt_capa_key          TYPE /bobf/t_frw_key,
+      lv_key               TYPE /bobf/conf_key,
+      lt_req2capa_info     TYPE tt_req2capa_info,
+      ls_req2capa_info     TYPE ts_req2capa_info,
+      lt_cap_stop_seq      TYPE tt_cap_stop_seq,
+      ls_cap_stop_seq      TYPE ts_cap_stop_seq,
+      lt_capa_stop_seq_new TYPE /scmtms/t_pln_stop_seq,
+      lv_order             TYPE numc04,
+      lv_counter           TYPE int4,
+      lt_capa_list         TYPE tt_capa_list,
+      ls_capa_list         TYPE ts_capa_list.
+
+    CLEAR:
+      et_req2capa_info,
+      et_capa_list.
+
+    IF it_root_key IS NOT INITIAL.
+      lt_root_key = it_root_key.
+    ELSE.
+      ASSIGN ir_root->* TO <ls_root>.
+      IF sy-subrc <> 0.
+        MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+        zcl_gtt_sts_tools=>throw_exception( ).
+      ENDIF.
+      lt_root_key = VALUE #( ( key = <ls_root>-node_id ) ).
+    ENDIF.
+
+    lo_srvmgr_tor = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+    lt_root_key_tmp = lt_root_key.
+
+    lo_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+        it_key          = lt_root_key
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+        iv_fill_data    = abap_true
+        iv_before_image = iv_old_data
+      IMPORTING
+        et_data         = lt_req_stop ).
+
+*   1)Find capacity document
+    DO 10 TIMES.
+
+      CLEAR:
+        lt_capa_key,
+        lt_capa_tmp,
+        lt_capa_stop_tmp,
+        lt_capa_stop_seq_tmp.
+
+      lo_srvmgr_tor->retrieve_by_association(
+        EXPORTING
+          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+          it_key          = lt_root_key_tmp
+          iv_association  = /scmtms/if_tor_c=>sc_association-root-capa_tor
+          iv_fill_data    = abap_true
+          iv_before_image = iv_old_data
+        IMPORTING
+          et_data         = lt_capa_tmp
+          et_target_key   = lt_capa_key ).
+
+      CLEAR lt_root_key_tmp.
+      lt_root_key_tmp = CORRESPONDING #( lt_capa_key ).
+
+*     Capacity document is not found
+      IF lt_root_key_tmp IS INITIAL.
+        EXIT."exit the loop
+      ENDIF.
+
+      lo_srvmgr_tor->retrieve_by_association(
+        EXPORTING
+          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+          it_key          = lt_root_key_tmp
+          iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+          iv_fill_data    = abap_true
+          iv_before_image = iv_old_data
+        IMPORTING
+          et_data         = lt_capa_stop_tmp ).
+
+      /scmtms/cl_tor_helper_stop=>get_stop_sequence(
+        EXPORTING
+          it_root_key     = lt_root_key_tmp
+          iv_before_image = iv_old_data
+        IMPORTING
+          et_stop_seq_d   = lt_capa_stop_seq_tmp ).
+
+      APPEND LINES OF lt_capa_tmp TO lt_capa.
+      APPEND LINES OF lt_capa_stop_tmp TO lt_capa_stop.
+      APPEND LINES OF lt_capa_stop_seq_tmp TO lt_capa_stop_seq.
+
+*     Freight order is found,then exit the loop
+      READ TABLE lt_capa_tmp TRANSPORTING NO FIELDS
+        WITH TABLE KEY tor_cat COMPONENTS tor_cat = /scmtms/if_tor_const=>sc_tor_category-active.
+      IF sy-subrc = 0.
+        EXIT."exit the loop
+      ENDIF.
+
+    ENDDO.
+
+    CLEAR:
+      lt_capa_tmp,
+      lt_capa_stop_tmp,
+      lt_capa_stop_seq_tmp.
+
+    SORT lt_capa BY key.
+    SORT lt_capa_stop BY key.
+    SORT lt_capa_stop_seq BY root_key seq_id.
+
+*   2)Build requirement document and capacity document relationship table
+    LOOP AT lt_req_stop INTO DATA(ls_req_stop).
+      lv_key = ls_req_stop-assgn_stop_key.
+
+      DO 10 TIMES.
+        READ TABLE lt_capa_stop INTO DATA(ls_capa_stop)
+          WITH KEY key = lv_key.
+        IF sy-subrc = 0.
+          lv_key = ls_capa_stop-assgn_stop_key.
+          READ TABLE lt_capa INTO DATA(ls_capa)
+            WITH KEY key = ls_capa_stop-parent_key.
+          IF sy-subrc = 0 AND ls_capa-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active.
+
+            ls_req2capa_info-req_key = ls_req_stop-parent_key.
+            ls_req2capa_info-req_no = <ls_root>-tor_id.
+            ls_req2capa_info-req_stop_key = ls_req_stop-key.
+            ls_req2capa_info-req_assgn_stop_key = ls_req_stop-assgn_stop_key.
+            ls_req2capa_info-req_log_locid = ls_req_stop-log_locid.
+            ls_req2capa_info-cap_no  = ls_capa-tor_id.
+            ls_req2capa_info-cap_key = ls_capa_stop-parent_key.
+            ls_req2capa_info-cap_stop_key = ls_capa_stop-key.
+            ls_req2capa_info-cap_plan_trans_time = ls_capa_stop-plan_trans_time.
+            APPEND ls_req2capa_info TO lt_req2capa_info.
+            CLEAR ls_req2capa_info.
+            EXIT.
+          ENDIF.
+        ELSE.
+          EXIT.
+        ENDIF.
+      ENDDO.
+    ENDLOOP.
+
+*   3)Prepare capacity document stop sequence table
+    LOOP AT lt_capa_stop_seq INTO DATA(ls_capa_stop_seq).
+      CLEAR:
+       ls_capa,
+       lt_capa_stop_seq_new.
+
+      lv_order = 1.
+
+      APPEND LINES OF ls_capa_stop_seq-stop_seq TO lt_capa_stop_seq_new.
+
+      READ TABLE lt_capa INTO ls_capa
+         WITH KEY key = ls_capa_stop_seq-root_key.
+
+      LOOP AT lt_capa_stop_seq_new INTO DATA(ls_capa_stop_seq_new).
+
+        ls_cap_stop_seq-cap_no = ls_capa-tor_id.
+        ls_cap_stop_seq-cap_key  = ls_capa_stop_seq_new-root_key.
+
+        READ TABLE ls_capa_stop_seq-stop_map INTO DATA(ls_capa_stop_map)
+          WITH KEY tabix = ls_capa_stop_seq_new-seq_num.
+        IF sy-subrc = 0.
+          ls_cap_stop_seq-cap_stop_key = ls_capa_stop_seq_new-stop_key.
+        ENDIF.
+
+        IF NOT zcl_gtt_sts_tools=>is_odd( ls_capa_stop_seq_new-seq_num ).
+          lv_order += 1.
+        ENDIF.
+        ls_cap_stop_seq-seq = lv_order.
+        APPEND ls_cap_stop_seq TO lt_cap_stop_seq.
+        CLEAR ls_cap_stop_seq.
+
+      ENDLOOP.
+    ENDLOOP.
+
+*   4)Summarize all of the data
+    LOOP AT lt_req2capa_info ASSIGNING FIELD-SYMBOL(<fs_req2capa_info>).
+      CLEAR ls_cap_stop_seq.
+      READ TABLE lt_cap_stop_seq INTO ls_cap_stop_seq
+        WITH KEY cap_no       = <fs_req2capa_info>-cap_no
+                 cap_key      = <fs_req2capa_info>-cap_key
+                 cap_stop_key = <fs_req2capa_info>-cap_stop_key.
+      IF sy-subrc = 0.
+        <fs_req2capa_info>-cap_seq = ls_cap_stop_seq-seq.
+      ENDIF.
+    ENDLOOP.
+
+    SORT lt_req2capa_info BY cap_no
+                             cap_seq.
+
+*   5)Prepare capacity document list
+    LOOP AT lt_req2capa_info INTO ls_req2capa_info
+      GROUP BY ls_req2capa_info-cap_no ASSIGNING FIELD-SYMBOL(<lt_capa_group>).
+      CLEAR:
+        lv_counter,
+        ls_capa_list.
+
+      LOOP AT GROUP <lt_capa_group> ASSIGNING FIELD-SYMBOL(<ls_capa_group>).
+        lv_counter = lv_counter + 1.
+        IF lv_counter = 1.
+          ls_capa_list-cap_no = |{ <ls_capa_group>-cap_no ALPHA = OUT }|.
+          ls_capa_list-first_stop = |{ ls_capa_list-cap_no }{ <ls_capa_group>-cap_seq }|.
+          CONDENSE ls_capa_list-first_stop NO-GAPS.
+        ENDIF.
+        ls_capa_list-last_stop = |{ ls_capa_list-cap_no }{ <ls_capa_group>-cap_seq }|.
+        CONDENSE ls_capa_list-last_stop NO-GAPS.
+      ENDLOOP.
+      APPEND ls_capa_list TO lt_capa_list.
+    ENDLOOP.
+
+*   6)Output the result
+    et_req2capa_info = lt_req2capa_info.
+    et_capa_list = lt_capa_list.
+
+  ENDMETHOD.
+
+
   METHOD get_req_info.
 
     FIELD-SYMBOLS:
@@ -1141,6 +1577,91 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
         et_data         = lt_req ).
 
     et_req_tor = CORRESPONDING #( lt_req MAPPING node_id = key tor_root_node = root_key ).
+
+  ENDMETHOD.
+
+
+  METHOD get_req_info_mul.
+
+    FIELD-SYMBOLS:
+      <ls_root>  TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lo_srvmgr_tor   TYPE REF TO /bobf/if_tra_service_manager,
+      lt_root_key     TYPE /bobf/t_frw_key,
+      lt_root_key_tmp TYPE /bobf/t_frw_key,
+      lt_req_key      TYPE /bobf/t_frw_key,
+      lt_req_tmp      TYPE /scmtms/t_tor_root_k,
+      lt_req_stop_tmp TYPE /scmtms/t_tor_stop_k,
+      lt_req          TYPE /scmtms/t_tor_root_k,
+      lt_req_stop     TYPE /scmtms/t_tor_stop_k.
+
+    CLEAR:
+      et_req,
+      et_req_stop.
+
+    IF it_root_key IS NOT INITIAL.
+      lt_root_key = it_root_key.
+    ELSE.
+      ASSIGN ir_root->* TO <ls_root>.
+      IF sy-subrc <> 0.
+        MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+        zcl_gtt_sts_tools=>throw_exception( ).
+      ENDIF.
+      lt_root_key = VALUE #( ( key = <ls_root>-node_id ) ).
+    ENDIF.
+
+    lo_srvmgr_tor = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+    lt_root_key_tmp = lt_root_key.
+
+*   Find requirement document
+    DO 10 TIMES.
+
+      CLEAR:
+        lt_req_tmp,
+        lt_req_stop_tmp,
+        lt_req_key.
+
+*     Get requirement information
+      lo_srvmgr_tor->retrieve_by_association(
+        EXPORTING
+          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+          it_key          = lt_root_key_tmp
+          iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
+          iv_fill_data    = abap_true
+          iv_before_image = iv_old_data
+        IMPORTING
+          et_data         = lt_req_tmp
+          et_target_key   = lt_req_key ).
+
+      CLEAR lt_root_key_tmp.
+      lt_root_key_tmp = CORRESPONDING #( lt_req_key ).
+
+*     Check the document is FU or not
+      READ TABLE lt_req_tmp TRANSPORTING NO FIELDS
+        WITH TABLE KEY tor_cat COMPONENTS tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
+
+*     Get requirement Stop information
+      lo_srvmgr_tor->retrieve_by_association(
+        EXPORTING
+          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
+          it_key          = lt_root_key_tmp
+          iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
+          iv_fill_data    = abap_true
+          iv_before_image = iv_old_data
+        IMPORTING
+          et_data         = lt_req_stop_tmp ).
+
+      APPEND LINES OF lt_req_tmp TO lt_req.
+      APPEND LINES OF lt_req_stop_tmp TO lt_req_stop.
+      EXIT."Exit the loop
+    ENDDO.
+
+    et_req      = CORRESPONDING #( lt_req MAPPING node_id = key tor_root_node = root_key ).
+    et_req_stop = CORRESPONDING #( lt_req_stop MAPPING node_id = key parent_node_id = parent_key ).
 
   ENDMETHOD.
 

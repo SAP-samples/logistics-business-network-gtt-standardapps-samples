@@ -187,6 +187,7 @@ CONSTANTS:
   gc_cp_yn_act_timezone          TYPE /saptrx/paramname     VALUE 'ACTUAL_BUSINESS_TIMEZONE',
   gc_cp_yn_acttec_datetime       TYPE /saptrx/paramname     VALUE 'ACTUAL_TECHNICAL_DATETIME',
   gc_cp_yn_acttec_timezone       TYPE /saptrx/paramname     VALUE 'ACTUAL_TECHNICAL_TIMEZONE',
+  gc_cp_yn_reported_by           TYPE /saptrx/paramname     VALUE 'REPORTED_BY',
   gc_cp_yn_de_no                 TYPE /saptrx/paramname     VALUE 'YN_DLV_NO',
   gc_cp_yn_de_item_no            TYPE /saptrx/paramname     VALUE 'YN_DLV_ITEM_NO',
   gc_cp_yn_de_ship_to            TYPE /saptrx/paramname     VALUE 'YN_DLV_SHIPTO',
@@ -242,7 +243,9 @@ CONSTANTS:
   gc_cp_yn_shp_res_id            TYPE /saptrx/paramname     VALUE 'YN_SHP_TRACKED_RESOURCE_ID',
   gc_cp_yn_shp_res_tp_id         TYPE /saptrx/paramname     VALUE 'YN_SHP_RESOURCE_TP_ID',
   gc_cp_yn_shp_res_tp_cnt        TYPE /saptrx/paramname     VALUE 'YN_SHP_RESOURCE_TP_LINE_COUNT',
-
+  gc_cp_yn_appsys                TYPE /saptrx/paramname     VALUE 'E1EHPTID_APPSYS',
+  gc_cp_yn_trxcod                TYPE /saptrx/paramname     VALUE 'E1EHPTID_TRXCOD',
+  gc_cp_yn_trxid                 TYPE /saptrx/paramname     VALUE 'E1EHPTID_TRXID',
 
   gc_cp_yn_shp_stops_line_cnt    TYPE /saptrx/paramname     VALUE 'YN_SHP_LINE_COUNT',
   gc_cp_yn_shp_stops_stop_id     TYPE /saptrx/paramname     VALUE 'YN_SHP_STOP_ID',
@@ -301,6 +304,7 @@ CONSTANTS:
   gc_cp_yn_fu_units              TYPE /saptrx/paramname     VALUE 'YN_DL_FU_UNITS',
   gc_cp_yn_fu_product            TYPE /saptrx/paramname     VALUE 'YN_DL_FU_PRODUCT',
   gc_cp_yn_fu_product_descr      TYPE /saptrx/paramname     VALUE 'YN_DL_FU_PRODUCT_DESCR',
+  gc_cp_yn_fu_no_logsys          TYPE /saptrx/paramname     VALUE 'YN_DL_FU_NO_LOGSYS',
 
 * Sales Order
   gc_parvw_ag                    TYPE parvw                 VALUE 'AG', " Sold-to Party

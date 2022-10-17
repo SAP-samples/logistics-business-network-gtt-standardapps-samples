@@ -105,15 +105,6 @@ ENDCLASS.
 CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
 
 
-  METHOD add_additional_match_key.
-    IF iv_execution_info_source = /scmtms/if_tor_const=>sc_tor_event_source-prop_predecessor.
-      INSERT VALUE #( evtcnt      = iv_evtcnt
-                      param_name  = zif_gtt_sts_ef_constants=>cs_parameter-additional_match_key
-                      param_value = 'TMFU' ) INTO TABLE ct_trackparameters.
-    ENDIF.
-  ENDMETHOD.
-
-
   METHOD check_application_event_source.
 
     FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
@@ -288,6 +279,12 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
     ls_trackparameters-evtcnt      = cs_trackingheader-evtcnt.
     ls_trackparameters-param_name  = zif_gtt_sts_ef_constants=>cs_system_fields-actual_technical_datetime.
     ls_trackparameters-param_value = zcl_gtt_sts_tools=>get_system_date_time( ).
+    APPEND ls_trackparameters TO ct_trackparameters.
+
+    CLEAR ls_trackparameters.
+    ls_trackparameters-evtcnt      = cs_trackingheader-evtcnt.
+    ls_trackparameters-param_name  = zif_gtt_sts_ef_constants=>cs_system_fields-reported_by.
+    ls_trackparameters-param_value = sy-uname.
     APPEND ls_trackparameters TO ct_trackparameters.
 
   ENDMETHOD.
@@ -745,5 +742,14 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
+  ENDMETHOD.
+
+
+  METHOD add_additional_match_key.
+    IF iv_execution_info_source = /scmtms/if_tor_const=>sc_tor_event_source-prop_predecessor.
+      INSERT VALUE #( evtcnt      = iv_evtcnt
+                      param_name  = zif_gtt_sts_ef_constants=>cs_parameter-additional_match_key
+                      param_value = 'TMFU' ) INTO TABLE ct_trackparameters.
+    ENDIF.
   ENDMETHOD.
 ENDCLASS.

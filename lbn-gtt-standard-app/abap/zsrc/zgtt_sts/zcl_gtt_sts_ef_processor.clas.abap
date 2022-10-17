@@ -154,6 +154,10 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
     ls_control_data-value      = zcl_gtt_sts_tools=>get_system_date_time( ).
     APPEND ls_control_data TO ct_control_data.
 
+    ls_control_data-paramname  = zif_gtt_sts_ef_constants=>cs_system_fields-reported_by.
+    ls_control_data-value      = sy-uname.
+    APPEND ls_control_data TO ct_control_data.
+
   ENDMETHOD.
 
 
@@ -223,7 +227,7 @@ CLASS ZCL_GTT_STS_EF_PROCESSOR IMPLEMENTATION.
         CATCH cx_udm_message.
           CONTINUE.
       ENDTRY.
-      CHECK mo_bo_reader IS BOUND.
+      CHECK mo_bo_reader is BOUND.
       rv_result = mo_bo_reader->check_relevance( is_app_object = <ls_app_objects> ).
       IF rv_result = abap_true.
         EXIT.

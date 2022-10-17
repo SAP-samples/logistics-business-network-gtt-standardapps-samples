@@ -61,6 +61,7 @@ interface ZIF_GTT_EF_CONSTANTS
       actual_bisiness_datetime  TYPE /saptrx/paramname VALUE 'ACTUAL_BUSINESS_DATETIME',
       actual_technical_timezone TYPE /saptrx/paramname VALUE 'ACTUAL_TECHNICAL_TIMEZONE',
       actual_technical_datetime TYPE /saptrx/paramname VALUE 'ACTUAL_TECHNICAL_DATETIME',
+      reported_by               TYPE /saptrx/paramname VALUE 'REPORTED_BY',
     END OF cs_system_fields .
   constants:
     BEGIN OF cs_errors,

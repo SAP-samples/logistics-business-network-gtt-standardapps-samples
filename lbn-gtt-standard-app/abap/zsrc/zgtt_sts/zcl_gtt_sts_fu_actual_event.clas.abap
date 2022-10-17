@@ -95,12 +95,16 @@ CLASS ZCL_GTT_STS_FU_ACTUAL_EVENT IMPLEMENTATION.
     ENDIF.
 
     DATA(lt_stop) = get_stop( it_all_appl_tables ).
-    DATA(lt_capa_stop) = get_capa_stop( it_all_appl_tables ).
-    DATA(lt_capa_root) = get_capa_root( it_all_appl_tables ).
-
     lv_locno = is_execinfo-ext_loc_id.
     ls_tracklocation-loccod = zcl_gtt_sts_tools=>get_location_type( iv_locno = lv_locno ).
     ls_tracklocation-locid1 = is_execinfo-ext_loc_id.
+
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
+      EXPORTING
+        ir_root          = REF #( <ls_root> )
+        iv_old_data      = abap_false
+      IMPORTING
+        et_req2capa_info = DATA(lt_req2capa_info) ).
 
     LOOP AT lt_stop ASSIGNING FIELD-SYMBOL(<ls_stop>) USING KEY parent_seqnum WHERE parent_node_id = <ls_root>-node_id.
       IF <ls_stop>-seq_num = 1.
@@ -138,11 +142,13 @@ CLASS ZCL_GTT_STS_FU_ACTUAL_EVENT IMPLEMENTATION.
        lv_reference_event = /scmtms/if_tor_const=>sc_tor_event-pod.
       ls_tracklocation-locid2 = <ls_root>-tor_id.
     ELSE.
-      IF <ls_stop> IS  ASSIGNED.
-        ls_tracklocation-locid2 = zcl_gtt_sts_tools=>get_capa_match_key(
-                                      iv_assgn_stop_key = <ls_stop>-assgn_stop_key
-                                      it_capa_stop      = lt_capa_stop
-                                      it_capa_root      = lt_capa_root ).
+      IF <ls_stop> IS ASSIGNED.
+        READ TABLE lt_req2capa_info INTO DATA(ls_req2capa_info)
+          WITH KEY req_assgn_stop_key = <ls_stop>-assgn_stop_key.
+        IF sy-subrc = 0.
+          ls_tracklocation-locid2 = |{ ls_req2capa_info-cap_no }{ ls_req2capa_info-cap_seq }|.
+          SHIFT ls_tracklocation-locid2 LEFT DELETING LEADING '0'.
+        ENDIF.
       ENDIF.
     ENDIF.
 

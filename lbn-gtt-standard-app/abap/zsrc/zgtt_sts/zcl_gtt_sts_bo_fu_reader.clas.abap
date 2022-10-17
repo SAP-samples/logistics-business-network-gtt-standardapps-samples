@@ -43,6 +43,8 @@ public section.
         product_txt           TYPE STANDARD TABLE OF /scmtms/item_description     WITH EMPTY KEY,
         dlv_item_inb_alt_id   TYPE STANDARD TABLE OF char16                       WITH EMPTY KEY,
         dlv_item_oub_alt_id   TYPE STANDARD TABLE OF char16                       WITH EMPTY KEY,
+        dlv_item_inb_logsys   TYPE STANDARD TABLE OF /scmtms/logsys_sending       WITH EMPTY KEY,
+        dlv_item_oub_logsys   TYPE STANDARD TABLE OF /scmtms/logsys_sending       WITH EMPTY KEY,
         capa_doc_line_no      TYPE tt_capacity_doc_line_number,
         capa_doc_no           TYPE tt_capacity_doc_number,
         capa_doc_first_stop   TYPE tt_stop,
@@ -127,8 +129,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
     FIELD-SYMBOLS <ls_header> TYPE /scmtms/s_em_bo_tor_root.
 
     DATA:
-      lv_stage_num_difference    TYPE i,
-      lv_stage_num_difference_bi TYPE i.
+      lv_no_changes TYPE flag.
 
     rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
@@ -137,59 +138,31 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
-    lo_tor_srv_mgr->retrieve_by_association(
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
       EXPORTING
-        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
-        it_key         = VALUE #( ( key = <ls_header>-node_id ) )
-        iv_association = /scmtms/if_tor_c=>sc_association-root-capa_tor
+        ir_root      = REF #( <ls_header> )
+        iv_old_data  = abap_false
       IMPORTING
-        et_target_key  = DATA(lt_tor_capa_key) ).
+        et_capa_list = DATA(lt_capa_list_new) ).
 
-    /scmtms/cl_tor_helper_stage=>get_stage(
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
       EXPORTING
-        it_root_key = VALUE #( ( key = <ls_header>-node_id ) )
+        ir_root      = REF #( <ls_header> )
+        iv_old_data  = abap_true
       IMPORTING
-        et_stage    = DATA(lt_req_stage) ).
+        et_capa_list = DATA(lt_capa_list_old) ).
 
-    /scmtms/cl_tor_helper_stage=>get_stage(
+    CALL FUNCTION 'CTVB_COMPARE_TABLES'
       EXPORTING
-        it_root_key = lt_tor_capa_key
+        table_old  = lt_capa_list_old
+        table_new  = lt_capa_list_new
+        key_length = 120
       IMPORTING
-        et_stage    = DATA(lt_capa_stage) ).
+        no_changes = lv_no_changes.
 
-    /scmtms/cl_tor_helper_stage=>get_stage(
-      EXPORTING
-        it_root_key     = lt_tor_capa_key
-        iv_before_image = abap_true
-      IMPORTING
-        et_stage        = DATA(lt_capa_stage_bi) ).
-
-    DATA(lv_req_stage_count) = lines( lt_req_stage ).
-    DATA(lv_stop_des_key) = lt_req_stage[ lv_req_stage_count ]-dest_stop-assgn_stop_key.
-    DATA(lv_stop_src_key) = lt_req_stage[ 1 ]-source_stop-assgn_stop_key.
-
-    DO 1 TIMES.
-
-      ASSIGN lt_capa_stage[ source_stop_key = lv_stop_src_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_first_num>).
-      CHECK sy-subrc = 0.
-
-      ASSIGN lt_capa_stage[ dest_stop_key = lv_stop_des_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_last_num>).
-      CHECK sy-subrc = 0.
-
-      lv_stage_num_difference = <lv_capa_stage_last_num> - <lv_capa_stage_first_num>.
-
-      ASSIGN lt_capa_stage_bi[ source_stop_key = lv_stop_src_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_first_num_bi>).
-      CHECK sy-subrc = 0.
-
-      ASSIGN lt_capa_stage_bi[ dest_stop_key = lv_stop_des_key ]-seq_num TO FIELD-SYMBOL(<lv_capa_stage_last_num_bi>).
-      CHECK sy-subrc = 0.
-
-      lv_stage_num_difference_bi = <lv_capa_stage_last_num_bi> - <lv_capa_stage_first_num_bi>.
-
-    ENDDO.
-
-    IF lv_stage_num_difference <> lv_stage_num_difference_bi.
+    IF lv_no_changes = abap_true.
+      rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+    ELSE.
       rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
     ENDIF.
 
@@ -344,44 +317,40 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
 
   METHOD check_non_idoc_stop_fields.
 
-    DATA lt_capa_stop_old TYPE /scmtms/t_tor_stop_k.
-
     FIELD-SYMBOLS:
       <lt_stop_new>      TYPE /scmtms/t_em_bo_tor_stop,
       <lt_stop_old>      TYPE /scmtms/t_em_bo_tor_stop,
-      <lt_capa_stop_new> TYPE /scmtms/t_em_bo_tor_stop,
       <ls_header>        TYPE /scmtms/s_em_bo_tor_root.
 
     rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
     DATA(lt_stop_new) = mo_ef_parameters->get_appl_table(
-                            iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_stop_new ).
+      iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_stop_new ).
     DATA(lt_stop_old) = mo_ef_parameters->get_appl_table(
-                            iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_stop_old ).
-    DATA(lt_capa_stop_new) = mo_ef_parameters->get_appl_table(
-                               /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_stop ).
+      iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_stop_old ).
 
     ASSIGN lt_stop_new->* TO <lt_stop_new>.
     ASSIGN lt_stop_old->* TO <lt_stop_old>.
-    ASSIGN lt_capa_stop_new->* TO <lt_capa_stop_new>.
     ASSIGN is_app_object-maintabref->* TO <ls_header>.
-    IF <lt_stop_new>      IS NOT ASSIGNED OR <lt_stop_old> IS NOT ASSIGNED OR
-       <lt_capa_stop_new> IS NOT ASSIGNED OR <ls_header> IS NOT ASSIGNED.
+    IF <lt_stop_new> IS NOT ASSIGNED OR <lt_stop_old> IS NOT ASSIGNED OR
+       <ls_header> IS NOT ASSIGNED.
       MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-    DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
-    DATA(lt_capa_stop_key) = VALUE /bobf/t_frw_key( FOR <ls_stop> IN <lt_stop_new> ( key = <ls_stop>-assgn_stop_key ) ).
-    TEST-SEAM lt_capa_stop_old.
-      lo_tor_srv_mgr->retrieve(
-        EXPORTING
-          iv_node_key     = /scmtms/if_tor_c=>sc_node-stop
-          it_key          = lt_capa_stop_key
-          iv_before_image = abap_true
-        IMPORTING
-          et_data         = lt_capa_stop_old ).
-    END-TEST-SEAM.
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
+      EXPORTING
+        ir_root          = REF #( <ls_header> )
+        iv_old_data      = abap_false
+      IMPORTING
+        et_req2capa_info = DATA(lt_req2capa_info_new) ).
+
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
+      EXPORTING
+        ir_root          = REF #( <ls_header> )
+        iv_old_data      = abap_true
+      IMPORTING
+        et_req2capa_info = DATA(lt_req2capa_info_old) ).
 
     LOOP AT <lt_stop_new> ASSIGNING FIELD-SYMBOL(<ls_stop_new>)
       USING KEY parent_seqnum WHERE parent_node_id = <ls_header>-node_id.
@@ -395,13 +364,13 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
         EXIT.
       ENDIF.
 
-      ASSIGN <lt_capa_stop_new>[ node_id = <ls_stop_new>-assgn_stop_key ] TO FIELD-SYMBOL(<ls_capa_stop_new>).
+      ASSIGN lt_req2capa_info_new[ req_assgn_stop_key = <ls_stop_new>-assgn_stop_key ] TO FIELD-SYMBOL(<ls_capa_stop_new>).
       CHECK sy-subrc = 0.
 
-      ASSIGN lt_capa_stop_old[ key = <ls_stop_new>-assgn_stop_key ] TO FIELD-SYMBOL(<ls_capa_stop_old>).
+      ASSIGN lt_req2capa_info_old[ req_assgn_stop_key = <ls_stop_new>-assgn_stop_key ] TO FIELD-SYMBOL(<ls_capa_stop_old>).
       CHECK sy-subrc = 0.
 
-      IF <ls_capa_stop_new>-plan_trans_time <> <ls_capa_stop_old>-plan_trans_time.
+      IF <ls_capa_stop_new>-cap_plan_trans_time <> <ls_capa_stop_old>-cap_plan_trans_time.
         rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
         EXIT.
       ENDIF.
@@ -414,142 +383,22 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
   METHOD get_capacity_doc_list.
 
     DATA:
-      lv_capa_doc_line_no     TYPE int4,
-      lv_tabledef_stop        TYPE /saptrx/strucdataname,
-      lv_tabledef_capa_root   TYPE /saptrx/strucdataname,
-      lv_tabledef_capa_stop   TYPE /saptrx/strucdataname,
-      lt_tor_capa_stop_before TYPE /scmtms/t_tor_stop_k,
-      lt_tor_stop_before      TYPE /scmtms/t_tor_stop_k,
-      lt_capa_stop            TYPE /scmtms/t_em_bo_tor_stop,
-      lt_stop                 TYPE /scmtms/t_em_bo_tor_stop,
-      ls_stop_key             TYPE /bobf/s_frw_key,
-      lt_fo_stop              TYPE /scmtms/t_em_bo_tor_stop,
-      lv_seq_num              TYPE /scmtms/seq_num.
+      lv_capa_doc_line_no TYPE int4.
 
-    FIELD-SYMBOLS:
-      <lt_stop>          TYPE /scmtms/t_em_bo_tor_stop,
-      <ls_tor_root>      TYPE /scmtms/s_em_bo_tor_root,
-      <lt_tor_root_capa> TYPE /scmtms/t_em_bo_tor_root,
-      <lt_capa_stop>     TYPE /scmtms/t_em_bo_tor_stop.
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
+      EXPORTING
+        ir_root      = ir_data
+        iv_old_data  = iv_old_data
+      IMPORTING
+        et_capa_list = DATA(lt_capa_list) ).
 
-    DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
-
-    ASSIGN ir_data->* TO <ls_tor_root>.
-    IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
-
-    IF iv_old_data = abap_false.
-      lv_tabledef_stop     = /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-stop.
-      lv_tabledef_capa_root = /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_root.
-      lv_tabledef_capa_stop = /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_stop.
-    ELSE.
-      lv_tabledef_stop     = /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-stop_before.
-      lv_tabledef_capa_root = /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_root_before.
-    ENDIF.
-
-*   Get Stop information
-    DATA(lr_stop) = mo_ef_parameters->get_appl_table( lv_tabledef_stop ).
-    ASSIGN lr_stop->* TO <lt_stop>.
-    IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO lv_dummy.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
-
-*   Get capacity root information
-    DATA(lr_req_root) = mo_ef_parameters->get_appl_table( iv_tabledef = lv_tabledef_capa_root ).
-    ASSIGN lr_req_root->* TO <lt_tor_root_capa>.
-    IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO lv_dummy.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
-
-*   Get capacity stop information
-    IF iv_old_data = abap_false.
-      DATA(lr_capa_stop) = mo_ef_parameters->get_appl_table( lv_tabledef_capa_stop ).
-      ASSIGN lr_capa_stop->* TO <lt_capa_stop>.
-      IF sy-subrc <> 0.
-        MESSAGE e010(zgtt_sts) INTO lv_dummy.
-        zcl_gtt_sts_tools=>throw_exception( ).
-      ELSE.
-        lt_capa_stop = <lt_capa_stop>.
-      ENDIF.
-    ELSE.
-      lo_tor_srv_mgr->retrieve_by_association(
-        EXPORTING
-          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-          it_key          = CORRESPONDING #( <lt_tor_root_capa> MAPPING key = node_id )
-          iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
-          iv_before_image = abap_true
-          iv_fill_data    = abap_true
-        IMPORTING
-          et_data         = lt_tor_capa_stop_before ).
-
-      lt_capa_stop = CORRESPONDING #( lt_tor_capa_stop_before MAPPING node_id = key parent_node_id = parent_key ).
-    ENDIF.
-
-    TEST-SEAM lt_req2capa_link.
-      lo_tor_srv_mgr->retrieve_by_association(
-        EXPORTING
-          iv_node_key    = /scmtms/if_tor_c=>sc_node-root
-          it_key         = VALUE #( ( key = <ls_tor_root>-node_id ) )
-          iv_association = /scmtms/if_tor_c=>sc_association-root-capa_tor
-        IMPORTING
-          et_key_link    = DATA(lt_req2capa_link) ).
-    END-TEST-SEAM.
-
-    LOOP AT lt_req2capa_link ASSIGNING FIELD-SYMBOL(<ls_req2capa_link>).
-      ASSIGN <lt_tor_root_capa>[ node_id = <ls_req2capa_link>-target_key ] TO FIELD-SYMBOL(<ls_tor_capa_id>).
-      CHECK sy-subrc = 0.
-
-      lv_capa_doc_line_no += 1.
+    LOOP AT lt_capa_list INTO DATA(ls_capa_list).
+      lv_capa_doc_line_no = lv_capa_doc_line_no + 1.
       APPEND lv_capa_doc_line_no TO ct_capa_doc_line_no.
-
-      APPEND |{ <ls_tor_capa_id>-tor_id ALPHA = OUT }| TO ct_capa_doc_no.
-
-      TEST-SEAM lt_stop_seq.
-        /scmtms/cl_tor_helper_stop=>get_stop_sequence(
-        EXPORTING
-          it_root_key     = VALUE #( ( key = <ls_tor_capa_id>-node_id ) )
-          iv_before_image = iv_old_data
-        IMPORTING
-          et_stop_seq_d   = DATA(lt_stop_seq) ).
-      END-TEST-SEAM.
-
-      ASSIGN lt_stop_seq[ root_key = <ls_tor_capa_id>-node_id ] TO FIELD-SYMBOL(<ls_stop_seq>) ##WARN_OK.
-      IF sy-subrc = 0.
-        MOVE-CORRESPONDING <ls_stop_seq>-stop_seq TO lt_fo_stop.
-        LOOP AT lt_fo_stop ASSIGNING FIELD-SYMBOL(<ls_fo_stop>).
-          <ls_fo_stop>-parent_node_id = <ls_tor_capa_id>-node_id.
-          ASSIGN <ls_stop_seq>-stop_map[ tabix = <ls_fo_stop>-seq_num ]-stop_key TO FIELD-SYMBOL(<lv_stop_key>).
-          CHECK sy-subrc = 0.
-          <ls_fo_stop>-node_id = <lv_stop_key>.
-        ENDLOOP.
-      ENDIF.
-
-      zcl_gtt_sts_tools=>get_stop_points(
-        EXPORTING
-          iv_root_id     = <ls_tor_capa_id>-tor_id
-          it_stop        = lt_fo_stop
-        IMPORTING
-          et_stop_points = DATA(lt_stop_points) ).
-
-      LOOP AT lt_fo_stop USING KEY parent_seqnum ASSIGNING <ls_fo_stop>.
-        ASSIGN <lt_stop>[ assgn_stop_key = <ls_fo_stop>-node_id parent_node_id = <ls_tor_root>-node_id ] TO FIELD-SYMBOL(<ls_fu_stop>).
-        IF sy-subrc = 0.
-          IF lv_seq_num IS INITIAL.
-            DATA(lv_capa_doc_first_stop) = lt_stop_points[ seq_num = <ls_fo_stop>-seq_num ]-stop_id.
-            APPEND |{ lv_capa_doc_first_stop ALPHA = OUT }| TO ct_capa_doc_first_stop.
-          ENDIF.
-          lv_seq_num = <ls_fo_stop>-seq_num.
-        ENDIF.
-      ENDLOOP.
-      IF lv_seq_num IS NOT INITIAL.
-        DATA(lv_capa_doc_last_stop) = lt_stop_points[ seq_num = lv_seq_num ]-stop_id.
-        APPEND |{ lv_capa_doc_last_stop ALPHA = OUT }| TO ct_capa_doc_last_stop.
-      ENDIF.
-      CLEAR: lv_seq_num, lt_stop_points.
+      APPEND ls_capa_list-cap_no TO ct_capa_doc_no.
+      APPEND ls_capa_list-first_stop TO ct_capa_doc_first_stop.
+      APPEND ls_capa_list-last_stop TO ct_capa_doc_last_stop.
+      CLEAR ls_capa_list.
     ENDLOOP.
 
   ENDMETHOD.
@@ -636,6 +485,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       IF <ls_tor_item>-base_btd_tco     = cs_base_btd_tco_inb_dlv  AND
          <ls_tor_item>-base_btditem_tco = cs_base_btd_tco_delivery_item.
         APPEND lv_base_btd_alt_item_id TO cs_freight_unit-dlv_item_inb_alt_id.
+        APPEND <ls_tor_item>-base_btd_logsys to cs_freight_unit-dlv_item_inb_logsys.
       ELSE.
         APPEND '' TO cs_freight_unit-dlv_item_inb_alt_id.
       ENDIF.
@@ -643,6 +493,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       IF <ls_tor_item>-base_btd_tco     = cs_base_btd_tco_outb_dlv AND
          <ls_tor_item>-base_btditem_tco = cs_base_btd_tco_delivery_item.
         APPEND lv_base_btd_alt_item_id TO cs_freight_unit-dlv_item_oub_alt_id.
+        APPEND <ls_tor_item>-base_btd_logsys to cs_freight_unit-dlv_item_oub_logsys.
       ELSE.
         APPEND '' TO cs_freight_unit-dlv_item_oub_alt_id.
       ENDIF.
@@ -775,39 +626,12 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    " Get Capacity Root
-    DATA(lr_capa_root) = mo_ef_parameters->get_appl_table(
-      SWITCH #( iv_old_data WHEN abap_false THEN /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_root
-                                            ELSE /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_root_before ) ).
-    ASSIGN lr_capa_root->* TO <lt_capa_root>.
-    IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO lv_dummy.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
-
-    " Get Capacity Stop
-    IF iv_old_data = abap_true.
-      DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
-                                 iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
-      lo_tor_srv_mgr->retrieve_by_association(
-        EXPORTING
-          iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-          it_key          = CORRESPONDING #( <lt_capa_root> MAPPING key = node_id )
-          iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
-          iv_before_image = abap_true
-          iv_fill_data    = abap_true
-        IMPORTING
-          et_data         = lt_tor_capa_stop_before ).
-
-      lt_capa_stop = CORRESPONDING #( lt_tor_capa_stop_before MAPPING node_id = key parent_node_id = parent_key ).
-
-    ELSE.
-      DATA(lr_capa_stop) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_stop ).
-      ASSIGN lr_capa_stop->* TO <lt_capa_stop>.
-      IF sy-subrc = 0.
-        lt_capa_stop = <lt_capa_stop>.
-      ENDIF.
-    ENDIF.
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
+      EXPORTING
+        ir_root          = ir_data
+        iv_old_data      = iv_old_data
+      IMPORTING
+        et_req2capa_info = DATA(lt_req2capa_info) ).
 
     LOOP AT <lt_stop_seq> ASSIGNING FIELD-SYMBOL(<ls_stop_seq>).
 
@@ -816,11 +640,12 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       ENDIF.
 
       IF <ls_stop_seq>-assgn_stop_key IS NOT INITIAL.
-        lv_stop_id = zcl_gtt_sts_tools=>get_capa_match_key(
-                          iv_assgn_stop_key = <ls_stop_seq>-assgn_stop_key
-                          it_capa_stop      = lt_capa_stop
-                          it_capa_root      = <lt_capa_root>
-                          iv_before_image   = iv_old_data ).
+        READ TABLE lt_req2capa_info INTO DATA(ls_req2capa_info)
+          WITH KEY req_assgn_stop_key = <ls_stop_seq>-assgn_stop_key.
+        IF sy-subrc = 0.
+          lv_stop_id = |{ ls_req2capa_info-cap_no }{ ls_req2capa_info-cap_seq }|.
+          SHIFT lv_stop_id LEFT DELETING LEADING '0'.
+        ENDIF.
       ELSE.
         lv_stop_id = |{ lv_tor_id }{ lv_stop_id_num }|.
       ENDIF.
@@ -967,14 +792,10 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       lt_track_id_data_new TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
       lt_track_id_data_old TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
       lv_trxid             TYPE /saptrx/trxid,
-      lv_tmp_fotrxcod      TYPE /saptrx/trxcod,
-      lv_tmp_futrxcod      TYPE /saptrx/trxcod,
       lv_fotrxcod          TYPE /saptrx/trxcod,
       lv_futrxcod          TYPE /saptrx/trxcod.
 
     FIELD-SYMBOLS:
-      <lt_tor_capa_root_new> TYPE /scmtms/t_em_bo_tor_root,
-      <lt_tor_capa_root_old> TYPE /scmtms/t_em_bo_tor_root,
       <ls_root>              TYPE /scmtms/s_em_bo_tor_root.
 
     CLEAR: et_track_id_data.
@@ -997,18 +818,16 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       CHANGING
         ct_track_id   = et_track_id_data ).
 
-    DATA(lr_tor_capa_root_new) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_root ).
-    ASSIGN lr_tor_capa_root_new->* TO <lt_tor_capa_root_new>.
-    IF <lt_tor_capa_root_new> IS NOT ASSIGNED.
-      MESSAGE e010(zgtt_sts) INTO lv_dummy ##needed.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
+    zcl_gtt_sts_tools=>get_capa_info_mul(
+      EXPORTING
+        ir_root     = REF #( <ls_root> )
+        iv_old_data = abap_false
+      IMPORTING
+        et_capa     = DATA(lt_tor_capa_root_new) ).
 
-    LOOP AT <lt_tor_capa_root_new> ASSIGNING FIELD-SYMBOL(<ls_tor_capa_root_new>).
-      IF <ls_tor_capa_root_new>-tor_root_node IS ASSIGNED
-         AND ( <ls_tor_capa_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active
-         OR    <ls_tor_capa_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking )
-         AND   <ls_tor_capa_root_new>-tor_root_node = <ls_root>-node_id.
+    LOOP AT lt_tor_capa_root_new ASSIGNING FIELD-SYMBOL(<ls_tor_capa_root_new>).
+      IF ( <ls_tor_capa_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active
+         OR <ls_tor_capa_root_new>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking ).
 
         DATA(lv_tor_id) = |{ <ls_tor_capa_root_new>-tor_id  ALPHA = OUT }|.
         CONDENSE lv_tor_id.
@@ -1022,18 +841,16 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
-    DATA(lr_tor_capa_root_old) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_root_before ).
-    ASSIGN lr_tor_capa_root_old->* TO <lt_tor_capa_root_old>.
-    IF <lt_tor_capa_root_old> IS NOT ASSIGNED.
-      MESSAGE e010(zgtt_sts) INTO lv_dummy ##needed.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
+    zcl_gtt_sts_tools=>get_capa_info_mul(
+      EXPORTING
+        ir_root     = REF #( <ls_root> )
+        iv_old_data = abap_true
+      IMPORTING
+        et_capa     = DATA(lt_tor_capa_root_old) ).
 
-    LOOP AT <lt_tor_capa_root_old> ASSIGNING FIELD-SYMBOL(<ls_tor_capa_root_old>).
-      IF <ls_tor_capa_root_old>-tor_root_node IS ASSIGNED
-         AND ( <ls_tor_capa_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active
-         OR    <ls_tor_capa_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking )
-         AND   <ls_tor_capa_root_old>-tor_root_node = <ls_root>-node_id.
+    LOOP AT lt_tor_capa_root_old ASSIGNING FIELD-SYMBOL(<ls_tor_capa_root_old>).
+      IF ( <ls_tor_capa_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active
+         OR <ls_tor_capa_root_old>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking ).
 
         lv_tor_id = |{ <ls_tor_capa_root_old>-tor_id  ALPHA = OUT }|.
         CONDENSE lv_tor_id.
@@ -1048,13 +865,13 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
     ENDLOOP.
 
     zcl_gtt_sts_tools=>get_track_obj_changes(
-       EXPORTING
-         is_app_object        = is_app_object
-         iv_appsys            = mo_ef_parameters->get_appsys( )
-         it_track_id_data_new = lt_track_id_data_new
-         it_track_id_data_old = lt_track_id_data_old
-       CHANGING
-         ct_track_id_data     = et_track_id_data ).
+      EXPORTING
+        is_app_object        = is_app_object
+        iv_appsys            = mo_ef_parameters->get_appsys( )
+        it_track_id_data_new = lt_track_id_data_new
+        it_track_id_data_old = lt_track_id_data_old
+      CHANGING
+        ct_track_id_data     = et_track_id_data ).
 
   ENDMETHOD.
 ENDCLASS.

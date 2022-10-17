@@ -330,6 +330,9 @@ METHOD IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT .
         ls_control-paramname = 'ACTUAL_BUSINESS_DATETIME'.
         CONCATENATE '0' sy-datum sy-uzeit INTO ls_control-value.
         APPEND ls_control TO lt_control.
+        ls_control-paramname = 'REPORTED_BY'.
+        ls_control-value = sy-uname.
+        APPEND ls_control TO lt_control.
 
         CLEAR:ls_expeventdata.
         ls_expeventdata-appsys = lv_appsys.

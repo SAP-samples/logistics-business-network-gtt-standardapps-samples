@@ -161,6 +161,8 @@ PROTECTED SECTION.
       capa_doc_last_stop    TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_LAST_STOP',
       dlv_item_inb_alt_id   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_INB_ALT_ID',
       dlv_item_oub_alt_id   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_OUB_ALT_ID',
+      dlv_item_inb_logsys   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_INB_ALT_ID_LOGSYS',
+      dlv_item_oub_logsys   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_OUB_ALT_ID_LOGSYS',
       estimated_datetime    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_DATETIME',
       estimated_timezone    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_TIMEZONE',
       resource_tp_line_cnt  TYPE /saptrx/paramname VALUE 'YN_SHP_RESOURCE_TP_LINE_COUNT',
@@ -500,45 +502,6 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_container_id.
-
-    DATA:
-      ls_container TYPE ts_container,
-      lt_tmp_cont  TYPE TABLE OF /scmtms/package_id.
-
-    CLEAR:et_container.
-
-    get_data_from_text_collection(
-      EXPORTING
-        iv_old_data     = iv_old_data
-        ir_data         = ir_data
-      IMPORTING
-        er_text         = DATA(lr_text)
-        er_text_content = DATA(lr_text_content) ).
-
-    IF lr_text->* IS NOT INITIAL AND lr_text_content->* IS NOT INITIAL.
-      LOOP AT lr_text->* ASSIGNING FIELD-SYMBOL(<ls_text>).
-        READ TABLE lr_text_content->* WITH KEY parent_key
-          COMPONENTS parent_key = <ls_text>-key ASSIGNING FIELD-SYMBOL(<ls_text_content>).
-        IF sy-subrc = 0.
-          IF <ls_text>-text_type = cs_text_type-cont AND <ls_text_content>-text IS NOT INITIAL.
-            CLEAR lt_tmp_cont.
-            SPLIT <ls_text_content>-text AT zif_gtt_sts_constants=>cs_separator-semicolon INTO TABLE lt_tmp_cont.
-            DELETE lt_tmp_cont WHERE table_line IS INITIAL.
-            LOOP AT lt_tmp_cont INTO DATA(ls_tmp_cont).
-              ls_container-object_value = ls_tmp_cont.
-              ls_container-object_id = cs_track_id-container_id.
-              APPEND ls_container TO et_container.
-              CLEAR ls_tmp_cont.
-            ENDLOOP.
-          ENDIF.
-        ENDIF.
-      ENDLOOP.
-    ENDIF.
-
-  ENDMETHOD.
-
-
   METHOD get_container_mobile_track_id.
 
     FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
@@ -868,6 +831,121 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_stop_seq.
+
+    FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+    DATA:
+      lv_stop_num(4) TYPE n,
+      lv_loctype     TYPE /saptrx/loc_id_type.
+
+    ASSIGN ir_data->* TO <ls_tor_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    DATA(lv_tor_id) = <ls_tor_root>-tor_id.
+    SHIFT lv_tor_id LEFT DELETING LEADING '0'.
+
+    ASSIGN it_stop_seq[ root_key = <ls_tor_root>-node_id ]-stop_seq TO FIELD-SYMBOL(<lt_stop_seq>) ##WARN_OK.
+    IF sy-subrc = 0.
+      LOOP AT <lt_stop_seq> ASSIGNING FIELD-SYMBOL(<ls_stop_seq>).
+        CHECK zcl_gtt_sts_tools=>is_odd( <ls_stop_seq>-seq_num ).
+        lv_stop_num += 1.
+        CHECK <ls_stop_seq>-log_locid IS NOT INITIAL.
+
+        lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_seq>-log_locid ).
+
+        APPEND |{ lv_tor_id }{ lv_stop_num }|  TO ct_stop_id.
+        APPEND lv_stop_num                     TO ct_ordinal_no.
+        APPEND lv_loctype                      TO ct_loc_type.
+        APPEND <ls_stop_seq>-log_locid         TO ct_loc_id.
+        CLEAR:lv_loctype.
+      ENDLOOP.
+    ENDIF.
+
+    lv_stop_num += 1.
+    DATA(lv_stop_count) = lines( <lt_stop_seq> ).
+
+    ASSIGN <lt_stop_seq>[ lv_stop_count ] TO <ls_stop_seq>.
+    IF sy-subrc = 0 AND <ls_stop_seq>-log_locid IS NOT INITIAL.
+      lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_seq>-log_locid ).
+      APPEND |{ lv_tor_id }{ lv_stop_num }| TO ct_stop_id.
+      APPEND lv_stop_num                    TO ct_ordinal_no.
+      APPEND lv_loctype                     TO ct_loc_type.
+      APPEND <ls_stop_seq>-log_locid        TO ct_loc_id.
+    ENDIF.
+
+    IF ct_ordinal_no IS INITIAL.
+      APPEND '' TO ct_ordinal_no.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_gtt_sts_bo_reader~check_relevance.
+
+    " FO relevance function
+    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+
+    ASSIGN is_app_object-maintabref->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      RETURN.
+    ENDIF.
+
+    IF get_customizing_aot( <ls_root>-tor_type ) <> is_app_object-appobjtype.
+      RETURN.
+    ENDIF.
+
+    IF is_app_object-maintabdef = zif_gtt_sts_constants=>cs_tabledef-fo_header_new AND
+      ( <ls_root>-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-execution OR
+        <ls_root>-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-exec_with_extern_event_mngr ) AND
+      <ls_root>-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-in_process AND
+      ( <ls_root>-execution = zif_gtt_sts_constants=>cs_execution_status-in_execution OR
+        <ls_root>-execution = zif_gtt_sts_constants=>cs_execution_status-ready_for_transp_exec ) AND
+     <ls_root>-tspid IS NOT INITIAL AND
+      ( <ls_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active OR
+        <ls_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking ).
+
+      CASE is_app_object-update_indicator.
+        WHEN zif_gtt_sts_ef_constants=>cs_change_mode-insert.
+          rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+        WHEN zif_gtt_sts_ef_constants=>cs_change_mode-update OR
+             zif_gtt_sts_ef_constants=>cs_change_mode-undefined.
+          rv_result = zcl_gtt_sts_tools=>are_structures_different(
+                          ir_data1  = zif_gtt_sts_bo_reader~get_data( is_app_object = is_app_object )
+                          ir_data2  = zif_gtt_sts_bo_reader~get_data(
+                                          is_app_object = is_app_object
+                                          iv_old_data   = abap_true ) ).
+          IF rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+            rv_result = check_non_idoc_fields( is_app_object ).
+          ENDIF.
+      ENDCASE.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD zif_gtt_sts_bo_reader~get_data.
+    RETURN.
+  ENDMETHOD.
+
+
+  METHOD zif_gtt_sts_bo_reader~get_mapping_structure.
+
+    rr_data = REF #( cs_mapping ).
+
+  ENDMETHOD.
+
+
+  METHOD zif_gtt_sts_bo_reader~get_track_id_data.
+    CLEAR et_track_id_data.
+    RETURN.
+  ENDMETHOD.
+
+
   METHOD get_resource_info.
 
     FIELD-SYMBOLS:
@@ -1016,6 +1094,45 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD get_container_id.
+
+    DATA:
+      ls_container TYPE ts_container,
+      lt_tmp_cont  TYPE TABLE OF /scmtms/package_id.
+
+    CLEAR:et_container.
+
+    get_data_from_text_collection(
+      EXPORTING
+        iv_old_data     = iv_old_data
+        ir_data         = ir_data
+      IMPORTING
+        er_text         = DATA(lr_text)
+        er_text_content = DATA(lr_text_content) ).
+
+    IF lr_text->* IS NOT INITIAL AND lr_text_content->* IS NOT INITIAL.
+      LOOP AT lr_text->* ASSIGNING FIELD-SYMBOL(<ls_text>).
+        READ TABLE lr_text_content->* WITH KEY parent_key
+          COMPONENTS parent_key = <ls_text>-key ASSIGNING FIELD-SYMBOL(<ls_text_content>).
+        IF sy-subrc = 0.
+          IF <ls_text>-text_type = cs_text_type-cont AND <ls_text_content>-text IS NOT INITIAL.
+            CLEAR lt_tmp_cont.
+            SPLIT <ls_text_content>-text AT zif_gtt_sts_constants=>cs_separator-semicolon INTO TABLE lt_tmp_cont.
+            DELETE lt_tmp_cont WHERE table_line IS INITIAL.
+            LOOP AT lt_tmp_cont INTO DATA(ls_tmp_cont).
+              ls_container-object_value = ls_tmp_cont.
+              ls_container-object_id = cs_track_id-container_id.
+              APPEND ls_container TO et_container.
+              CLEAR ls_tmp_cont.
+            ENDLOOP.
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+  ENDMETHOD.
+
+
   METHOD get_stop_info.
 
     FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
@@ -1091,120 +1208,5 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
     ls_stop_info-stop_num = lv_stop_num.
     APPEND ls_stop_info TO ct_stop_info.
 
-  ENDMETHOD.
-
-
-  METHOD get_stop_seq.
-
-    FIELD-SYMBOLS <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
-    DATA:
-      lv_stop_num(4) TYPE n,
-      lv_loctype     TYPE /saptrx/loc_id_type.
-
-    ASSIGN ir_data->* TO <ls_tor_root>.
-    IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
-
-    DATA(lv_tor_id) = <ls_tor_root>-tor_id.
-    SHIFT lv_tor_id LEFT DELETING LEADING '0'.
-
-    ASSIGN it_stop_seq[ root_key = <ls_tor_root>-node_id ]-stop_seq TO FIELD-SYMBOL(<lt_stop_seq>) ##WARN_OK.
-    IF sy-subrc = 0.
-      LOOP AT <lt_stop_seq> ASSIGNING FIELD-SYMBOL(<ls_stop_seq>).
-        CHECK zcl_gtt_sts_tools=>is_odd( <ls_stop_seq>-seq_num ).
-        lv_stop_num += 1.
-        CHECK <ls_stop_seq>-log_locid IS NOT INITIAL.
-
-        lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_seq>-log_locid ).
-
-        APPEND |{ lv_tor_id }{ lv_stop_num }|  TO ct_stop_id.
-        APPEND lv_stop_num                     TO ct_ordinal_no.
-        APPEND lv_loctype                      TO ct_loc_type.
-        APPEND <ls_stop_seq>-log_locid         TO ct_loc_id.
-        CLEAR:lv_loctype.
-      ENDLOOP.
-    ENDIF.
-
-    lv_stop_num += 1.
-    DATA(lv_stop_count) = lines( <lt_stop_seq> ).
-
-    ASSIGN <lt_stop_seq>[ lv_stop_count ] TO <ls_stop_seq>.
-    IF sy-subrc = 0 AND <ls_stop_seq>-log_locid IS NOT INITIAL.
-      lv_loctype = zcl_gtt_sts_tools=>get_location_type( iv_locno = <ls_stop_seq>-log_locid ).
-      APPEND |{ lv_tor_id }{ lv_stop_num }| TO ct_stop_id.
-      APPEND lv_stop_num                    TO ct_ordinal_no.
-      APPEND lv_loctype                     TO ct_loc_type.
-      APPEND <ls_stop_seq>-log_locid        TO ct_loc_id.
-    ENDIF.
-
-    IF ct_ordinal_no IS INITIAL.
-      APPEND '' TO ct_ordinal_no.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD zif_gtt_sts_bo_reader~check_relevance.
-
-    " FO relevance function
-    FIELD-SYMBOLS <ls_root> TYPE /scmtms/s_em_bo_tor_root.
-
-    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
-
-    ASSIGN is_app_object-maintabref->* TO <ls_root>.
-    IF sy-subrc <> 0.
-      RETURN.
-    ENDIF.
-
-    IF get_customizing_aot( <ls_root>-tor_type ) <> is_app_object-appobjtype.
-      RETURN.
-    ENDIF.
-
-    IF is_app_object-maintabdef = zif_gtt_sts_constants=>cs_tabledef-fo_header_new AND
-      ( <ls_root>-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-execution OR
-        <ls_root>-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-exec_with_extern_event_mngr ) AND
-      <ls_root>-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-in_process AND
-      ( <ls_root>-execution = zif_gtt_sts_constants=>cs_execution_status-in_execution OR
-        <ls_root>-execution = zif_gtt_sts_constants=>cs_execution_status-ready_for_transp_exec ) AND
-     <ls_root>-tspid IS NOT INITIAL AND
-      ( <ls_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active OR
-        <ls_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking ).
-
-      CASE is_app_object-update_indicator.
-        WHEN zif_gtt_sts_ef_constants=>cs_change_mode-insert.
-          rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-        WHEN zif_gtt_sts_ef_constants=>cs_change_mode-update OR
-             zif_gtt_sts_ef_constants=>cs_change_mode-undefined.
-          rv_result = zcl_gtt_sts_tools=>are_structures_different(
-                          ir_data1  = zif_gtt_sts_bo_reader~get_data( is_app_object = is_app_object )
-                          ir_data2  = zif_gtt_sts_bo_reader~get_data(
-                                          is_app_object = is_app_object
-                                          iv_old_data   = abap_true ) ).
-          IF rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
-            rv_result = check_non_idoc_fields( is_app_object ).
-          ENDIF.
-      ENDCASE.
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD zif_gtt_sts_bo_reader~get_data.
-    RETURN.
-  ENDMETHOD.
-
-
-  METHOD zif_gtt_sts_bo_reader~get_mapping_structure.
-
-    rr_data = REF #( cs_mapping ).
-
-  ENDMETHOD.
-
-
-  METHOD zif_gtt_sts_bo_reader~get_track_id_data.
-    CLEAR et_track_id_data.
-    RETURN.
   ENDMETHOD.
 ENDCLASS.

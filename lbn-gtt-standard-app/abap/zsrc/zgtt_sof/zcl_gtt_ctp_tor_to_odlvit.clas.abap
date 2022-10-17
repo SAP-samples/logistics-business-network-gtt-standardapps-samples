@@ -1,83 +1,32 @@
-class ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI definition
+class ZCL_GTT_CTP_TOR_TO_ODLVIT definition
   public
-  inheriting from ZCL_GTT_SOF_CTP_SND
-  create private .
+  inheriting from ZCL_GTT_CTP_TOR_TO_DL_BASE
+  create public .
 
 public section.
 
-  class-methods GET_INSTANCE
-    returning
-      value(RO_SENDER) type ref to ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI
-    raising
-      CX_UDM_MESSAGE .
-  methods PREPARE_IDOC_DATA
-    importing
-      !IO_DL_ITEM_DATA type ref to ZCL_GTT_SOF_CTP_DAT_TOR_TO_DLI
-    raising
-      CX_UDM_MESSAGE .
-  PROTECTED SECTION.
-
-    METHODS get_aotype_restriction_id
-        REDEFINITION .
-    METHODS get_object_type
-        REDEFINITION .
-private section.
-
-  constants:
-    BEGIN OF cs_mapping,
-      vbeln            TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
-      posnr            TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY_ITEM',
-      fu_lineno        TYPE /saptrx/paramname VALUE 'YN_DL_FU_LINE_COUNT',
-      fu_freightunit   TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO',
-      fu_itemnumber    TYPE /saptrx/paramname VALUE 'YN_DL_FU_ITEM_NO',
-      fu_quantity      TYPE /saptrx/paramname VALUE 'YN_DL_FU_QUANTITY',
-      fu_quantityuom   TYPE /saptrx/paramname VALUE 'YN_DL_FU_UNITS',
-      fu_product_id    TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT',
-      fu_product_descr TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT_DESCR',
-    END OF cs_mapping .
+  methods ZIF_GTT_CTP_TOR_TO_DL~EXTRACT_DATA
+    redefinition .
+protected section.
 
   methods FILL_IDOC_APPOBJ_CTABS
-    importing
-      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
-      !IS_LIPS type LIPSVB
-    changing
-      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA
-    raising
-      CX_UDM_MESSAGE .
+    redefinition .
   methods FILL_IDOC_CONTROL_DATA
-    importing
-      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
-      !IS_LIKP type LIKPVB
-      !IS_LIPS type LIPSVB
-      !IT_FU_LIST type ZIF_GTT_SOF_CTP_TYPES=>TT_FU_LIST
-    changing
-      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA
-    raising
-      CX_UDM_MESSAGE .
+    redefinition .
   methods FILL_IDOC_EXP_EVENT
-    importing
-      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
-      !IS_LIKP type LIKPVB
-      !IS_LIPS type LIPSVB
-      !IS_DLV_ITEM type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY_ITEM
-    changing
-      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA
-    raising
-      CX_UDM_MESSAGE .
+    redefinition .
+  methods GET_AOTYPE_RESTRICTION_ID
+    redefinition .
+  methods PREPARE_IDOC_DATA
+    redefinition .
   methods FILL_IDOC_TRACKING_ID
-    importing
-      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
-      !IS_LIPS type LIPSVB
-      !IT_FU_LIST type ZIF_GTT_SOF_CTP_TYPES=>TT_FU_LIST
-    changing
-      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA
-    raising
-      CX_UDM_MESSAGE .
+    redefinition .
+private section.
 ENDCLASS.
 
 
 
-CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
+CLASS ZCL_GTT_CTP_TOR_TO_ODLVIT IMPLEMENTATION.
 
 
   METHOD fill_idoc_appobj_ctabs.
@@ -85,7 +34,7 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
     DATA:
       lv_appobjid TYPE /saptrx/aoid.
 
-    lv_appobjid = |{ is_lips-vbeln ALPHA = OUT }{ is_lips-posnr ALPHA = IN }|.
+    lv_appobjid = |{ is_delivery_item-lips-vbeln ALPHA = OUT }{ is_delivery_item-lips-posnr ALPHA = IN }|.
     CONDENSE lv_appobjid NO-GAPS.
 
     cs_idoc_data-appobj_ctabs = VALUE #( BASE cs_idoc_data-appobj_ctabs (
@@ -99,21 +48,25 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
 
   METHOD fill_idoc_control_data.
 
-    DATA: lt_control  TYPE /saptrx/bapi_trk_control_tab,
-          lv_count    TYPE i VALUE 0,
-          lv_appobjid TYPE /saptrx/aoid,
-          lt_tmp_fu   TYPE zif_gtt_sof_ctp_types=>tt_fu_list.
-
+    DATA:
+      lt_control   TYPE /saptrx/bapi_trk_control_tab,
+      lv_count     TYPE i VALUE 0,
+      lv_appobjid  TYPE /saptrx/aoid,
+      lt_tmp_fu    TYPE zif_gtt_sof_ctp_types=>tt_fu_list,
+      ls_fu_create TYPE zif_gtt_sof_ctp_types=>ts_fu_list,
+      ls_fu_update TYPE zif_gtt_sof_ctp_types=>ts_fu_list,
+      ls_fu_delete TYPE zif_gtt_sof_ctp_types=>ts_fu_list,
+      lt_fu_id     TYPE zif_gtt_sof_ctp_types=>tt_fu_id.
 
     " DL Item key data (obligatory)
     lt_control  = VALUE #(
       (
-        paramname = cs_mapping-vbeln
-        value     = |{ is_likp-vbeln ALPHA = OUT }|
+        paramname = cs_mapping-dlv_vbeln
+        value     = |{ is_delivery_item-likp-vbeln ALPHA = OUT }|
       )
       (
-        paramname = cs_mapping-posnr
-        value     = is_lips-posnr
+        paramname = cs_mapping-dlv_posnr
+        value     = is_delivery_item-lips-posnr
       )
       (
         paramname = zif_gtt_sof_ctp_tor_constants=>cs_system_fields-actual_bisiness_timezone
@@ -138,7 +91,7 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
     ).
 
     " fill F.U. table
-    LOOP AT it_fu_list ASSIGNING FIELD-SYMBOL(<ls_fu_list>).
+    LOOP AT is_delivery_item-fu_list ASSIGNING FIELD-SYMBOL(<ls_fu_list>).
       IF <ls_fu_list>-change_mode = /bobf/if_frw_c=>sc_modify_delete.
         CONTINUE.
       ENDIF.
@@ -189,10 +142,15 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
           value       = zcl_gtt_sof_tm_tools=>get_pretty_value(
                           iv_value = <ls_fu_list>-product_descr )
         )
+        (
+          paramindex  = lv_count
+          paramname   = cs_mapping-fu_freightunit_logsys
+          value       = mv_appsys
+        )
       ).
     ENDLOOP.
 
-    " add deletion sign in case of emtpy IT_FU_LIST table
+    " add deletion sign in case of emtpy is_delivery_item-FU_LIST table
     IF lt_tmp_fu IS INITIAL.
       lt_control  = VALUE #( BASE lt_control (
           paramindex = 1
@@ -201,8 +159,76 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
       ) ).
     ENDIF.
 
+*   Add tracking ID information
+    CLEAR lv_count.
+    lt_fu_id =  CORRESPONDING #( is_delivery_item-fu_list ).
+    SORT lt_fu_id BY tor_id.
+    DELETE ADJACENT DUPLICATES FROM lt_fu_id COMPARING tor_id.
+
+    LOOP AT lt_fu_id  ASSIGNING FIELD-SYMBOL(<ls_fu_id>).
+      ADD 1 TO lv_count.
+      CLEAR:
+        ls_fu_create,
+        ls_fu_update,
+        ls_fu_delete.
+
+      READ TABLE is_delivery_item-fu_list INTO ls_fu_create WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_create.
+      READ TABLE is_delivery_item-fu_list INTO ls_fu_update WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_update.
+      READ TABLE is_delivery_item-fu_list INTO ls_fu_delete WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_delete.
+
+      IF ls_fu_create IS NOT INITIAL
+        AND ls_fu_update IS INITIAL
+        AND ls_fu_delete IS INITIAL.
+
+        lt_control  = VALUE #( BASE lt_control
+          (
+            paramindex  = lv_count
+            paramname   = cs_mapping-appsys
+            value       = mv_appsys
+          )
+          (
+            paramindex  = lv_count
+            paramname   = cs_mapping-trxcod
+            value       = zif_gtt_sof_constants=>cs_trxcod-fu_number
+          )
+          (
+            paramindex  = lv_count
+            paramname   = cs_mapping-trxid
+            value       = zcl_gtt_sof_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
+          )
+        ).
+      ENDIF.
+
+      IF ls_fu_delete IS NOT INITIAL
+       AND ls_fu_create IS INITIAL
+       AND ls_fu_update IS INITIAL.
+        lt_control  = VALUE #( BASE lt_control
+          (
+            paramindex  = lv_count
+            paramname   = cs_mapping-appsys
+            value       = mv_appsys
+          )
+          (
+            paramindex  = lv_count
+            paramname   = cs_mapping-trxcod
+            value       = zif_gtt_sof_constants=>cs_trxcod-fu_number
+          )
+          (
+            paramindex  = lv_count
+            paramname   = cs_mapping-trxid
+            value       = zcl_gtt_sof_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
+          )
+          (
+            paramindex  = lv_count
+            paramname   = cs_mapping-action
+            value       = /bobf/if_frw_c=>sc_modify_delete
+          )
+        ).
+      ENDIF.
+    ENDLOOP.
+
     " fill technical data into all control data records
-    lv_appobjid = |{ is_lips-vbeln ALPHA = OUT }{ is_lips-posnr ALPHA = IN }|.
+    lv_appobjid = |{ is_delivery_item-lips-vbeln ALPHA = OUT }{ is_delivery_item-lips-posnr ALPHA = IN }|.
     CONDENSE lv_appobjid NO-GAPS.
     LOOP AT lt_control ASSIGNING FIELD-SYMBOL(<ls_control>).
       <ls_control>-appsys     = mv_appsys.
@@ -224,16 +250,16 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
 
     " do not retrieve planned events when DLV is not stored in DB yet
     " (this is why all the fields of LIKP are empty, except VBELN)
-    IF is_likp-lfart IS NOT INITIAL AND
-       is_lips-pstyv IS NOT INITIAL.
+    IF is_dlv_item-likp-lfart IS NOT INITIAL AND
+       is_dlv_item-lips-pstyv IS NOT INITIAL.
 
       TRY.
           zcl_gtt_sof_tm_tools=>get_delivery_item_planned_evt(
             EXPORTING
               iv_appsys    = mv_appsys
               is_aotype    = is_aotype
-              is_likp      = is_likp
-              is_lips      = is_lips
+              is_likp      = is_dlv_item-likp
+              is_lips      = is_dlv_item-lips
               is_dlv_item  = is_dlv_item
             IMPORTING
               et_exp_event = lt_exp_event ).
@@ -249,7 +275,7 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
             ) ).
           ENDIF.
 
-          lv_appobjid = |{ is_lips-vbeln ALPHA = OUT }{ is_lips-posnr ALPHA = IN }|.
+          lv_appobjid = |{ is_dlv_item-lips-vbeln ALPHA = OUT }{ is_dlv_item-lips-posnr ALPHA = IN }|.
           CONDENSE lv_appobjid NO-GAPS.
           LOOP AT lt_exp_event ASSIGNING FIELD-SYMBOL(<ls_exp_event>).
             <ls_exp_event>-appsys         = mv_appsys.
@@ -298,7 +324,7 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
     lv_futrxcod    = zif_gtt_sof_constants=>cs_trxcod-fu_number.
 
     " Delivery Item
-    lv_appobjid = |{ is_lips-vbeln ALPHA = OUT }{ is_lips-posnr ALPHA = IN }|.
+    lv_appobjid = |{ is_delivery_item-lips-vbeln ALPHA = OUT }{ is_delivery_item-lips-posnr ALPHA = IN }|.
     CONDENSE lv_appobjid NO-GAPS.
     cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
       appsys      = mv_appsys
@@ -306,52 +332,7 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
       appobjid    = lv_appobjid
       trxcod      = lv_dlvittrxcod
       trxid       = lv_appobjid
-      timzon      = zcl_gtt_sof_tm_tools=>get_system_time_zone( )
     ) ).
-
-*   DLV Item watch FU
-    lt_fu_id =  CORRESPONDING #( it_fu_list ).
-    SORT lt_fu_id BY tor_id.
-    DELETE ADJACENT DUPLICATES FROM lt_fu_id COMPARING tor_id.
-
-    LOOP AT lt_fu_id  ASSIGNING FIELD-SYMBOL(<ls_fu_id>).
-      CLEAR:
-        ls_fu_create,
-        ls_fu_update,
-        ls_fu_delete.
-
-      READ TABLE it_fu_list INTO ls_fu_create WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_create.
-      READ TABLE it_fu_list INTO ls_fu_update WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_update.
-      READ TABLE it_fu_list INTO ls_fu_delete WITH KEY tor_id = <ls_fu_id>-tor_id change_mode = /bobf/if_frw_c=>sc_modify_delete.
-
-      IF ls_fu_create IS NOT INITIAL
-        AND ls_fu_update IS INITIAL
-        AND ls_fu_delete IS INITIAL.
-        cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
-          appsys      = mv_appsys
-          appobjtype  = is_aotype-aot_type
-          appobjid    = lv_appobjid
-          trxcod      = lv_futrxcod
-          trxid       = zcl_gtt_sof_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
-          timzon      = zcl_gtt_sof_tm_tools=>get_system_time_zone( )
-        ) ).
-      ENDIF.
-
-      IF ls_fu_delete IS NOT INITIAL
-       AND ls_fu_create IS INITIAL
-       AND ls_fu_update IS INITIAL.
-        cs_idoc_data-tracking_id  = VALUE #( BASE cs_idoc_data-tracking_id (
-          appsys      = mv_appsys
-          appobjtype  = is_aotype-aot_type
-          appobjid    = lv_appobjid
-          trxcod      = lv_futrxcod
-          trxid       = zcl_gtt_sof_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
-          timzon      = zcl_gtt_sof_tm_tools=>get_system_time_zone( )
-          action      = /bobf/if_frw_c=>sc_modify_delete
-        ) ).
-      ENDIF.
-
-    ENDLOOP.
 
   ENDMETHOD.
 
@@ -363,41 +344,10 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_instance.
-
-    DATA(lt_trk_obj_type) = VALUE zif_gtt_sof_ctp_types=>tt_trk_obj_type(
-       ( zif_gtt_sof_ctp_tor_constants=>cs_trk_obj_type-tms_tor )
-       ( zif_gtt_sof_ctp_tor_constants=>cs_trk_obj_type-esc_deliv )
-    ).
-
-    IF is_gtt_enabled( it_trk_obj_type = lt_trk_obj_type ) = abap_true.
-      ro_sender  = NEW #( ).
-
-      ro_sender->initiate( ).
-    ELSE.
-      MESSAGE e006(zgtt_ssof) INTO DATA(lv_dummy).
-      zcl_gtt_sof_tm_tools=>throw_exception( ).
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD get_object_type.
-
-    rv_objtype  = zif_gtt_sof_ctp_tor_constants=>cs_trk_obj_type-esc_deliv.
-
-  ENDMETHOD.
-
-
   METHOD prepare_idoc_data.
 
-    DATA: ls_idoc_data    TYPE zif_gtt_sof_ctp_types=>ts_idoc_data.
-
-    DATA(lr_dlv_item)   = io_dl_item_data->get_delivery_items( ).
-
-    FIELD-SYMBOLS: <lt_dlv_item>  TYPE zif_gtt_sof_ctp_types=>tt_delivery_item.
-
-    ASSIGN lr_dlv_item->*  TO <lt_dlv_item>.
+    DATA:
+      ls_idoc_data    TYPE zif_gtt_sof_ctp_types=>ts_idoc_data.
 
     LOOP AT mt_aotype ASSIGNING FIELD-SYMBOL(<ls_aotype>).
       CLEAR: ls_idoc_data.
@@ -410,44 +360,39 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
         CHANGING
           cs_idoc_data = ls_idoc_data ).
 
-      LOOP AT <lt_dlv_item> ASSIGNING FIELD-SYMBOL(<ls_dlv_fu>).
+      LOOP AT mt_delivery_item ASSIGNING FIELD-SYMBOL(<ls_dlv_item>).
 
-        IF <ls_dlv_fu>-lips-pstyv IS INITIAL. " Skip the the item that don't stored in DB
+        IF <ls_dlv_item>-lips-pstyv IS INITIAL. " Skip the the item that don't stored in DB
           CONTINUE.
         ENDIF.
 
         fill_idoc_appobj_ctabs(
           EXPORTING
-            is_aotype    = <ls_aotype>
-            is_lips      = <ls_dlv_fu>-lips
+            is_aotype        = <ls_aotype>
+            is_delivery_item = <ls_dlv_item>
           CHANGING
-            cs_idoc_data = ls_idoc_data ).
+            cs_idoc_data     = ls_idoc_data ).
 
         fill_idoc_control_data(
           EXPORTING
-            is_aotype    = <ls_aotype>
-            is_likp      = <ls_dlv_fu>-likp
-            is_lips      = <ls_dlv_fu>-lips
-            it_fu_list   = <ls_dlv_fu>-fu_list
+            is_aotype        = <ls_aotype>
+            is_delivery_item = <ls_dlv_item>
           CHANGING
-            cs_idoc_data = ls_idoc_data ).
+            cs_idoc_data     = ls_idoc_data ).
 
         fill_idoc_exp_event(
           EXPORTING
             is_aotype    = <ls_aotype>
-            is_likp      = <ls_dlv_fu>-likp
-            is_lips      = <ls_dlv_fu>-lips
-            is_dlv_item  = <ls_dlv_fu>
+            is_dlv_item  = <ls_dlv_item>
           CHANGING
             cs_idoc_data = ls_idoc_data ).
 
         fill_idoc_tracking_id(
           EXPORTING
-            is_aotype    = <ls_aotype>
-            is_lips      = <ls_dlv_fu>-lips
-            it_fu_list   = <ls_dlv_fu>-fu_list
+            is_aotype        = <ls_aotype>
+            is_delivery_item = <ls_dlv_item>
           CHANGING
-            cs_idoc_data = ls_idoc_data ).
+            cs_idoc_data     = ls_idoc_data ).
       ENDLOOP.
 
       IF ls_idoc_data-appobj_ctabs[] IS NOT INITIAL AND
@@ -456,6 +401,13 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
         APPEND ls_idoc_data TO mt_idoc_data.
       ENDIF.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD zif_gtt_ctp_tor_to_dl~extract_data.
+
+    fill_delivery_item_data( ).
 
   ENDMETHOD.
 ENDCLASS.

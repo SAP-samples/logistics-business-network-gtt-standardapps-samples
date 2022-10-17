@@ -170,6 +170,10 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_PO IMPLEMENTATION.
         paramname = zif_gtt_ef_constants=>cs_system_fields-actual_technical_datetime
         value     = |0{ sy-datum }{ sy-uzeit }|
       )
+      (
+        paramname = zif_gtt_ef_constants=>cs_system_fields-reported_by
+        value     = sy-uname
+      )
     ).
 
     " fill technical data into all control data records

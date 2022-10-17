@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_INTF" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <VSEOINTERF>
+    <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+    <LANGU>E</LANGU>
+    <DESCRIPT>Interface for Outbound/Inbound Delivery CrossTP Update</DESCRIPT>
+    <EXPOSURE>2</EXPOSURE>
+    <STATE>1</STATE>
+    <UNICODE>X</UNICODE>
+   </VSEOINTERF>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>CHECK_RELEVANCE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Check Relevance</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>CHECK_RELEVANCE</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>INTF ZIF_GTT_CTP_TOR_TO_DL</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>CHECK_RELEVANCE</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ĉĥēċķ∙Řēĺēʋąŋċē∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>EXTRACT_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Extract Data</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>EXTRACT_DATA</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>INTF ZIF_GTT_CTP_TOR_TO_DL</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>EXTRACT_DATA</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ĕχţŗąċţ∙Ďąţą∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>INITIATE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Initialization</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>INITIATE</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>INTF ZIF_GTT_CTP_TOR_TO_DL</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>INITIATE</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ĭŋįţįąĺįžąţįŏŋ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>PROCESS_DATA</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Process Data</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>PROCESS_DATA</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>INTF ZIF_GTT_CTP_TOR_TO_DL</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_CTP_TOR_TO_DL</CLSNAME>
+     <CMPNAME>PROCESS_DATA</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ƥŗŏċēşş∙Ďąţą∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
+  </asx:values>
+ </asx:abap>
+</abapGit>

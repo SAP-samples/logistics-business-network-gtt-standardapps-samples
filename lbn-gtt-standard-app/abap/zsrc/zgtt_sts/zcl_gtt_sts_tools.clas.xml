@@ -32,6 +32,24 @@
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_CAPA2REQ_LINK_MUL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get the Link of Capacity/Requirement Doc (Multpile layer)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_CAPA2REQ_LINK_MUL</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_TOOLS</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_CAPA2REQ_LINK_MUL</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙ţĥē∙Ļįŋķ∙ŏƒ∙Ĉąρąċįţŷ/Řēƣűįŗēɱēŋţ∙Ďŏċ∙(Μűĺţρįĺē∙ĺąŷēŗ)∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
      <CMPNAME>GET_CAPA_INFO</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Get Capacity Information</DESCRIPT>
@@ -47,6 +65,24 @@
      <CMPNAME>GET_CAPA_INFO</CMPNAME>
      <LANGU>닱</LANGU>
      <DESCRIPT>[Ģēţ∙Ĉąρąċįţŷ∙Ĭŋƒŏŗɱąţįŏŋ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_CAPA_INFO_MUL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Capacity Document (Multpile layer)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_CAPA_INFO_MUL</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_TOOLS</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_CAPA_INFO_MUL</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙Ĉąρąċįţŷ∙Ďŏċűɱēŋţ∙(Μűĺţρįĺē∙ĺąŷēŗ)∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
@@ -194,6 +230,24 @@
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_REQCAPA_INFO_MUL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Requirement/Capacity Document (Multpile layer)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_REQCAPA_INFO_MUL</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_TOOLS</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_REQCAPA_INFO_MUL</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙Řēƣűįŗēɱēŋţ/Ĉąρąċįţŷ∙Ďŏċűɱēŋţ∙(Μűĺţρįĺē∙ĺąŷēŗ)∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
      <CMPNAME>GET_REQ_INFO</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Get Requirement Information</DESCRIPT>
@@ -209,6 +263,24 @@
      <CMPNAME>GET_REQ_INFO</CMPNAME>
      <LANGU>닱</LANGU>
      <DESCRIPT>[Ģēţ∙Řēƣűįŗēɱēŋţ∙Ĭŋƒŏŗɱąţįŏŋ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_REQ_INFO_MUL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Requirement Document (Multpile layer)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_REQ_INFO_MUL</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_TOOLS</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>GET_REQ_INFO_MUL</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙Řēƣűįŗēɱēŋţ∙Ďŏċűɱēŋţ∙(Μűĺţρįĺē∙ĺąŷēŗ)∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>

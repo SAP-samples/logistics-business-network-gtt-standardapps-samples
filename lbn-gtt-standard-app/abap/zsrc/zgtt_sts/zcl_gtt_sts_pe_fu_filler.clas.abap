@@ -5,6 +5,22 @@ class ZCL_GTT_STS_PE_FU_FILLER definition
 
 public section.
 
+  types:
+    BEGIN OF ts_req2capa_info,
+      req_no              TYPE /scmtms/tor_id,
+      req_key             TYPE /bobf/conf_key,
+      req_stop_key        TYPE /bobf/conf_key,
+      req_assgn_stop_key  TYPE /bobf/conf_key,
+      req_log_locid       TYPE /scmtms/location_id,
+      cap_no              TYPE /scmtms/tor_id,
+      cap_key             TYPE /bobf/conf_key,
+      cap_stop_key        TYPE /bobf/conf_key,
+      cap_plan_trans_time TYPE /scmtms/stop_plan_date,
+      cap_seq             TYPE numc04,
+    END OF ts_req2capa_info .
+  types:
+    tt_req2capa_info TYPE TABLE OF ts_req2capa_info .
+
   methods GET_CAPA_MATCHKEY
     importing
       !IV_ASSGN_STOP_KEY type /SCMTMS/TOR_STOP_KEY
@@ -12,10 +28,17 @@ public section.
       value(RV_MATCH_KEY) type /SAPTRX/LOC_ID_2
     raising
       CX_UDM_MESSAGE .
+  methods GET_REQCAPA_INFO
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    raising
+      CX_UDM_MESSAGE .
 
   methods ZIF_GTT_STS_PE_FILLER~GET_PLANNED_EVENTS
     redefinition .
 protected section.
+
+  data MT_REQ2CAPA_INFO type TT_REQ2CAPA_INFO .
 
   methods LOAD_END
     redefinition .
@@ -41,26 +64,13 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
 
   METHOD get_capa_matchkey.
 
-    FIELD-SYMBOLS:
-      <lt_capa_root> TYPE /scmtms/t_em_bo_tor_root,
-      <lt_capa_stop> TYPE /scmtms/t_em_bo_tor_stop.
-
-    DATA(lr_capa_root) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_root ).
-    ASSIGN lr_capa_root->* TO <lt_capa_root>.
-    IF sy-subrc <> 0.
-      RETURN.
+    CLEAR rv_match_key.
+    READ TABLE mt_req2capa_info INTO DATA(ls_req2capa_info)
+      WITH KEY req_assgn_stop_key = iv_assgn_stop_key.
+    IF sy-subrc = 0.
+      rv_match_key = |{ ls_req2capa_info-cap_no }{ ls_req2capa_info-cap_seq }|.
+      SHIFT rv_match_key LEFT DELETING LEADING '0'.
     ENDIF.
-
-    DATA(lr_capa_stop) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_stop ).
-    ASSIGN lr_capa_stop->* TO <lt_capa_stop>.
-    IF sy-subrc <> 0.
-      RETURN.
-    ENDIF.
-
-    rv_match_key = zcl_gtt_sts_tools=>get_capa_match_key(
-                        iv_assgn_stop_key = iv_assgn_stop_key
-                        it_capa_stop      = <lt_capa_stop>
-                        it_capa_root      = <lt_capa_root> ).
 
   ENDMETHOD.
 
@@ -305,16 +315,13 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA(lr_capa_stop) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_stop ).
-    ASSIGN lr_capa_stop->* TO <lt_capa_stop>.
-
     LOOP AT <lt_stop> ASSIGNING FIELD-SYMBOL(<ls_stop>) USING KEY parent_seqnum WHERE parent_node_id = <ls_root>-node_id.
 
-      READ TABLE <lt_capa_stop> ASSIGNING FIELD-SYMBOL(<ls_capa_stop>) WITH KEY node_id = <ls_stop>-assgn_stop_key.
+      READ TABLE mt_req2capa_info ASSIGNING FIELD-SYMBOL(<ls_req2capa_info>) WITH KEY req_assgn_stop_key = <ls_stop>-assgn_stop_key.
       CHECK sy-subrc = 0.
 
       CHECK <ls_stop>-stop_cat = /scmtms/if_common_c=>c_stop_category-inbound AND
-            <ls_capa_stop>-plan_trans_time IS NOT INITIAL.
+            <ls_req2capa_info>-cap_plan_trans_time IS NOT INITIAL.
 
       TEST-SEAM shp_arrival_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
@@ -332,12 +339,12 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
                                   THEN ls_loc_root->time_zone_code
                                   ELSE sy-zonlo ).
 
-      DATA(lv_exp_datetime) = <ls_capa_stop>-plan_trans_time.
+      DATA(lv_exp_datetime) = <ls_req2capa_info>-cap_plan_trans_time.
 
 
       zcl_gtt_sts_tools=>convert_utc_timestamp(
         EXPORTING
-          iv_timezone  =  lv_tz
+          iv_timezone  = lv_tz
         CHANGING
           cv_timestamp = lv_exp_datetime ).
 
@@ -383,17 +390,12 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
       RETURN.
     ENDIF.
 
-    DATA(lr_capa_stop) = mo_ef_parameters->get_appl_table( /scmtms/cl_scem_int_c=>sc_table_definition-bo_tor-capa_stop ).
-    ASSIGN lr_capa_stop->* TO <lt_capa_stop>.
-
     LOOP AT <lt_stop> ASSIGNING FIELD-SYMBOL(<ls_stop>) USING KEY parent_seqnum WHERE parent_node_id = <ls_root>-node_id.
-
-      READ TABLE <lt_capa_stop> ASSIGNING FIELD-SYMBOL(<ls_capa_stop>)
-        WITH KEY node_id = <ls_stop>-assgn_stop_key.
+      READ TABLE mt_req2capa_info ASSIGNING FIELD-SYMBOL(<ls_req2capa_info>) WITH KEY req_assgn_stop_key = <ls_stop>-assgn_stop_key.
       CHECK sy-subrc = 0.
 
       CHECK <ls_stop>-stop_cat = /scmtms/if_common_c=>c_stop_category-outbound AND
-            <ls_capa_stop>-plan_trans_time IS NOT INITIAL.
+            <ls_req2capa_info>-cap_plan_trans_time IS NOT INITIAL.
 
       TEST-SEAM shp_departure_lt_loc_root.
         /scmtms/cl_pln_bo_data=>get_loc_data(
@@ -411,11 +413,11 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
                                   THEN ls_loc_root->time_zone_code
                                   ELSE sy-zonlo ).
 
-      DATA(lv_exp_datetime) = <ls_capa_stop>-plan_trans_time.
+      DATA(lv_exp_datetime) = <ls_req2capa_info>-cap_plan_trans_time.
 
       zcl_gtt_sts_tools=>convert_utc_timestamp(
         EXPORTING
-          iv_timezone  =  lv_tz
+          iv_timezone  = lv_tz
         CHANGING
           cv_timestamp = lv_exp_datetime ).
 
@@ -589,6 +591,8 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
       IMPORTING
         et_loc_address = DATA(lt_loc_address) ).
 
+    get_reqcapa_info( is_app_objects = is_app_objects  ).
+
     shp_arrival(
       EXPORTING
         it_loc_addr     = lt_loc_address
@@ -668,6 +672,30 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
 
       ENDLOOP.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_reqcapa_info.
+
+    FIELD-SYMBOLS:
+      <ls_tor_root>        TYPE /scmtms/s_em_bo_tor_root.
+
+    CLEAR:
+      mt_req2capa_info.
+
+    ASSIGN is_app_objects-maintabref->* TO <ls_tor_root>.
+    IF <ls_tor_root> IS NOT ASSIGNED.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
+      EXPORTING
+        ir_root          = REF #( <ls_tor_root> )
+        iv_old_data      = abap_false
+      IMPORTING
+        et_req2capa_info = mt_req2capa_info ).
 
   ENDMETHOD.
 ENDCLASS.

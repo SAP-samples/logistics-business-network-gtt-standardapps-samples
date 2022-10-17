@@ -477,6 +477,11 @@ FUNCTION zgtt_ssof_ote_de_item.
     CONCATENATE '0' sy-datum sy-uzeit INTO ls_control_data-value.
     APPEND ls_control_data TO e_control_data.
 
+    ls_control_data-paramname = gc_cp_yn_reported_by.
+    ls_control_data-value = sy-uname.
+    CONDENSE ls_control_data-value NO-GAPS.
+    APPEND ls_control_data TO e_control_data.
+
 *   freightUnitTPs
     CLEAR lt_relation.
     lo_gtt_toolkit->check_integration_mode(
@@ -563,6 +568,11 @@ FUNCTION zgtt_ssof_ote_de_item.
         ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
           iv_value = ls_fu_item-item_descr ).
         APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_count.
+        ls_control_data-paramname = gc_cp_yn_fu_no_logsys.
+        ls_control_data-value = i_appsys.
+        APPEND ls_control_data TO e_control_data.
       ENDLOOP.
       IF sy-subrc NE 0.
         ls_control_data-paramindex = '1'.
@@ -570,6 +580,32 @@ FUNCTION zgtt_ssof_ote_de_item.
         ls_control_data-value = ''.
         APPEND ls_control_data TO e_control_data.
       ENDIF.
+
+      clear lv_tabix.
+      LOOP AT lt_relation INTO ls_relation
+        WHERE delivery_number      = <ls_xlips>-vbeln
+          AND delivery_item_number = <ls_xlips>-posnr.
+        lv_tabix = lv_tabix + 1.
+
+        ls_control_data-paramindex = lv_tabix.
+        ls_control_data-paramname = gc_cp_yn_appsys.
+        ls_control_data-value = i_appsys.
+        SHIFT ls_control_data-value LEFT DELETING LEADING space.
+        APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_tabix.
+        ls_control_data-paramname = gc_cp_yn_trxcod.
+        ls_control_data-value = zif_gtt_sof_constants=>cs_trxcod-fu_number.
+        SHIFT ls_control_data-value LEFT DELETING LEADING space.
+        APPEND ls_control_data TO e_control_data.
+
+        ls_control_data-paramindex = lv_tabix.
+        ls_control_data-paramname = gc_cp_yn_trxid.
+        ls_control_data-value = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
+        SHIFT ls_control_data-value LEFT DELETING LEADING space.
+        APPEND ls_control_data TO e_control_data.
+
+      ENDLOOP.
 
     ENDIF.
     CLEAR ls_control_data-paramindex.
