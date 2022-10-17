@@ -2,7 +2,7 @@
 ## What's New 
 ### Oct 15th, 2022
 1. Add the "Reported By" field for all the tracked processes and actual events. 
-2. Remove the Resource TPs table in the shipment and freight order exactor. 
+2. Remove the Resource TPs table in the shipment and freight order extractor. 
 3. When a freight unit observes a freight order, if there is multi-layer data from the freight unit to the freight order (example: freight unit -> container unit -> freight order), the relationship between the freight unit and the freight order can still be retrieved. 
 4. The receiving location of the inbound delivery is corrected from "Plant" to "Shipping Point"; Now the "Proof of Delivery" planned event of a shipment is created when the receiving location is "Shipping Point".
 5. When no location is provided, the location type should be set to null.
