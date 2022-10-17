@@ -376,6 +376,7 @@
        <CONT_NAME>TCTRL_ZGTT_TRACK_CONF</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_TRACK_CONF-TOR_TYPE</NAME>
+       <TEXT>Doc._Type_______________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>040</LENGTH>
@@ -392,6 +393,7 @@
        <CONT_NAME>TCTRL_ZGTT_TRACK_CONF</CONT_NAME>
        <TYPE>TEXT</TYPE>
        <NAME>*ZGTT_TRACK_CONF-TRACK_OPTION</NAME>
+       <TEXT>Scenario________________________________</TEXT>
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>
        <LENGTH>040</LENGTH>
@@ -422,6 +424,7 @@
        <CONT_NAME>TCTRL_ZGTT_TRACK_CONF</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_TRACK_CONF-TOR_TYPE</NAME>
+       <TEXT>____</TEXT>
        <LINE>001</LINE>
        <COLUMN>001</COLUMN>
        <LENGTH>004</LENGTH>
@@ -439,6 +442,7 @@
        <CONT_NAME>TCTRL_ZGTT_TRACK_CONF</CONT_NAME>
        <TYPE>TEMPLATE</TYPE>
        <NAME>ZGTT_TRACK_CONF-TRACK_OPTION</NAME>
+       <TEXT>__</TEXT>
        <DROPDOWN>L</DROPDOWN>
        <LINE>001</LINE>
        <COLUMN>002</COLUMN>

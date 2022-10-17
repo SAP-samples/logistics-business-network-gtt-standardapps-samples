@@ -4,6 +4,14 @@ class ZCL_GTT_SOF_TM_TOOLS definition
 
 public section.
 
+  types:
+    BEGIN OF ts_dlv,
+      vbeln        type /SCMTMS/BASE_BTD_ID,
+      base_btd_tco TYPE /SCMTMS/BASE_BTD_TCO,
+    END OF ts_dlv .
+  types:
+    tt_dlv TYPE TABLE OF ts_dlv .
+
   class-methods GET_FORMATED_TOR_ID
     importing
       !IR_DATA type ref to DATA
@@ -122,6 +130,17 @@ public section.
       !IV_KEY type /BOBF/CONF_KEY
     exporting
       value(ES_TOR) type /SCMTMS/S_TOR_ROOT_K .
+  class-methods GET_TOR_STOP_BEFORE
+    importing
+      !IT_TOR_ROOT type /SCMTMS/T_EM_BO_TOR_ROOT
+    returning
+      value(RT_TOR_STOP_BEFORE) type /SCMTMS/T_EM_BO_TOR_STOP .
+  class-methods GET_DLV_TOR_RELATION
+    importing
+      !IT_TOR_ROOT_SSTRING type /SCMTMS/T_EM_BO_TOR_ROOT
+      !IT_TOR_ITEM_SSTRING type /SCMTMS/T_EM_BO_TOR_ITEM
+    exporting
+      !ET_FU_INFO type /SCMTMS/T_TOR_ROOT_K .
   PROTECTED SECTION.
 private section.
 
@@ -743,5 +762,104 @@ CLASS ZCL_GTT_SOF_TM_TOOLS IMPLEMENTATION.
 
       CATCH /bobf/cx_frw_contrct_violation.
     ENDTRY.
+  ENDMETHOD.
+
+
+  METHOD get_dlv_tor_relation.
+
+    DATA:
+      lt_dlv        TYPE tt_dlv,
+      ls_dlv        TYPE ts_dlv,
+      lv_sys        TYPE tbdls-logsys,
+      ls_base_doc   TYPE /scmtms/s_base_document_w_item,
+      lt_base_doc   TYPE /scmtms/t_base_document_w_item,
+      lo_srvmgr_tor TYPE REF TO /bobf/if_tra_service_manager,
+      lt_result     TYPE /bobf/t_frw_keyindex,
+      lt_fu         TYPE /scmtms/t_tor_root_k.
+
+    CLEAR:et_fu_info.
+
+    LOOP AT it_tor_root_sstring ASSIGNING FIELD-SYMBOL(<ls_tor_root>)
+      WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit
+        AND ( base_btd_tco = /scmtms/if_common_c=>c_btd_tco-outbounddelivery
+         OR base_btd_tco = /scmtms/if_common_c=>c_btd_tco-inbounddelivery ).
+
+      LOOP AT it_tor_item_sstring ASSIGNING FIELD-SYMBOL(<ls_tor_item>)
+        USING KEY item_parent WHERE parent_node_id = <ls_tor_root>-node_id.
+
+        READ TABLE lt_dlv TRANSPORTING NO FIELDS
+          WITH KEY vbeln = <ls_tor_item>-base_btd_id .
+        IF sy-subrc <> 0.
+          ls_dlv-vbeln = <ls_tor_item>-base_btd_id .
+          ls_dlv-base_btd_tco = <ls_tor_root>-base_btd_tco.
+          APPEND ls_dlv TO lt_dlv.
+          CLEAR ls_dlv.
+        ENDIF.
+      ENDLOOP.
+    ENDLOOP.
+
+    CALL FUNCTION 'OWN_LOGICAL_SYSTEM_GET'
+      IMPORTING
+        own_logical_system             = lv_sys
+      EXCEPTIONS
+        own_logical_system_not_defined = 1
+        OTHERS                         = 2.
+
+    LOOP AT lt_dlv INTO ls_dlv.
+      ls_base_doc-base_btd_logsys = lv_sys.
+      ls_base_doc-base_btd_tco = ls_dlv-base_btd_tco.
+      ls_base_doc-base_btd_id = ls_dlv-vbeln.
+      APPEND ls_base_doc TO lt_base_doc.
+      CLEAR ls_base_doc.
+    ENDLOOP.
+
+    lo_srvmgr_tor = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+    lo_srvmgr_tor->convert_altern_key(
+      EXPORTING
+        iv_node_key   = /scmtms/if_tor_c=>sc_node-item_tr
+        iv_altkey_key = /scmtms/if_tor_c=>sc_alternative_key-item_tr-base_document
+        it_key        = lt_base_doc
+      IMPORTING
+        et_result     = lt_result ).
+
+    lo_srvmgr_tor->retrieve_by_association(
+      EXPORTING
+        iv_node_key    = /scmtms/if_tor_c=>sc_node-item_tr
+        it_key         = CORRESPONDING #( lt_result )
+        iv_association = /scmtms/if_tor_c=>sc_association-item_tr-fu_root
+        iv_fill_data   = abap_true
+      IMPORTING
+        et_data        = et_fu_info ).
+
+  ENDMETHOD.
+
+
+  METHOD get_tor_stop_before.
+
+    DATA: ls_tor_stop_before TYPE /scmtms/s_em_bo_tor_stop.
+
+    /scmtms/cl_tor_helper_stop=>get_stop_sequence(
+      EXPORTING
+        it_root_key     = VALUE #( FOR <ls_tor_root> IN it_tor_root ( key = <ls_tor_root>-node_id ) )
+        iv_before_image = abap_true
+      IMPORTING
+        et_stop_seq_d   = DATA(lt_stop_seq_d) ).
+
+    LOOP AT lt_stop_seq_d ASSIGNING FIELD-SYMBOL(<ls_stop_seq_d>).
+
+      LOOP AT <ls_stop_seq_d>-stop_seq ASSIGNING FIELD-SYMBOL(<ls_stop_seq>).
+        DATA(lv_tabix) = sy-tabix.
+        MOVE-CORRESPONDING <ls_stop_seq> TO ls_tor_stop_before.
+
+        ls_tor_stop_before-parent_node_id = <ls_stop_seq>-root_key.
+
+        ASSIGN <ls_stop_seq_d>-stop_map[ tabix = lv_tabix ] TO FIELD-SYMBOL(<ls_stop_map>).
+        ls_tor_stop_before-node_id = <ls_stop_map>-stop_key.
+
+        INSERT ls_tor_stop_before INTO TABLE rt_tor_stop_before.
+      ENDLOOP.
+
+    ENDLOOP.
+
   ENDMETHOD.
 ENDCLASS.

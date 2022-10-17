@@ -12,6 +12,64 @@
    </INCLUDES>
    <FUNCTIONS>
     <item>
+     <FUNCNAME>ZGTT_CTP_TOR_TO_DL</FUNCNAME>
+     <SHORT_TEXT>Cross TP Update from TM TOR to Inbound/Outbound Delivery</SHORT_TEXT>
+     <IMPORT>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ROOT_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ROOT</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ROOT_BEFORE_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ROOT</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ITEM_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ITEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IT_TOR_ITEM_BEFORE_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_ITEM</TYP>
+      </RSIMP>
+      <RSIMP>
+       <PARAMETER>IT_TOR_STOP_SSTRING</PARAMETER>
+       <REFERENCE>X</REFERENCE>
+       <TYP>/SCMTMS/T_EM_BO_TOR_STOP</TYP>
+      </RSIMP>
+     </IMPORT>
+     <DOCUMENTATION>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ROOT_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Root (EM Integration)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ROOT_BEFORE_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Root (EM Integration)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ITEM_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Item (EM Integration)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IT_TOR_ITEM_BEFORE_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Item (EM Integration)</STEXT>
+      </RSFDO>
+      <RSFDO>
+       <PARAMETER>IT_TOR_STOP_SSTRING</PARAMETER>
+       <KIND>P</KIND>
+       <STEXT>Table Type for BO Transportation Order Stop (EM Integration)</STEXT>
+      </RSFDO>
+     </DOCUMENTATION>
+    </item>
+    <item>
      <FUNCNAME>ZGTT_SSOF_AOID</FUNCNAME>
      <SHORT_TEXT>AOID Extractor for Sales Order/Outbound Delivery</SHORT_TEXT>
      <IMPORT>

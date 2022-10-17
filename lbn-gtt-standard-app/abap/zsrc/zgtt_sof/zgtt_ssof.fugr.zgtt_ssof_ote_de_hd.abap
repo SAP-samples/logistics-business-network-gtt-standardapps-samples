@@ -452,6 +452,11 @@ FUNCTION zgtt_ssof_ote_de_hd.
     CONCATENATE '0' sy-datum sy-uzeit INTO ls_control_data-value.
     APPEND ls_control_data TO e_control_data.
 
+    ls_control_data-paramname = gc_cp_yn_reported_by.
+    ls_control_data-value = sy-uname.
+    CONDENSE ls_control_data-value NO-GAPS.
+    APPEND ls_control_data TO e_control_data.
+
     CLEAR ls_control_data-paramindex.
   ENDLOOP.
 

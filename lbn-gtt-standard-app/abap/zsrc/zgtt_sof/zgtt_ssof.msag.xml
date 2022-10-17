@@ -87,6 +87,154 @@
      <TEXT>Error occurred during the call of function module &amp;1</TEXT>
     </T100>
    </T100>
+   <I18N_LANGS>
+    <LANGU>늑</LANGU>
+    <LANGU>닱</LANGU>
+   </I18N_LANGS>
+   <T100T>
+    <T100T>
+     <SPRSL>늑</SPRSL>
+     <ARBGB>ZGTT_SSOF</ARBGB>
+     <STEXT>MSAG ZGTT_SSOF</STEXT>
+    </T100T>
+    <T100T>
+     <SPRSL>닱</SPRSL>
+     <ARBGB>ZGTT_SSOF</ARBGB>
+     <STEXT>[Ŝąĺēş∙Ŏŗƌēŗ∙Ƒűĺĺƒįĺĺɱēŋţ∙Μēşşąğēş∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</STEXT>
+    </T100T>
+   </T100T>
+   <T100_TEXTS>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>001</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           001</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>002</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           002</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>003</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           003</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>004</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           004</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>005</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           005</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>006</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           006</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>007</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           007</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>008</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           008</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>009</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           009</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>010</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           010</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>011</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           011</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>012</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           012</TEXT>
+    </item>
+    <item>
+     <SPRSL>늑</SPRSL>
+     <MSGNR>013</MSGNR>
+     <TEXT>MESS ZGTT_SSOF           013</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>001</MSGNR>
+     <TEXT>[Ƥŗŏʋįƌēƌ∙şţŗűċţűŗē∙&amp;2∙ƌŏēş∙ŋŏţ∙ċŏŋţąįŋ∙ƒįēĺƌ∙&amp;1∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>002</MSGNR>
+     <TEXT>[Ƥŗŏʋįƌēƌ∙ŗēƒēŗēŋċē∙&amp;1∙įş∙ŋŏţ∙ƃŏűŋƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>003</MSGNR>
+     <TEXT>[Ĕŗŗŏŗ∙ŏŋ∙ğēţţįŋğ∙şŷşţēɱ∙ţįɱēžŏŋē∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>004</MSGNR>
+     <TEXT>[Ţŗąċķ∙ĬĎ∙ƒűŋċţįŏŋ∙įş∙ŋŏţ∙įɱρĺēɱēŋţēƌ∙įŋ∙&amp;1∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>005</MSGNR>
+     <TEXT>[Řēċŏŗƌ∙įş∙ŋŏţ∙ƒŏűŋƌ∙įŋ∙&amp;1∙ƒŏŗ∙ķēŷ∙&amp;2∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>006</MSGNR>
+     <TEXT>[ĢŢŢ∙įş∙ŋŏţ∙ēŋąƃĺēƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>007</MSGNR>
+     <TEXT>[Ļŏğįċąĺ∙şŷşţēɱ∙įş∙ŋŏţ∙ƌēƒįŋēƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>008</MSGNR>
+     <TEXT>[Ńŏ∙ŜŎƑ∙ēχţŗąċţŏŗ∙įş∙ƒŏűŋƌ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>009</MSGNR>
+     <TEXT>[Ůŋķŋŏŵŋ∙Ďēĺįʋēŗŷ∙Ĭţēɱ∙ɱįĺēşţŏŋē∙&amp;1∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>010</MSGNR>
+     <TEXT>[Ƥĺąŋŋēƌ∙ēʋēŋţş∙ąŗē∙ŋŏţ∙įɱρĺēɱēŋţēƌ∙ƒŏŗ∙&amp;1∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>011</MSGNR>
+     <TEXT>[Ŝţŏρ∙ĬĎ∙&amp;1∙įş∙ŋŏţ∙ƒŏűŋƌ∙ƒŏŗ∙Ŝĥįρɱēŋţ∙&amp;2∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>012</MSGNR>
+     <TEXT>[Ńŏ∙ąρρĺįċąţįŏŋ∙ŏƃĵēċţ∙ţŷρē∙įş∙ƒŏűŋƌ∙(įţ_ąρρ_ŏƃĵēċţş)∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+    <item>
+     <SPRSL>닱</SPRSL>
+     <MSGNR>013</MSGNR>
+     <TEXT>[Ĕŗŗŏŗ∙ŏċċűŗŗēƌ∙ƌűŗįŋğ∙ţĥē∙ċąĺĺ∙ŏƒ∙ƒűŋċţįŏŋ∙ɱŏƌűĺē∙&amp;1∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+    </item>
+   </T100_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

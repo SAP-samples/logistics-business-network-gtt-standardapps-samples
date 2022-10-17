@@ -240,13 +240,6 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
           et_res_id  = cs_header-trobj_res_id
           et_res_val = cs_header-trobj_res_val ).
 
-      fill_resource_tables(
-        EXPORTING
-          is_vttk    = <ls_vttk>
-        IMPORTING
-          et_ref_cnt = cs_header-resrc_cnt
-          et_tp_id   = cs_header-resrc_tp_id ).
-
       fill_carrier_ref_doc_tables(
         EXPORTING
           is_vttk    = <ls_vttk>
@@ -722,7 +715,6 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   METHOD ZIF_GTT_TP_READER~GET_TRACK_ID_DATA.
 
     "another tip is that: for tracking ID type 'SHIPMENT_ORDER' of delivery header,
-    "and for tracking ID type 'RESOURCE' of shipment header,
     "DO NOT enable START DATE and END DATE
 
     DATA:
@@ -734,7 +726,6 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
                    <ls_vttk_old> TYPE vttkvb.
 
     lv_shptrxcod = zif_gtt_ef_constants=>cs_trxcod-sh_number.
-    lv_restrxcod = zif_gtt_ef_constants=>cs_trxcod-sh_resource.
     CLEAR et_track_id_data.
 
     ASSIGN is_app_object-maintabref->* TO <ls_vttk>.
@@ -751,64 +742,6 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
         timzon      = zcl_gtt_tools=>get_system_time_zone( )
       ) ).
 
-      DATA(lv_res_tid_new) = get_resource_tracking_id(
-        is_vttk = <ls_vttk> ).
-
-      " is shipment created?
-      IF <ls_vttk>-updkz = zif_gtt_ef_constants=>cs_change_mode-insert AND
-         lv_res_tid_new IS NOT INITIAL.
-
-        " add RESOURCE Tracking ID for the new Shipment
-        et_track_id_data  = VALUE #( BASE et_track_id_data (
-          appsys      = mo_ef_parameters->get_appsys( )
-          appobjtype  = is_app_object-appobjtype
-          appobjid    = is_app_object-appobjid
-          trxcod      = lv_restrxcod
-          trxid       = lv_res_tid_new
-        ) ).
-
-        " is shipment updated?
-      ELSEIF <ls_vttk>-updkz = zif_gtt_ef_constants=>cs_change_mode-update.
-        DATA(lr_vttk_old) = get_shippment_header(
-                              is_app_object = is_app_object
-                              ir_vttk       = mo_ef_parameters->get_appl_table(
-                                                iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_header_old ) ).
-
-        ASSIGN lr_vttk_old->* TO <ls_vttk_old>.
-        IF <ls_vttk_old> IS ASSIGNED.
-          DATA(lv_res_tid_old) = get_resource_tracking_id(
-            is_vttk = <ls_vttk_old> ).
-
-          " is RESOURCE Tracking ID changed?
-          IF lv_res_tid_old <> lv_res_tid_new.
-            " add new RESOURCE Tracking ID
-            IF lv_res_tid_new IS NOT INITIAL.
-              et_track_id_data  = VALUE #( BASE et_track_id_data (
-                appsys      = mo_ef_parameters->get_appsys( )
-                appobjtype  = is_app_object-appobjtype
-                appobjid    = is_app_object-appobjid
-                trxcod      = lv_restrxcod
-                trxid       = lv_res_tid_new
-              ) ).
-            ENDIF.
-
-            " delete old RESOURCE Tracking ID
-            IF lv_res_tid_old IS NOT INITIAL.
-              et_track_id_data  = VALUE #( BASE et_track_id_data (
-                appsys      = mo_ef_parameters->get_appsys( )
-                appobjtype  = is_app_object-appobjtype
-                appobjid    = is_app_object-appobjid
-                trxcod      = lv_restrxcod
-                trxid       = lv_res_tid_old
-                action      = zif_gtt_ef_constants=>cs_change_mode-delete
-              ) ).
-            ENDIF.
-          ENDIF.
-        ELSE.
-          MESSAGE e002(zgtt) WITH 'VTTK' INTO lv_dummy.
-          zcl_gtt_tools=>throw_exception( ).
-        ENDIF.
-      ENDIF.
     ELSE.
       MESSAGE e002(zgtt) WITH 'VTTK' INTO lv_dummy.
       zcl_gtt_tools=>throw_exception( ).

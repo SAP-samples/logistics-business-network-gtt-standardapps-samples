@@ -18,6 +18,28 @@
     <DTELMASTER>E</DTELMASTER>
     <REFKIND>D</REFKIND>
    </DD04V>
+   <I18N_LANGS>
+    <LANGU>늑</LANGU>
+    <LANGU>닱</LANGU>
+   </I18N_LANGS>
+   <DD04_TEXTS>
+    <item>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DDTEXT>DTEL ZGTT_RST_ID</DDTEXT>
+     <REPTEXT>DTEL ZGTT_RST_ID</REPTEXT>
+     <SCRTEXT_S>DTEL&gt;ZGTT_</SCRTEXT_S>
+     <SCRTEXT_M>DTEL ZGTT_RST_ID</SCRTEXT_M>
+     <SCRTEXT_L>DTEL ZGTT_RST_ID</SCRTEXT_L>
+    </item>
+    <item>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DDTEXT>[Řēşţŗįċţįŏŋ∙ĬĎ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DDTEXT>
+     <REPTEXT>[Řēşţŗįċţįŏŋ∙ĬĎ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</REPTEXT>
+     <SCRTEXT_S>[Řēşţŗ.ĬĎ]</SCRTEXT_S>
+     <SCRTEXT_M>[Řēşţŗįċţįŏŋ∙ĬĎ∙∙∙∙]</SCRTEXT_M>
+     <SCRTEXT_L>[Řēşţŗįċţįŏŋ∙ĬĎ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</SCRTEXT_L>
+    </item>
+   </DD04_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

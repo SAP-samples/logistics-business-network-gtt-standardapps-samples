@@ -127,6 +127,10 @@ CLASS ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI IMPLEMENTATION.
         paramname = zif_gtt_ef_constants=>cs_system_fields-actual_technical_datetime
         value     = |0{ sy-datum }{ sy-uzeit }|
       )
+      (
+        paramname = zif_gtt_ef_constants=>cs_system_fields-reported_by
+        value     = sy-uname
+      )
     ).
 
     DATA(lt_fu_list) = it_fu_list.

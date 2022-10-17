@@ -161,6 +161,8 @@ PROTECTED SECTION.
       capa_doc_last_stop    TYPE /saptrx/paramname VALUE 'YN_SHP_CAPA_DOC_LAST_STOP',
       dlv_item_inb_alt_id   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_INB_ALT_ID',
       dlv_item_oub_alt_id   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_OUB_ALT_ID',
+      dlv_item_inb_logsys   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_INB_ALT_ID_LOGSYS',
+      dlv_item_oub_logsys   TYPE /saptrx/paramname VALUE 'YN_SHP_DLV_ITM_OUB_ALT_ID_LOGSYS',
       estimated_datetime    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_DATETIME',
       estimated_timezone    TYPE /saptrx/paramname VALUE 'YN_SHP_ESTIMATED_TIMEZONE',
       resource_tp_line_cnt  TYPE /saptrx/paramname VALUE 'YN_SHP_RESOURCE_TP_LINE_COUNT',

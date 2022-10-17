@@ -21,6 +21,7 @@ private section.
   types TV_QUANTITYUOM type MEINS .
   types TV_PRODUCT_ID type /SCMTMS/PRODUCT_ID .
   types TV_PRODUCT_DESCR type /SCMTMS/ITEM_DESCRIPTION .
+  types tv_logsys TYPE  /SAPTRX/APPLSYSTEM.
   types:
     tt_line_no TYPE STANDARD TABLE OF tv_line_no
                           WITH EMPTY KEY .
@@ -40,6 +41,14 @@ private section.
                           WITH EMPTY KEY .
   types:
     tt_product_descr TYPE STANDARD TABLE OF tv_product_descr WITH EMPTY KEY .
+   types:
+    tt_logsys        TYPE STANDARD TABLE OF tv_logsys WITH EMPTY KEY .
+   types:
+    tt_appsys        TYPE STANDARD TABLE OF tv_logsys WITH EMPTY KEY .
+   types:
+    tt_trxcod        type STANDARD TABLE OF /SAPTRX/TRXCOD WITH EMPTY KEY .
+   types:
+    tt_trxid         type STANDARD TABLE OF /SAPTRX/TRXID WITH EMPTY KEY .
   types:
     BEGIN OF ts_dl_item,
       " Header section
@@ -129,6 +138,10 @@ private section.
       fu_quantityuom   TYPE tt_quantityuom,
       fu_product_id    TYPE tt_product_id,
       fu_product_descr TYPE tt_product_descr,
+      fu_no_logsys     type tt_logsys,
+      appsys           TYPE tt_appsys,
+      trxcod           type tt_trxcod,
+      trxid            type tt_trxid,
   END OF ts_dl_item_with_fu .
 
   constants:
@@ -220,6 +233,10 @@ private section.
       fu_quantityuom   TYPE /saptrx/paramname VALUE 'YN_DL_FU_UNITS',
       fu_product_id    TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT',
       fu_product_descr TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT_DESCR',
+      fu_no_logsys     TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO_LOGSYS',
+      appsys           TYPE /saptrx/paramname VALUE 'E1EHPTID_APPSYS',
+      trxcod           TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXCOD',
+      trxid            TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXID',
     END OF cs_mapping_with_fu .
   constants CV_POSNR_EMPTY type POSNR_VL value '000000' ##NO_TEXT.
   data MO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
@@ -629,37 +646,36 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
       CHANGING
         cs_dl_item = ls_item ).
 
-    IF change_mode = zif_gtt_ef_constants=>cs_change_mode-insert.
-      ls_item_with_fu = CORRESPONDING #( ls_item ).
-      " Give FU number in the tracking id
-      get_tor_items_for_dlv_item(
-        EXPORTING
-          ir_lips     = is_app_object-maintabref
-        IMPORTING
-          et_tor_item = DATA(lt_tor_item)
-      ).
-      IF lt_tor_item IS NOT INITIAL.
-        LOOP AT lt_tor_item ASSIGNING FIELD-SYMBOL(<ls_tor_item>).
-          ADD 1 TO lv_count.
-          APPEND lv_count TO ls_item_with_fu-fu_lineno.
-          APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
-                   ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_freightunit.
-          APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_item(
-                   ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_itemnumber.
-          APPEND <ls_tor_item>-quantity TO ls_item_with_fu-fu_quantity.
-          APPEND <ls_tor_item>-quantityuom TO ls_item_with_fu-fu_quantityuom.
-          APPEND <ls_tor_item>-product_id TO ls_item_with_fu-fu_product_id.
-          APPEND <ls_tor_item>-product_descr TO ls_item_with_fu-fu_product_descr.
-        ENDLOOP.
-      ENDIF.
-      rr_data   = NEW ts_dl_item_with_fu( ).
-      ASSIGN rr_data->* TO FIELD-SYMBOL(<ls_item_with_fu>).
-      <ls_item_with_fu> = ls_item_with_fu.
-    ELSE.
-      rr_data   = NEW ts_dl_item( ).
-      ASSIGN rr_data->* TO FIELD-SYMBOL(<ls_item>).
-      <ls_item> = ls_item.
+    ls_item_with_fu = CORRESPONDING #( ls_item ).
+    " Give FU number in the tracking id
+    get_tor_items_for_dlv_item(
+      EXPORTING
+        ir_lips     = is_app_object-maintabref
+      IMPORTING
+        et_tor_item = DATA(lt_tor_item)
+    ).
+    IF lt_tor_item IS NOT INITIAL.
+      LOOP AT lt_tor_item ASSIGNING FIELD-SYMBOL(<ls_tor_item>).
+        ADD 1 TO lv_count.
+        APPEND lv_count TO ls_item_with_fu-fu_lineno.
+        APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
+                 ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_freightunit.
+        APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_item(
+                 ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_itemnumber.
+        APPEND <ls_tor_item>-quantity TO ls_item_with_fu-fu_quantity.
+        APPEND <ls_tor_item>-quantityuom TO ls_item_with_fu-fu_quantityuom.
+        APPEND <ls_tor_item>-product_id TO ls_item_with_fu-fu_product_id.
+        APPEND <ls_tor_item>-product_descr TO ls_item_with_fu-fu_product_descr.
+        APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-fu_no_logsys.
+        APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-appsys.
+        APPEND zif_gtt_ef_constants=>cs_trxcod-fu_number TO ls_item_with_fu-trxcod.
+        APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
+                 ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-trxid.
+      ENDLOOP.
     ENDIF.
+    rr_data   = NEW ts_dl_item_with_fu( ).
+    ASSIGN rr_data->* TO FIELD-SYMBOL(<ls_item_with_fu>).
+    <ls_item_with_fu> = ls_item_with_fu.
 
   ENDMETHOD.
 
@@ -722,16 +738,11 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
       CHANGING
         cs_dl_item = ls_item ).
 
-    IF change_mode = zif_gtt_ef_constants=>cs_change_mode-insert.
-      ls_item_with_fu = CORRESPONDING #( ls_item ).
-      rr_data   = NEW ts_dl_item_with_fu( ).
-      ASSIGN rr_data->* TO FIELD-SYMBOL(<ls_item_with_fu>).
-      <ls_item_with_fu> = ls_item_with_fu.
-    ELSE.
-      rr_data   = NEW ts_dl_item( ).
-      ASSIGN rr_data->* TO FIELD-SYMBOL(<ls_item>).
-      <ls_item> = ls_item.
-    ENDIF.
+    ls_item_with_fu = CORRESPONDING #( ls_item ).
+    rr_data   = NEW ts_dl_item_with_fu( ).
+    ASSIGN rr_data->* TO FIELD-SYMBOL(<ls_item_with_fu>).
+    <ls_item_with_fu> = ls_item_with_fu.
+
   ENDMETHOD.
 
 
@@ -744,11 +755,8 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
   METHOD zif_gtt_tp_reader~get_mapping_structure.
 
-    IF change_mode = zif_gtt_ef_constants=>cs_change_mode-insert.
-      rr_data   = REF #( cs_mapping_with_fu ).
-    ELSE.
-      rr_data   = REF #( cs_mapping ).
-    ENDIF.
+    rr_data   = REF #( cs_mapping_with_fu ).
+
   ENDMETHOD.
 
 
@@ -799,26 +807,26 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
           timzon      = lv_tzone
           msrid       = space
         ) ).
-        " Give FU number in the tracking id
-        get_tor_items_for_dlv_item(
-          EXPORTING
-            ir_lips   = is_app_object-maintabref
-          IMPORTING
-            et_tor_id = DATA(lt_tor_id)
-        ).
-        IF lt_tor_id IS NOT INITIAL.
-          LOOP AT lt_tor_id ASSIGNING FIELD-SYMBOL(<ls_fu_id>).
-            et_track_id_data  = VALUE #( BASE et_track_id_data (
-              appsys      = mo_ef_parameters->get_appsys( )
-              appobjtype  = is_app_object-appobjtype
-              appobjid    = is_app_object-appobjid
-              trxcod      = lv_futrxcod
-              trxid       = zcl_gtt_mia_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
-              timzon      = lv_tzone
-              msrid       = space
-            ) ).
-          ENDLOOP.
-        ENDIF.
+*        " Give FU number in the tracking id
+*        get_tor_items_for_dlv_item(
+*          EXPORTING
+*            ir_lips   = is_app_object-maintabref
+*          IMPORTING
+*            et_tor_id = DATA(lt_tor_id)
+*        ).
+*        IF lt_tor_id IS NOT INITIAL.
+*          LOOP AT lt_tor_id ASSIGNING FIELD-SYMBOL(<ls_fu_id>).
+*            et_track_id_data  = VALUE #( BASE et_track_id_data (
+*              appsys      = mo_ef_parameters->get_appsys( )
+*              appobjtype  = is_app_object-appobjtype
+*              appobjid    = is_app_object-appobjid
+*              trxcod      = lv_futrxcod
+*              trxid       = zcl_gtt_mia_tm_tools=>get_formated_tor_id( ir_data = REF #( <ls_fu_id> ) )
+*              timzon      = lv_tzone
+*              msrid       = space
+*            ) ).
+*          ENDLOOP.
+*        ENDIF.
       ENDIF.
     ELSE.
       MESSAGE e002(zgtt) WITH 'LIPS' INTO DATA(lv_dummy).

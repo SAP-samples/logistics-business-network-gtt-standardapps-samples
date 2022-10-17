@@ -111,6 +111,10 @@ CLASS ZCL_GTT_SOF_CTP_SND_TOR_TO_DLH IMPLEMENTATION.
         paramname = zif_gtt_sof_ctp_tor_constants=>cs_system_fields-actual_technical_datetime
         value     = |0{ sy-datum }{ sy-uzeit }|
       )
+      (
+        paramname = zif_gtt_sof_ctp_tor_constants=>cs_system_fields-reported_by
+        value     = sy-uname
+      )
     ).
 
     " fill technical data into all control data records

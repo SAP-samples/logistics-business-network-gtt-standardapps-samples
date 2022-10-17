@@ -21,6 +21,16 @@
     <TCODE>ZGTT_EVTYPE_RST</TCODE>
     <PARAM>/*SM30 VIEWNAME=ZGTT_EVTYPE_RST;SHOW=X;</PARAM>
    </TSTCP>
+   <I18N_TPOOL>
+    <TSTCT>
+     <SPRSL>늑</SPRSL>
+     <TTEXT>TRAN ZGTT_EVTYPE_RST</TTEXT>
+    </TSTCT>
+    <TSTCT>
+     <SPRSL>닱</SPRSL>
+     <TTEXT>[Ĕʋēŋţ∙Ţŷρēş∙Řēşţŗįċţįŏŋş∙∙∙∙∙∙∙∙∙∙]</TTEXT>
+    </TSTCT>
+   </I18N_TPOOL>
   </asx:values>
  </asx:abap>
 </abapGit>

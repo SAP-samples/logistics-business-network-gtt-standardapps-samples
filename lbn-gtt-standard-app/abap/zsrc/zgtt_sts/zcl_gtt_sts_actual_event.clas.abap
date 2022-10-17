@@ -281,6 +281,12 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
     ls_trackparameters-param_value = zcl_gtt_sts_tools=>get_system_date_time( ).
     APPEND ls_trackparameters TO ct_trackparameters.
 
+    CLEAR ls_trackparameters.
+    ls_trackparameters-evtcnt      = cs_trackingheader-evtcnt.
+    ls_trackparameters-param_name  = zif_gtt_sts_ef_constants=>cs_system_fields-reported_by.
+    ls_trackparameters-param_value = sy-uname.
+    APPEND ls_trackparameters TO ct_trackparameters.
+
   ENDMETHOD.
 
 

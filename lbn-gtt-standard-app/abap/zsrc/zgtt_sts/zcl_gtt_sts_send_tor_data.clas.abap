@@ -207,29 +207,15 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
     send_deletion_idoc( lt_tor_root_for_deletion ).
 
-    " F.O./F.B./F.U. to Inbound DLV CrossTP update
+*   Freight Unit to Inbound/Outbound DLV CrossTP update
     TRY.
-        CALL FUNCTION 'ZGTT_MIA_CTP_TOR_TO_DL'
+        CALL FUNCTION 'ZGTT_CTP_TOR_TO_DL'
           EXPORTING
             it_tor_root_sstring        = it_tor_root_sstring
             it_tor_root_before_sstring = it_tor_root_before_sstring
             it_tor_item_sstring        = it_item_sstring
             it_tor_item_before_sstring = it_item_before_sstring
-            it_tor_stop_sstring        = it_stop_sstring
-            it_tor_stop_addr_sstring   = it_stop_addr_sstring.
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
-
-    " F.O./F.B./F.U. to Outbound DLV CrossTP update
-    TRY.
-        CALL FUNCTION 'ZGTT_SSOF_CTP_TOR_TO_DL'
-          EXPORTING
-            it_tor_root_sstring        = it_tor_root_sstring
-            it_tor_root_before_sstring = it_tor_root_before_sstring
-            it_tor_item_sstring        = it_item_sstring
-            it_tor_item_before_sstring = it_item_before_sstring
-            it_tor_stop_sstring        = it_stop_sstring
-            it_tor_stop_addr_sstring   = it_stop_addr_sstring.
+            it_tor_stop_sstring        = it_stop_sstring.
       CATCH cx_sy_dyn_call_illegal_func.
     ENDTRY.
 
@@ -358,15 +344,11 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
                                            tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking )
                                  ( key = <ls_tor_root_sstring>-node_id ) ).
 
-    DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
-      iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
-    lo_tor_srv_mgr->retrieve_by_association(
+    zcl_gtt_sts_tools=>get_capa2req_link_mul(
       EXPORTING
-        iv_node_key    = /scmtms/if_tor_c=>sc_node-root
-        it_key         = lt_freight_order_key
-        iv_association = /scmtms/if_tor_c=>sc_association-root-req_tor
+        it_root_key = lt_freight_order_key
       IMPORTING
-        et_key_link    = DATA(lt_capa2req_link) ).
+        et_key_link = DATA(lt_capa2req_link) ).
 
     LOOP AT lt_capa2req_link ASSIGNING FIELD-SYMBOL(<ls_capa2req_link>).
       CHECK NOT line_exists( ct_tor_root_sstring[ node_id = <ls_capa2req_link>-target_key ] ).
@@ -1456,42 +1438,29 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
     lt_party_sstring = CORRESPONDING #( lt_party MAPPING node_id = key parent_node_id = parent_key ).
     INSERT LINES OF lt_party_sstring INTO TABLE ct_party_sstring.
 
-    lo_tor_srv_mgr->retrieve_by_association(
-      EXPORTING
-        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-        iv_before_image = abap_false
-        it_key          = lt_fu_root_key
-        iv_association  = /scmtms/if_tor_c=>sc_association-root-capa_tor
-        iv_fill_data    = abap_true
-      IMPORTING
-        et_target_key   = DATA(lt_capa_root_key)
-        et_data         = lt_capa_root ).
-    lt_capa_root_sstring = CORRESPONDING #( lt_capa_root MAPPING node_id = key ).
-    INSERT LINES OF lt_capa_root_sstring INTO TABLE ct_capa_root_sstring.
+    TRY.
+        zcl_gtt_sts_tools=>get_capa_info_mul(
+          EXPORTING
+            it_root_key  = lt_fu_root_key
+            iv_old_data  = abap_false
+          IMPORTING
+            et_capa      = lt_capa_root_sstring
+            et_capa_stop = lt_capa_stop_sstring ).
 
-    lo_tor_srv_mgr->retrieve_by_association(
-      EXPORTING
-        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-        iv_before_image = abap_true
-        it_key          = lt_fu_root_key
-        iv_association  = /scmtms/if_tor_c=>sc_association-root-capa_tor
-        iv_fill_data    = abap_true
-      IMPORTING
-        et_data         = lt_capa_root_before ).
-    lt_capa_root_before_sstring = CORRESPONDING #( lt_capa_root_before MAPPING node_id = key ).
-    INSERT LINES OF lt_capa_root_before_sstring INTO TABLE ct_capa_root_bef_sstring.
+        INSERT LINES OF lt_capa_root_sstring INTO TABLE ct_capa_root_sstring.
+        INSERT LINES OF lt_capa_stop_sstring INTO TABLE ct_capa_stop_sstring.
 
-    lo_tor_srv_mgr->retrieve_by_association(
-      EXPORTING
-        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-        iv_before_image = abap_false
-        it_key          = lt_capa_root_key
-        iv_association  = /scmtms/if_tor_c=>sc_association-root-stop
-        iv_fill_data    = abap_true
-      IMPORTING
-        et_data         = lt_capa_stop ).
-    lt_capa_stop_sstring = CORRESPONDING #( lt_capa_stop MAPPING node_id = key parent_node_id = parent_key ).
-    INSERT LINES OF lt_capa_stop_sstring INTO TABLE ct_capa_stop_sstring.
+        zcl_gtt_sts_tools=>get_capa_info_mul(
+          EXPORTING
+            it_root_key = lt_fu_root_key
+            iv_old_data = abap_true
+          IMPORTING
+            et_capa     = lt_capa_root_before_sstring ).
+
+        INSERT LINES OF lt_capa_root_before_sstring INTO TABLE ct_capa_root_bef_sstring.
+
+      CATCH cx_udm_message.
+    ENDTRY.
 
   ENDMETHOD.
 

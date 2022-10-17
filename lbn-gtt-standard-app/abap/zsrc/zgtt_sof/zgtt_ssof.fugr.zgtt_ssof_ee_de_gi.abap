@@ -147,5 +147,11 @@ FUNCTION ZGTT_SSOF_EE_DE_GI.
     CONCATENATE '0' sy-datum sy-uzeit INTO ls_parameters-param_value.
     APPEND ls_parameters TO ct_trackparameters.
 
+    CLEAR ls_parameters.
+    ls_parameters-evtcnt = ls_events-eventid.
+    ls_parameters-param_name = gc_cp_yn_reported_by."Reported_by
+    ls_parameters-param_value = sy-uname.
+    APPEND ls_parameters TO ct_trackparameters.
+
   ENDLOOP.
 ENDFUNCTION.

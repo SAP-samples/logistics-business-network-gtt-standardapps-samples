@@ -53,7 +53,13 @@ CLASS ZCL_GTT_AE_PROCESSOR IMPLEMENTATION.
           evtcnt      = <lv_eventid>
           param_name  = zif_gtt_ef_constants=>cs_system_fields-actual_technical_datetime
           param_value = zcl_gtt_tools=>get_system_date_time( )
+        )
+        (
+          evtcnt      = <lv_eventid>
+          param_name  = zif_gtt_ef_constants=>cs_system_fields-reported_by
+          param_value = sy-uname
         ) ).
+
     ENDLOOP.
 
   ENDMETHOD.

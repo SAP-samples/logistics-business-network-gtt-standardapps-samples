@@ -18,6 +18,18 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Parameters of Actual Event extraction</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_SPOF_AE_FILL_PO_ITM_DE</CLSNAME>
+     <CMPNAME>MO_AE_PARAMETERS</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_SPOF_AE_FILL_PO_ITM_DE</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_SPOF_AE_FILL_PO_ITM_DE</CLSNAME>
+     <CMPNAME>MO_AE_PARAMETERS</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ƥąŗąɱēţēŗş∙ŏƒ∙Āċţűąĺ∙Ĕʋēŋţ∙ēχţŗąċţįŏŋ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

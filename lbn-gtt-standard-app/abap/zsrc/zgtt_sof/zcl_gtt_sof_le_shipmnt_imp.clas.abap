@@ -374,6 +374,10 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
         CONCATENATE '0' sy-datum sy-uzeit INTO ls_control-value.
         APPEND ls_control TO lt_control.
 
+        ls_control-paramname = 'REPORTED_BY'.
+        ls_control-value = sy-uname.
+        APPEND ls_control TO lt_control.
+
         CLEAR: lv_count.
         LOOP AT lt_vbfa_new INTO ls_vbfa_new WHERE vbelv = ls_likp_new-vbeln.
           lv_count = lv_count + 1.

@@ -69,6 +69,20 @@
      <COMPTYPE>E</COMPTYPE>
     </DD03P>
    </DD03P_TABLE>
+   <I18N_LANGS>
+    <LANGU>늑</LANGU>
+    <LANGU>닱</LANGU>
+   </I18N_LANGS>
+   <DD02_TEXTS>
+    <item>
+     <DDLANGUAGE>늑</DDLANGUAGE>
+     <DDTEXT>TABT ZGTT_MIA_EE_REL</DDTEXT>
+    </item>
+    <item>
+     <DDLANGUAGE>닱</DDLANGUAGE>
+     <DDTEXT>[ĢŢŢ∙ΜĬĀ∙-∙Ďēĺįʋēŗŷ∙Ŏŗƌēŗ&apos;ş∙Ƥĺąŋŋēƌ∙Ĕʋēŋţ∙Řēĺēʋąŋċē∙Ĭŋƌįċąţ]</DDTEXT>
+    </item>
+   </DD02_TEXTS>
   </asx:values>
  </asx:abap>
 </abapGit>

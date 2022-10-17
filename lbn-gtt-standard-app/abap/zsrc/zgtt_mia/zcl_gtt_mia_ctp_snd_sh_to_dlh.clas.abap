@@ -157,6 +157,10 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
         paramname = zif_gtt_ef_constants=>cs_system_fields-actual_technical_datetime
         value     = |0{ sy-datum }{ sy-uzeit }|
       )
+      (
+        paramname = zif_gtt_ef_constants=>cs_system_fields-reported_by
+        value     = sy-uname
+      )
     ).
 
     LOOP AT is_ship-likp\vbfa[ is_likp ] ASSIGNING FIELD-SYMBOL(<ls_vbfa>).
@@ -287,7 +291,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
         " POD
         IF <ls_stops>-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
-           <ls_stops>-loctype = zif_gtt_ef_constants=>cs_loc_types-plant AND
+           <ls_stops>-loctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint AND
            is_pod_relevant_stop( is_ship  = is_ship
                                  is_likp  = is_likp
                                  is_stops = <ls_stops> ) = abap_true.
@@ -476,24 +480,24 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
   METHOD is_pod_relevant_delivery.
 
-    DATA: lt_werks TYPE RANGE OF lips-werks.
+    DATA: lt_vstel TYPE RANGE OF likp-vstel.
 
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
-    " prepare list of POD relevant plants
-    LOOP AT is_ship-likp\lips[ is_likp ] ASSIGNING FIELD-SYMBOL(<ls_lips>).
-      IF lt_werks IS INITIAL OR
-         <ls_lips>-werks NOT IN lt_werks.
+    " prepare list of POD relevant shipping point
+    LOOP AT is_ship-likp ASSIGNING FIELD-SYMBOL(<ls_likp>).
+      IF lt_vstel IS INITIAL OR
+         <ls_likp>-vstel NOT IN lt_vstel.
 
         READ TABLE is_ship-ee_rel ASSIGNING FIELD-SYMBOL(<ls_ee_rel>)
-          WITH TABLE KEY appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
-                                      ir_lips = REF #( <ls_lips> ) ).
+          WITH TABLE KEY appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                                      ir_likp = REF #( <ls_likp> ) ).
 
         IF sy-subrc = 0 AND
            <ls_ee_rel>-z_pdstk = abap_true.
 
-          lt_werks  = VALUE #( BASE lt_werks (
-            low       = <ls_lips>-werks
+          lt_vstel  = VALUE #( BASE lt_vstel (
+            low       = <ls_likp>-vstel
             option    = 'EQ'
             sign      = 'I'
           ) ).
@@ -501,12 +505,12 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
-    " check whether shipment has any stops with POD Relevant plant
-    IF lt_werks[] IS NOT INITIAL.
+    " check whether shipment has any stops with POD Relevant shipping point
+    IF lt_vstel[] IS NOT INITIAL.
       LOOP AT it_stops ASSIGNING FIELD-SYMBOL(<ls_stops>)
-        WHERE locid    IN lt_werks
+        WHERE locid    IN lt_vstel
           AND loccat   = zif_gtt_mia_app_constants=>cs_loccat-arrival
-          AND loctype  = zif_gtt_ef_constants=>cs_loc_types-plant.
+          AND loctype  = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
 
         rv_result   = zif_gtt_ef_constants=>cs_condition-true.
         EXIT.
@@ -520,14 +524,14 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
     CLEAR: rv_result.
 
-    LOOP AT is_ship-likp\lips[ is_likp ] ASSIGNING FIELD-SYMBOL(<ls_lips>).
-      IF is_stops-locid   = <ls_lips>-werks AND
+    LOOP AT is_ship-likp ASSIGNING FIELD-SYMBOL(<ls_likp>).
+      IF is_stops-locid   = <ls_likp>-vstel AND
          is_stops-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
-         is_stops-loctype = zif_gtt_ef_constants=>cs_loc_types-plant.
+         is_stops-loctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
 
         READ TABLE is_ship-ee_rel ASSIGNING FIELD-SYMBOL(<ls_ee_rel>)
-          WITH TABLE KEY appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
-                                      ir_lips = REF #( <ls_lips> ) ).
+          WITH TABLE KEY appobjid = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_header(
+                                      ir_likp = REF #( <ls_likp> ) ).
 
         IF sy-subrc = 0 AND
            <ls_ee_rel>-z_pdstk = abap_true.

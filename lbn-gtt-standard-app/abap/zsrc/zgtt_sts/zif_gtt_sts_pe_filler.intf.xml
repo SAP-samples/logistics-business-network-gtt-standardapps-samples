@@ -16,6 +16,18 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Get Planned Events</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_STS_PE_FILLER</CLSNAME>
+     <CMPNAME>GET_PLANNED_EVENTS</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>INTF ZIF_GTT_STS_PE_FILLER</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZIF_GTT_STS_PE_FILLER</CLSNAME>
+     <CMPNAME>GET_PLANNED_EVENTS</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙Ƥĺąŋŋēƌ∙Ĕʋēŋţş∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

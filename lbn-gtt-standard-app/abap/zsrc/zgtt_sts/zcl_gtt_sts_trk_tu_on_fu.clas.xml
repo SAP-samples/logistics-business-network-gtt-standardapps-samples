@@ -18,6 +18,18 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Get Capacity Document</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TRK_TU_ON_FU</CLSNAME>
+     <CMPNAME>GET_CAPA_DOC</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_TRK_TU_ON_FU</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TRK_TU_ON_FU</CLSNAME>
+     <CMPNAME>GET_CAPA_DOC</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙Ĉąρąċįţŷ∙Ďŏċűɱēŋţ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

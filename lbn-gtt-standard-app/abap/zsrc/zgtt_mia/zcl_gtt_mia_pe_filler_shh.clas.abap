@@ -431,7 +431,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
     rv_result = abap_false.
 
     IF is_stops-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
-       is_stops-loctype = zif_gtt_ef_constants=>cs_loc_types-plant.
+       is_stops-loctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
 
       " get Inbound Delivery Numbers
       LOOP AT it_vtsp ASSIGNING FIELD-SYMBOL(<ls_vtsp>)

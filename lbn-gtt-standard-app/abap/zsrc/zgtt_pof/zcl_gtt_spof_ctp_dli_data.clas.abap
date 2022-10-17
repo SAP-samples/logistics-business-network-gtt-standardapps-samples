@@ -109,8 +109,8 @@ CLASS ZCL_GTT_SPOF_CTP_DLI_DATA IMPLEMENTATION.
           CONTINUE.
       ENDTRY.
 
-      DATA(lv_ebeln)  = CONV ebeln( <ls_xlips>-vgbel ).
-      DATA(lv_vgpos)  = CONV vgpos( <ls_xlips>-vgpos ).
+      DATA(lv_ebeln)  = <ls_xlips>-vgbel.
+      DATA(lv_vgpos)  = <ls_xlips>-vgpos.
 
       IF lv_ebeln IS NOT INITIAL AND lv_vgpos IS NOT INITIAL.
         zcl_gtt_spof_po_tools=>get_po_header(

@@ -17,8 +17,8 @@ PRIVATE SECTION.
       vbeln       TYPE likp-vbeln,
       lifnr       TYPE likp-lifnr,
       lifnr_lt    TYPE /saptrx/loc_id_type,
-      werks       TYPE likp-werks,
-      werks_lt    TYPE /saptrx/loc_id_type,
+      recv_loc    TYPE likp-vstel,
+      recv_loc_tp TYPE /saptrx/loc_id_type,
       bldat       TYPE likp-bldat,
       lfdat       TYPE likp-lfdat,
       lfdat_ts    TYPE timestamp,
@@ -47,8 +47,8 @@ PRIVATE SECTION.
       vbeln       TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
       lifnr       TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_ID',
       lifnr_lt    TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_LOC_TYPE',
-      werks       TYPE /saptrx/paramname VALUE 'YN_DL_RECEIVING_LOCATION',
-      werks_lt    TYPE /saptrx/paramname VALUE 'YN_DL_RECEIVING_LOC_TYPE',
+      recv_loc    TYPE /saptrx/paramname VALUE 'YN_DL_RECEIVING_LOCATION',
+      recv_loc_tp TYPE /saptrx/paramname VALUE 'YN_DL_RECEIVING_LOC_TYPE',
       bldat       TYPE /saptrx/paramname VALUE 'YN_DL_DOCUMENT_DATE',
       lfdat       TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATE',
       lfdat_ts    TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATETIME',
@@ -203,7 +203,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
                                    ELSE zcl_gtt_tools=>get_system_time_zone( ) ) ).
 
       cs_dl_header-proli    = boolc( cs_dl_header-proli IS NOT INITIAL ).
-
+      cs_dl_header-recv_loc = <ls_likp>-vstel."Shipping Point / Receiving Point
       IF <ls_likp>-lgnum IS NOT INITIAL AND
          <ls_likp>-lgtor IS NOT INITIAL.
 
@@ -238,18 +238,6 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     " prepare positions list
     IF <lt_lips_new> IS ASSIGNED.
-      " collect NEW records with appropriate item type
-      LOOP AT <lt_lips_new> ASSIGNING <ls_lips>
-        WHERE vbeln = iv_vbeln.
-
-        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
-             ir_struct = REF #( <ls_lips> ) ) = abap_true.
-
-          cs_dl_header-werks  = COND #( WHEN cs_dl_header-werks IS INITIAL
-                                          THEN <ls_lips>-werks
-                                          ELSE cs_dl_header-werks ).
-        ENDIF.
-      ENDLOOP.
 
       cs_dl_header-fu_relev = zcl_gtt_mia_tm_tools=>is_fu_relevant(
                                 it_lips = CORRESPONDING #( <lt_lips_new> ) ).
@@ -266,8 +254,8 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     cs_dl_header-lifnr_lt   = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
 
-    IF cs_dl_header-werks IS NOT INITIAL.
-      cs_dl_header-werks_lt = zif_gtt_ef_constants=>cs_loc_types-plant.
+    IF cs_dl_header-recv_loc IS NOT INITIAL.
+      cs_dl_header-recv_loc_tp = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
     ENDIF.
 
   ENDMETHOD.
@@ -278,9 +266,9 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
                             iv_locid   = cs_dl_header-lifnr
                             iv_loctype = cs_dl_header-lifnr_lt ).
 
-    cs_dl_header-werks  = zcl_gtt_tools=>get_pretty_location_id(
-                            iv_locid   = cs_dl_header-werks
-                            iv_loctype = cs_dl_header-werks_lt ).
+    cs_dl_header-recv_loc = zcl_gtt_tools=>get_pretty_location_id(
+                            iv_locid   = cs_dl_header-recv_loc
+                            iv_loctype = cs_dl_header-recv_loc_tp ).
   ENDMETHOD.
 
 

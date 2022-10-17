@@ -72,24 +72,24 @@ FUNCTION zgtt_ssof_trackid_ote_deitem .
       e_trackiddata-msrid = space.
       APPEND e_trackiddata.
 
-*     Get tracking id for FU
-      ASSIGN ls_app_objects-mastertabref->* TO <ls_xlikp>.
-      zcl_gtt_sof_toolkit=>get_instance( )->get_relation(
-        EXPORTING
-          iv_vbeln    = <ls_xlips>-vbeln  " Delivery
-          iv_posnr    = <ls_xlips>-posnr  " Item
-          iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
-        IMPORTING
-          et_relation = DATA(lt_relation) ).
-      LOOP AT lt_relation INTO DATA(ls_relation).
-        APPEND INITIAL LINE TO e_trackiddata ASSIGNING FIELD-SYMBOL(<ls_fu_tracking>).
-        <ls_fu_tracking>-appsys     = i_appsys.
-        <ls_fu_tracking>-appobjtype = i_app_obj_types-aotype.
-        <ls_fu_tracking>-appobjid   = ls_app_objects-appobjid.
-        <ls_fu_tracking>-trxcod = zif_gtt_sof_constants=>cs_trxcod-fu_number.
-        <ls_fu_tracking>-trxid = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
-      ENDLOOP.
-      CLEAR:lt_relation.
+**     Get tracking id for FU
+*      ASSIGN ls_app_objects-mastertabref->* TO <ls_xlikp>.
+*      zcl_gtt_sof_toolkit=>get_instance( )->get_relation(
+*        EXPORTING
+*          iv_vbeln    = <ls_xlips>-vbeln  " Delivery
+*          iv_posnr    = <ls_xlips>-posnr  " Item
+*          iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
+*        IMPORTING
+*          et_relation = DATA(lt_relation) ).
+*      LOOP AT lt_relation INTO DATA(ls_relation).
+*        APPEND INITIAL LINE TO e_trackiddata ASSIGNING FIELD-SYMBOL(<ls_fu_tracking>).
+*        <ls_fu_tracking>-appsys     = i_appsys.
+*        <ls_fu_tracking>-appobjtype = i_app_obj_types-aotype.
+*        <ls_fu_tracking>-appobjid   = ls_app_objects-appobjid.
+*        <ls_fu_tracking>-trxcod = zif_gtt_sof_constants=>cs_trxcod-fu_number.
+*        <ls_fu_tracking>-trxid = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
+*      ENDLOOP.
+*      CLEAR:lt_relation.
 
     ENDIF.
 
