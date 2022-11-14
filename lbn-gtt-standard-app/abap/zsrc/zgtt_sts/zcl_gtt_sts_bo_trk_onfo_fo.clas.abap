@@ -272,7 +272,8 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FO IMPLEMENTATION.
 
     cs_fo_header-shipment_type = zif_gtt_sts_constants=>cs_shipment_type-tor.
     TEST-SEAM get_carrier_name.
-    cs_fo_header-tspid = get_carrier_name( iv_tspid = cs_fo_header-tspid ).
+    cs_fo_header-tspid = get_carrier_name( iv_tspid = cs_fo_header-tspid
+                                           iv_tsp_scac = <ls_root>-tsp_scac ).
     END-TEST-SEAM.
     IF cs_fo_header-total_distance_km IS NOT INITIAL.
       cs_fo_header-total_distance_km_uom = zif_gtt_sts_constants=>cs_uom-km.

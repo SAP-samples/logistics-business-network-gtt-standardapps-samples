@@ -520,6 +520,9 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       <ls_root>     TYPE /scmtms/s_em_bo_tor_root,
       <lt_root_old> TYPE /scmtms/t_em_bo_tor_root.
 
+    DATA:
+      lv_tsp_id     TYPE bu_id_number.
+
     ASSIGN ir_maintab->* TO <ls_root>.
     IF sy-subrc <> 0.
       MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
@@ -543,9 +546,9 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
     cs_freight_unit-tor_id = <ls_root>-tor_id.
     SHIFT cs_freight_unit-tor_id LEFT DELETING LEADING '0'.
     cs_freight_unit-dgo_indicator = <ls_root>-dgo_indicator.
-
-    cs_freight_unit-tspid = get_carrier_name( iv_tspid = cs_freight_unit-tspid ).
-
+    lv_tsp_id = <ls_root>-tspid.
+    cs_freight_unit-tspid = get_carrier_name( iv_tspid = lv_tsp_id
+                                              iv_tsp_scac = <ls_root>-tsp_scac ).
     TEST-SEAM lt_tor_add_info.
       /scmtms/cl_tor_helper_root=>det_transient_root_fields(
         EXPORTING

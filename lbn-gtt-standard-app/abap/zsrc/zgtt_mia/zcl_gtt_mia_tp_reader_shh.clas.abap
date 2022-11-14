@@ -433,11 +433,14 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD GET_FORWARDING_AGENT_ID_NUMBER.
+  METHOD get_forwarding_agent_id_number.
 
     DATA: lv_forward_agt TYPE bu_partner,
           lt_bpdetail    TYPE STANDARD TABLE OF bapibus1006_id_details.
 
+    CHECK iv_tdlnr IS NOT INITIAL.
+
+*   Retrieve BP's LBN id
     CALL METHOD cl_site_bp_assignment=>select_bp_via_cvi_link
       EXPORTING
         i_lifnr = iv_tdlnr
@@ -451,12 +454,21 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
         identificationdetail = lt_bpdetail.
 
     READ TABLE lt_bpdetail ASSIGNING FIELD-SYMBOL(<ls_bpdetail>)
-      WITH KEY identificationtype = zif_gtt_mia_app_constants=>cv_agent_id_type
-      BINARY SEARCH.
+      WITH KEY identificationtype = zif_gtt_mia_app_constants=>cv_agent_id_type.
 
     rv_id_num   = COND #( WHEN sy-subrc = 0
                             THEN zif_gtt_mia_app_constants=>cv_agent_id_prefix &&
                                  <ls_bpdetail>-identificationnumber ).
+
+*   if BP‘s LBN id is empty, retrieve BP's Carrier Role's SCAC code with prefix "SCAC#"
+    IF rv_id_num IS INITIAL.
+*     Get Standard Carrier Alpha Code
+      zcl_gtt_mia_sh_tools=>get_scac_code(
+        EXPORTING
+          iv_partner = lv_forward_agt
+        RECEIVING
+          rv_num     = rv_id_num ).
+    ENDIF.
 
   ENDMETHOD.
 

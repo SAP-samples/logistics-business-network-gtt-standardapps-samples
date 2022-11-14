@@ -1,4 +1,9 @@
 # What's New for Fulfillment Tracking Apps 
+## Nov 12th, 2022
+1. To support tracking without carrier onboarding, the Standard Carrier Alpha Code (SCAC) of a carrier can be retrieved.
+2. For the outbound delivery and the outbound delivery item, remove the configuration check of "Define Transportation-Relevance of Delivery Documents" in control parameters and planned events.
+3. In the scenario "Maintain Tracked Objects on Freight Order/Freight Booking", the issue of missing planned “Departure” and “Arrival” events in the freight unit is fixed.
+
 ## Oct 15th, 2022
 1. Add the "Reported By" field for all the tracked processes and actual events. 
 2. Remove the Resource TPs table in the shipment and freight order extractor. 
@@ -11,7 +16,7 @@
 3. Exceptions that occur when reporting events on container units are no longer handled.
 
 ## Jul 16th, 2022
-1. The information on this test branch includes standard features of the global track and trace option as well as features that are only available in the test tenants. The preview content is provided as a courtesy, without a warranty, and may be subject to change.
+1. The information on this test branch includes standard features of SAP Business Network Global Track and Trace as well as features that are only available in the test tenants. The preview content is provided as a courtesy, without a warranty, and may be subject to change.
 2. In the TM scenario, if you maintain container numbers on container units in SAP TM, the container units can now be sent as tracking units for tracking. For implementation details, see [Implementation Guide for Tracking via Tracking Unit and Reference Document in the TM Scenario](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/Implementation%20Guide%20for%20Tracking%20via%20Tracking%20Unit%20and%20Reference%20Document%20in%20the%20TM%20Scenario.pdf).
 3. The timestamp fields in the extractor are enhanced as follows: 
 * For timestamp fields in the Control Parameters functions: use UTC time.
@@ -41,7 +46,7 @@
 1.	Track SO Fulfillment and Track PO Fulfillment standard apps are now available for use with Version 2. You can use the two apps to track the fulfilment status of sales orders and purchase orders. The following delivered contents are updated: 
 *	[SAP ERP Sample Code Configuration Guide for Fulfillment Tracking Apps.pdf](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/master/lbn-gtt-standard-app/Documents/SAP%20ERP%20Sample%20Code%20Configuration%20Guide%20for%20Fulfillment%20Tracking%20Apps.pdf)
 *	Configuration file for SAP ERP extractors 
-*	Sample code for SAP ERP extractors to send the tracked processes and events to the global track and trace option (ABAP). 
+*	Sample code for SAP ERP extractors to send the tracked processes and events to SAP Business Network Global Track and Trace (ABAP). 
 2.	A new tracked object type "IMO" is added for ocean freight booking.
 3.	Issues on reporting "Delay" and "Proof of Pickup" events are fixed.
 
@@ -66,7 +71,7 @@ The location type in the following tracked processes is changed from "Supplier" 
  
 1. "Reference Document No." field is added into the "InboundDeliveryItem" tracked process.
 2. In the inbound delivery item extractor, inbound delivery items no longer observe inbound deliveries.
-3. The actual event "Goods Receipt" in SAP ERP is now tracked by the global track and trace option, and extracted into the "InboundDeliveryItem" tracked process.
+3. The actual event "Goods Receipt" in SAP ERP is now tracked by SAP Business Network Global Track and Trace, and extracted into the "InboundDeliveryItem" tracked process.
 4. The planned events "Departure" , "Arrival", and "Proof of Delivery" are removed from the "InboundDeliveryItem" tracked process.
 
 

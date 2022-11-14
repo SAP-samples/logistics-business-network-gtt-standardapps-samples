@@ -9,87 +9,87 @@ public section.
   methods CONSTRUCTOR
     importing
       !IO_EF_PARAMETERS type ref to ZIF_GTT_STS_EF_PARAMETERS .
-PROTECTED SECTION.
+protected section.
 
-  TYPES tv_tracked_object_type TYPE string .
-  TYPES:
+  types TV_TRACKED_OBJECT_TYPE type STRING .
+  types:
     tt_tracked_object_type TYPE STANDARD TABLE OF tv_tracked_object_type WITH EMPTY KEY .
-  TYPES tv_tracked_object_id TYPE char20 .
-  TYPES:
+  types TV_TRACKED_OBJECT_ID type CHAR20 .
+  types:
     tt_tracked_object_id TYPE STANDARD TABLE OF tv_tracked_object_type WITH EMPTY KEY .
-  TYPES tv_carrier_ref_value TYPE /scmtms/btd_id .
-  TYPES:
+  types TV_CARRIER_REF_VALUE type /SCMTMS/BTD_ID .
+  types:
     tt_carrier_ref_value TYPE STANDARD TABLE OF tv_carrier_ref_value WITH EMPTY KEY .
-  TYPES tv_carrier_ref_type TYPE char35 .
-  TYPES:
+  types TV_CARRIER_REF_TYPE type CHAR35 .
+  types:
     tt_carrier_ref_type TYPE STANDARD TABLE OF tv_carrier_ref_type WITH EMPTY KEY .
-  TYPES tv_shipper_ref_value TYPE /scmtms/btd_id .
-  TYPES:
+  types TV_SHIPPER_REF_VALUE type /SCMTMS/BTD_ID .
+  types:
     tt_shipper_ref_value TYPE STANDARD TABLE OF tv_shipper_ref_value WITH EMPTY KEY .
-  TYPES tv_shipper_ref_type TYPE char35 .
-  TYPES:
+  types TV_SHIPPER_REF_TYPE type CHAR35 .
+  types:
     tt_shipper_ref_type TYPE STANDARD TABLE OF tv_shipper_ref_type WITH EMPTY KEY .
-  TYPES tv_stop_id TYPE string .
-  TYPES:
+  types TV_STOP_ID type STRING .
+  types:
     tt_stop_id TYPE STANDARD TABLE OF tv_stop_id WITH EMPTY KEY .
-  TYPES tv_ordinal_no TYPE int4 .
-  TYPES:
+  types TV_ORDINAL_NO type INT4 .
+  types:
     tt_ordinal_no TYPE STANDARD TABLE OF tv_ordinal_no WITH EMPTY KEY .
-  TYPES tv_loc_type TYPE /saptrx/loc_id_type .
-  TYPES:
+  types TV_LOC_TYPE type /SAPTRX/LOC_ID_TYPE .
+  types:
     tt_loc_type TYPE STANDARD TABLE OF tv_loc_type WITH EMPTY KEY .
-  TYPES tv_loc_id TYPE /scmtms/location_id .
-  TYPES:
+  types TV_LOC_ID type /SCMTMS/LOCATION_ID .
+  types:
     tt_loc_id TYPE STANDARD TABLE OF tv_loc_id WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_req_doc_line_number TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_req_doc_number      TYPE STANDARD TABLE OF char20 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_capacity_doc_line_number  TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_capacity_doc_number TYPE STANDARD TABLE OF /scmtms/tor_id WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_stop TYPE STANDARD TABLE OF /saptrx/loc_id_2 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_resource_tp_line_cnt TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_resource_tp_id TYPE STANDARD TABLE OF string WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_tu_line_no TYPE STANDARD TABLE OF int4 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_tu_type TYPE STANDARD TABLE OF char20 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_tu_value TYPE STANDARD TABLE OF char255 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_tu_number TYPE STANDARD TABLE OF char255 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_tu_first_stop TYPE STANDARD TABLE OF char255 WITH EMPTY KEY .
-  TYPES:
+  types:
     tt_tu_last_stop TYPE STANDARD TABLE OF char255 WITH EMPTY KEY .
-  TYPES:
+  types:
     BEGIN OF ts_container,
       object_id    TYPE char20,
       object_value TYPE /scmtms/package_id,
     END OF ts_container .
-  TYPES:
+  types:
     tt_container TYPE TABLE OF ts_container .
-  TYPES:
-    tt_package TYPE TABLE OF ts_container.
-  TYPES:
+  types:
+    tt_package TYPE TABLE OF ts_container .
+  types:
     BEGIN OF ts_stop_info,
       tor_id   TYPE /scmtms/tor_id,
       stop_num TYPE numc4,
     END OF ts_stop_info .
-  TYPES:
+  types:
     tt_stop_info TYPE TABLE OF ts_stop_info .
 
-  CONSTANTS:
+  constants:
     BEGIN OF cs_text_type,
       cont TYPE /bobf/txc_text_type VALUE 'CONT',
       mobl TYPE /bobf/txc_text_type VALUE 'MOBL',
     END OF cs_text_type .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_track_id,
       container_id  TYPE tv_tracked_object_type VALUE 'CONTAINER_ID',
       mobile_number TYPE tv_tracked_object_type VALUE 'MOBILE_NUMBER',
@@ -101,7 +101,7 @@ PROTECTED SECTION.
       pkg_id        TYPE tv_tracked_object_type VALUE 'PACKAGE_ID',
       pkg_ext_id    TYPE tv_tracked_object_type VALUE 'PACKAGE_EXT_ID',
     END OF cs_track_id .
-  CONSTANTS:
+  constants:
     BEGIN OF cs_mapping,
       shipment_type         TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPMENT_TYPE',
       tor_id                TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
@@ -174,8 +174,8 @@ PROTECTED SECTION.
       tu_first_stop         TYPE /saptrx/paramname VALUE 'YN_SHP_TU_FIRST_STOP',
       tu_last_stop          TYPE /saptrx/paramname VALUE 'YN_SHP_TU_LAST_STOP',
     END OF cs_mapping .
-  CONSTANTS cs_bp_type TYPE bu_id_type VALUE 'LBN001' ##NO_TEXT.
-  DATA mo_ef_parameters TYPE REF TO zif_gtt_sts_ef_parameters .
+  constants CS_BP_TYPE type BU_ID_TYPE value 'LBN001' ##NO_TEXT.
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_STS_EF_PARAMETERS .
 
   methods GET_DATA_FROM_TEXT_COLLECTION
     importing
@@ -309,6 +309,7 @@ PROTECTED SECTION.
   methods GET_CARRIER_NAME
     importing
       !IV_TSPID type BU_ID_NUMBER
+      !IV_TSP_SCAC type /SCMTMS/SCACD
     returning
       value(RV_CARRIER) type BU_ID_NUMBER
     raising
@@ -322,22 +323,22 @@ PROTECTED SECTION.
       !CT_RESOURCE_TP_ID type TT_RESOURCE_TP_ID
     raising
       CX_UDM_MESSAGE .
-  METHODS get_container_id
-    IMPORTING
-      !ir_data      TYPE REF TO data
-      !iv_old_data  TYPE abap_bool DEFAULT abap_false
-    CHANGING
-      !et_container TYPE tt_container
-    RAISING
-      cx_udm_message .
-  METHODS get_stop_info
-    IMPORTING
-      !ir_data      TYPE REF TO data
-      !iv_old_data  TYPE abap_bool DEFAULT abap_false
-    CHANGING
-      !ct_stop_info TYPE tt_stop_info
-    RAISING
-      cx_udm_message .
+  methods GET_CONTAINER_ID
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !ET_CONTAINER type TT_CONTAINER
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_STOP_INFO
+    importing
+      !IR_DATA type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    changing
+      !CT_STOP_INFO type TT_STOP_INFO
+    raising
+      CX_UDM_MESSAGE .
   PRIVATE SECTION.
 ENDCLASS.
 
@@ -460,14 +461,38 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
   METHOD get_carrier_name.
 
     CONSTANTS lc_lbn TYPE char4 VALUE 'LBN#'.
+    DATA:
+      lv_partner TYPE but000-partner.
 
-    SELECT SINGLE idnumber
-      FROM but0id
-      INTO @DATA(lv_idnumber)
-      WHERE partner = @iv_tspid AND
-            type    = @cs_bp_type ##WARN_OK.
-    IF sy-subrc = 0.
-      rv_carrier = lc_lbn && lv_idnumber.
+    CLEAR:rv_carrier.
+
+*   Retrieve BP's LBN id
+    IF iv_tspid IS NOT INITIAL.
+      SELECT SINGLE idnumber
+        FROM but0id
+        INTO @DATA(lv_idnumber)
+        WHERE partner = @iv_tspid AND
+              type    = @cs_bp_type ##WARN_OK.
+      IF sy-subrc = 0.
+        rv_carrier = lc_lbn && lv_idnumber.
+      ENDIF.
+    ENDIF.
+
+*   if BP‘s LBN id is empty,Retrieve SCAC code in the freight document with prefix "SCAC#"
+    IF rv_carrier IS INITIAL AND iv_tsp_scac IS NOT INITIAL.
+      rv_carrier = zif_gtt_sts_constants=>cv_scac_prefix && iv_tsp_scac.
+    ENDIF.
+
+*   if BP‘s LBN id and SCAC code in the freight document is empty,
+*   Retrieve SCAC code in the BP‘s Carrier Role's SCAC code with prefix "SCAC#"
+    IF rv_carrier IS INITIAL AND iv_tspid IS NOT INITIAL.
+      lv_partner = iv_tspid.
+      zcl_gtt_sts_tools=>get_scac_code(
+        EXPORTING
+          iv_partner = lv_partner
+        RECEIVING
+          rv_num     = DATA(lv_scac_number) ).
+      rv_carrier = lv_scac_number.
     ENDIF.
 
   ENDMETHOD.

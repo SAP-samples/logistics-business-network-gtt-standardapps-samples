@@ -47,7 +47,8 @@ FUNCTION zgtt_ssof_ote_de_hd.
     ls_address      TYPE gtys_address,
     lv_dlv_datetime TYPE timestamp,
     lv_tmp_datetime TYPE char20,
-    lo_gtt_toolkit  TYPE REF TO zcl_gtt_sof_toolkit.
+    lo_gtt_toolkit  TYPE REF TO zcl_gtt_sof_toolkit,
+    lt_relation     TYPE STANDARD TABLE OF gtys_tor_data.
 
   FIELD-SYMBOLS:
     <ls_xlikp> TYPE likpvb,
@@ -403,28 +404,18 @@ FUNCTION zgtt_ssof_ote_de_hd.
     APPEND ls_control_data TO e_control_data.
 
 *   fu relevant flag
-    lo_gtt_toolkit->check_integration_mode(
+    CLEAR lt_relation.
+    lo_gtt_toolkit->get_relation(
       EXPORTING
-        iv_vstel        = <ls_xlikp>-vstel                 " Shipping Point / Receiving Point
-        iv_lfart        = <ls_xlikp>-lfart                 " Delivery Type
-        iv_vsbed        = <ls_xlikp>-vsbed                 " Shipping Conditions
+        iv_vbeln    = <ls_xlikp>-vbeln  " Delivery
+        iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
       IMPORTING
-        ev_internal_int = DATA(lv_internal_int) ).        " Data element for domain BOOLE: TRUE (='X') and FALSE (=' ')
+        et_relation = lt_relation ).
 
-    IF lv_internal_int = abap_true.
-      lo_gtt_toolkit->get_relation(
-        EXPORTING
-          iv_vbeln    = <ls_xlikp>-vbeln  " Delivery
-          iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
-        IMPORTING
-          et_relation = DATA(lt_relation) ).
-
-      IF lt_relation IS NOT INITIAL.
-        ls_control_data-paramname = gc_cp_yn_fu_relevant.
-        ls_control_data-value     = abap_true.
-        APPEND ls_control_data TO e_control_data.
-      ENDIF.
-
+    IF lt_relation IS NOT INITIAL.
+      ls_control_data-paramname = gc_cp_yn_fu_relevant.
+      ls_control_data-value     = abap_true.
+      APPEND ls_control_data TO e_control_data.
     ENDIF.
 
 *   Actual Business Time zone

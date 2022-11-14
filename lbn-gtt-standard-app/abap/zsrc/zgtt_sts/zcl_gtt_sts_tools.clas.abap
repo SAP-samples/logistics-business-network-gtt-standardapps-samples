@@ -336,6 +336,11 @@ public section.
       !IT_ROOT_KEY type /BOBF/T_FRW_KEY
     exporting
       !ET_KEY_LINK type /BOBF/T_FRW_KEY_LINK .
+  class-methods GET_SCAC_CODE
+    importing
+      !IV_PARTNER type BU_PARTNER
+    returning
+      value(RV_NUM) type /SAPTRX/PARAMVAL200 .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -588,7 +593,11 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
       READ TABLE lt_capa_tmp TRANSPORTING NO FIELDS
         WITH TABLE KEY tor_cat COMPONENTS tor_cat = /scmtms/if_tor_const=>sc_tor_category-active.
       IF sy-subrc <> 0.
-        CONTINUE.
+        READ TABLE lt_capa_tmp TRANSPORTING NO FIELDS
+          WITH TABLE KEY tor_cat COMPONENTS tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking.
+        IF sy-subrc <> 0.
+          CONTINUE.
+        ENDIF.
       ENDIF.
 
 *     Get Capacity Stop information
@@ -1427,8 +1436,13 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
         WITH TABLE KEY tor_cat COMPONENTS tor_cat = /scmtms/if_tor_const=>sc_tor_category-active.
       IF sy-subrc = 0.
         EXIT."exit the loop
+      ELSE.
+        READ TABLE lt_capa_tmp TRANSPORTING NO FIELDS
+          WITH TABLE KEY tor_cat COMPONENTS tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking.
+        IF sy-subrc = 0.
+          EXIT."exit the loop
+        ENDIF.
       ENDIF.
-
     ENDDO.
 
     CLEAR:
@@ -1451,8 +1465,8 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
           lv_key = ls_capa_stop-assgn_stop_key.
           READ TABLE lt_capa INTO DATA(ls_capa)
             WITH KEY key = ls_capa_stop-parent_key.
-          IF sy-subrc = 0 AND ls_capa-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active.
-
+          IF sy-subrc = 0 AND ( ls_capa-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active
+                           OR ls_capa-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking ).
             ls_req2capa_info-req_key = ls_req_stop-parent_key.
             ls_req2capa_info-req_no = <ls_root>-tor_id.
             ls_req2capa_info-req_stop_key = ls_req_stop-key.
@@ -2010,6 +2024,34 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
         m_msgv2 = sy-msgv2
         m_msgv3 = sy-msgv3
         m_msgv4 = sy-msgv4.
+
+  ENDMETHOD.
+
+
+  METHOD get_scac_code.
+
+    DATA:
+      lt_bpsc  TYPE TABLE OF /scmtms/cv_bpscac,
+      lv_lines TYPE i.
+
+    CLEAR:rv_num.
+    CHECK iv_partner IS NOT INITIAL.
+
+    SELECT *
+      INTO TABLE @lt_bpsc
+      FROM /scmtms/cv_bpscac
+     WHERE partner = @iv_partner.
+
+    lv_lines = lines( lt_bpsc ).
+
+    IF lv_lines > 1.
+      DELETE lt_bpsc WHERE scac_valfr > sy-datum OR scac_valto < sy-datum.
+    ENDIF.
+
+    READ TABLE lt_bpsc INTO DATA(ls_bpsc) WITH KEY type = 'BUP006'."Standard Carrier Alpha Code
+    IF sy-subrc = 0.
+      rv_num = zif_gtt_sts_constants=>cv_scac_prefix && ls_bpsc-scac.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

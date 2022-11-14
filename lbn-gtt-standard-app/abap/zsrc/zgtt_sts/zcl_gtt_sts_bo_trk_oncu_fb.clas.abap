@@ -232,8 +232,8 @@ CLASS ZCL_GTT_STS_BO_TRK_ONCU_FB IMPLEMENTATION.
     cs_freight_booking-tspid  = <ls_root>-tspid.
     SHIFT cs_freight_booking-tor_id LEFT DELETING LEADING '0'.
     cs_freight_booking-dgo_indicator = <ls_root>-dgo_indicator.
-    cs_freight_booking-tspid = get_carrier_name( iv_tspid = cs_freight_booking-tspid ).
-
+    cs_freight_booking-tspid = get_carrier_name( iv_tspid = cs_freight_booking-tspid
+                                                 iv_tsp_scac = <ls_root>-tsp_scac ).
     TEST-SEAM lv_mtr.
       SELECT SINGLE motscode
         FROM /sapapo/trtype

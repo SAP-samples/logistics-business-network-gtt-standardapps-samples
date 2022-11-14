@@ -55,7 +55,8 @@ FUNCTION zgtt_ssof_ote_de_item.
     ls_relation     TYPE gtys_tor_data,
     lo_gtt_toolkit  TYPE REF TO zcl_gtt_sof_toolkit,
     lt_address      TYPE STANDARD TABLE OF gtys_address,
-    ls_address      TYPE gtys_address.
+    ls_address      TYPE gtys_address,
+    lt_fu_item      TYPE /scmtms/t_tor_item_tr_k.
 
   lo_gtt_toolkit = zcl_gtt_sof_toolkit=>get_instance( ).
 
@@ -483,131 +484,124 @@ FUNCTION zgtt_ssof_ote_de_item.
     APPEND ls_control_data TO e_control_data.
 
 *   freightUnitTPs
-    CLEAR lt_relation.
-    lo_gtt_toolkit->check_integration_mode(
+    CLEAR:
+      lt_relation,
+      lt_fu_item.
+    lo_gtt_toolkit->get_relation(
       EXPORTING
-        iv_vstel        = <ls_xlikp>-vstel                 " Shipping Point / Receiving Point
-        iv_lfart        = <ls_xlikp>-lfart                 " Delivery Type
-        iv_vsbed        = <ls_xlikp>-vsbed                 " Shipping Conditions
+        iv_vbeln    = <ls_xlips>-vbeln  " Delivery
+        iv_posnr    = <ls_xlips>-posnr  " Item
+        iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
       IMPORTING
-        ev_internal_int = DATA(lv_internal_int) ).        " Data element for domain BOOLE: TRUE (='X') and FALSE (=' ')
-    IF lv_internal_int = abap_true.
-      lo_gtt_toolkit->get_relation(
-        EXPORTING
-          iv_vbeln    = <ls_xlips>-vbeln  " Delivery
-          iv_posnr    = <ls_xlips>-posnr  " Item
-          iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
-        IMPORTING
-          et_relation = lt_relation
-          et_fu_item  = DATA(lt_fu_item) ).
+        et_relation = lt_relation
+        et_fu_item  = lt_fu_item ).
 
-      LOOP AT lt_relation INTO ls_relation.
-        lv_tabix = sy-tabix.
-        ls_control_data-paramindex = lv_tabix.
-        ls_control_data-paramname = gc_cp_yn_dlv_line_cnt.
-        ls_control_data-value = lv_tabix.
-        SHIFT ls_control_data-value LEFT  DELETING LEADING space.
-        APPEND ls_control_data TO e_control_data.
+    LOOP AT lt_relation INTO ls_relation.
+      lv_tabix = sy-tabix.
+      ls_control_data-paramindex = lv_tabix.
+      ls_control_data-paramname = gc_cp_yn_dlv_line_cnt.
+      ls_control_data-value = lv_tabix.
+      SHIFT ls_control_data-value LEFT  DELETING LEADING space.
+      APPEND ls_control_data TO e_control_data.
 
-        ls_control_data-paramindex = lv_tabix.
-        ls_control_data-paramname = gc_cp_yn_dlv_fu_number.
-        ls_control_data-value = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
-        APPEND ls_control_data TO e_control_data.
-      ENDLOOP.
-      IF sy-subrc NE 0.
-        ls_control_data-paramindex = '1'.
-        ls_control_data-paramname = gc_cp_yn_dlv_line_cnt.
-        ls_control_data-value = ''.
-        APPEND ls_control_data TO e_control_data.
-      ENDIF.
-
-*     freightUnitItemTPs
-      LOOP AT lt_fu_item INTO DATA(ls_fu_item).
-        CLEAR ls_relation.
-        READ TABLE lt_relation INTO ls_relation WITH KEY freight_unit_root_key = ls_fu_item-root_key.
-        ADD 1 TO lv_count.
-        ls_control_data-paramindex = lv_count.
-        ls_control_data-paramname = gc_cp_yn_fu_line_count.
-        ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
-          iv_value = lv_count ).
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_count.
-        ls_control_data-paramname = gc_cp_yn_fu_no.
-        ls_control_data-value = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_count.
-        ls_control_data-paramname = gc_cp_yn_fu_item_no.
-        ls_control_data-value = ls_fu_item-item_id.
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_count.
-        ls_control_data-paramname = gc_cp_yn_fu_quantity.
-        ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
-          iv_value = ls_fu_item-qua_pcs_val ).
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_count.
-        ls_control_data-paramname = gc_cp_yn_fu_units.
-        zcl_gtt_sof_toolkit=>convert_unit_output(
-          EXPORTING
-            iv_input  = ls_fu_item-qua_pcs_uni
-          RECEIVING
-            rv_output = ls_control_data-value ).
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_count.
-        ls_control_data-paramname = gc_cp_yn_fu_product.
-        ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
-          iv_value = ls_fu_item-product_id ).
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_count.
-        ls_control_data-paramname = gc_cp_yn_fu_product_descr.
-        ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
-          iv_value = ls_fu_item-item_descr ).
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_count.
-        ls_control_data-paramname = gc_cp_yn_fu_no_logsys.
-        ls_control_data-value = i_appsys.
-        APPEND ls_control_data TO e_control_data.
-      ENDLOOP.
-      IF sy-subrc NE 0.
-        ls_control_data-paramindex = '1'.
-        ls_control_data-paramname = gc_cp_yn_fu_line_count.
-        ls_control_data-value = ''.
-        APPEND ls_control_data TO e_control_data.
-      ENDIF.
-
-      clear lv_tabix.
-      LOOP AT lt_relation INTO ls_relation
-        WHERE delivery_number      = <ls_xlips>-vbeln
-          AND delivery_item_number = <ls_xlips>-posnr.
-        lv_tabix = lv_tabix + 1.
-
-        ls_control_data-paramindex = lv_tabix.
-        ls_control_data-paramname = gc_cp_yn_appsys.
-        ls_control_data-value = i_appsys.
-        SHIFT ls_control_data-value LEFT DELETING LEADING space.
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_tabix.
-        ls_control_data-paramname = gc_cp_yn_trxcod.
-        ls_control_data-value = zif_gtt_sof_constants=>cs_trxcod-fu_number.
-        SHIFT ls_control_data-value LEFT DELETING LEADING space.
-        APPEND ls_control_data TO e_control_data.
-
-        ls_control_data-paramindex = lv_tabix.
-        ls_control_data-paramname = gc_cp_yn_trxid.
-        ls_control_data-value = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
-        SHIFT ls_control_data-value LEFT DELETING LEADING space.
-        APPEND ls_control_data TO e_control_data.
-
-      ENDLOOP.
-
+      ls_control_data-paramindex = lv_tabix.
+      ls_control_data-paramname = gc_cp_yn_dlv_fu_number.
+      ls_control_data-value = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
+      APPEND ls_control_data TO e_control_data.
+    ENDLOOP.
+    IF sy-subrc NE 0.
+      ls_control_data-paramindex = '1'.
+      ls_control_data-paramname = gc_cp_yn_dlv_line_cnt.
+      ls_control_data-value = ''.
+      APPEND ls_control_data TO e_control_data.
     ENDIF.
+
+*   freightUnitItemTPs
+    LOOP AT lt_fu_item INTO DATA(ls_fu_item).
+      CLEAR ls_relation.
+      READ TABLE lt_relation INTO ls_relation WITH KEY freight_unit_root_key = ls_fu_item-root_key.
+      ADD 1 TO lv_count.
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_line_count.
+      ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+        iv_value = lv_count ).
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_no.
+      ls_control_data-value = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_item_no.
+      ls_control_data-value = ls_fu_item-item_id.
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_quantity.
+      ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+        iv_value = ls_fu_item-qua_pcs_val ).
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_units.
+      zcl_gtt_sof_toolkit=>convert_unit_output(
+        EXPORTING
+          iv_input  = ls_fu_item-qua_pcs_uni
+        RECEIVING
+          rv_output = ls_control_data-value ).
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_product.
+      ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+        iv_value = ls_fu_item-product_id ).
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_product_descr.
+      ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+        iv_value = ls_fu_item-item_descr ).
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_no_logsys.
+      ls_control_data-value = i_appsys.
+      APPEND ls_control_data TO e_control_data.
+    ENDLOOP.
+    IF sy-subrc NE 0.
+      ls_control_data-paramindex = '1'.
+      ls_control_data-paramname = gc_cp_yn_fu_line_count.
+      ls_control_data-value = ''.
+      APPEND ls_control_data TO e_control_data.
+    ENDIF.
+
+    CLEAR lv_tabix.
+    LOOP AT lt_relation INTO ls_relation
+      WHERE delivery_number      = <ls_xlips>-vbeln
+        AND delivery_item_number = <ls_xlips>-posnr.
+      lv_tabix = lv_tabix + 1.
+
+      ls_control_data-paramindex = lv_tabix.
+      ls_control_data-paramname = gc_cp_yn_appsys.
+      ls_control_data-value = i_appsys.
+      SHIFT ls_control_data-value LEFT DELETING LEADING space.
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_tabix.
+      ls_control_data-paramname = gc_cp_yn_trxcod.
+      ls_control_data-value = zif_gtt_sof_constants=>cs_trxcod-fu_number.
+      SHIFT ls_control_data-value LEFT DELETING LEADING space.
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramindex = lv_tabix.
+      ls_control_data-paramname = gc_cp_yn_trxid.
+      ls_control_data-value = |{ ls_relation-freight_unit_number ALPHA = OUT }|.
+      SHIFT ls_control_data-value LEFT DELETING LEADING space.
+      APPEND ls_control_data TO e_control_data.
+
+    ENDLOOP.
+
     CLEAR ls_control_data-paramindex.
 
   ENDLOOP.
