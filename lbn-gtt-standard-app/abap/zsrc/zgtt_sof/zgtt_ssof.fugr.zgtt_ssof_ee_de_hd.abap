@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_EE_DE_HD.
+FUNCTION zgtt_ssof_ee_de_hd.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -35,8 +35,8 @@ FUNCTION ZGTT_SSOF_EE_DE_HD.
     ls_eerel                  TYPE zgtt_mia_ee_rel,
     ls_vbfa_new               TYPE vbfavb,
     lt_vbfa_new               TYPE STANDARD TABLE OF vbfavb,
-    ls_stop                   TYPE ZGTT_SSOF_STOP_INFO,
-    ls_dlv_watching_stop      TYPE ZGTT_SSOF_DLV_WATCH_STOP,
+    ls_stop                   TYPE zgtt_ssof_stop_info,
+    ls_dlv_watching_stop      TYPE zgtt_ssof_dlv_watch_stop,
     lt_stops_tmp              TYPE zgtt_ssof_stops,
     lt_dlv_watching_stops_tmp TYPE zgtt_ssof_dlv_watch_stops,
     lt_stops                  TYPE zgtt_ssof_stops,
@@ -46,7 +46,8 @@ FUNCTION ZGTT_SSOF_EE_DE_HD.
     ls_item_new               TYPE lipsvb,
     lv_milestonenum           TYPE /saptrx/seq_num VALUE 1,
     lv_appobjid               TYPE /saptrx/aoid,
-    lv_pdstk                  TYPE zgtt_mia_ee_rel-z_pdstk.
+    lv_pdstk                  TYPE zgtt_mia_ee_rel-z_pdstk,
+    lt_relation               TYPE STANDARD TABLE OF gtys_tor_data.
 
   FIELD-SYMBOLS:
 *   Delivery Header
@@ -269,16 +270,16 @@ FUNCTION ZGTT_SSOF_EE_DE_HD.
     ENDLOOP.
 
 *   Check if TM ingegrated or not
-    lo_gtt_toolkit->check_integration_mode(
+    CLEAR lt_relation.
+    lo_gtt_toolkit->get_relation(
       EXPORTING
-        iv_vstel        = <ls_xlikp>-vstel                 " Shipping Point / Receiving Point
-        iv_lfart        = <ls_xlikp>-lfart                 " Delivery Type
-        iv_vsbed        = <ls_xlikp>-vsbed                 " Shipping Conditions
+        iv_vbeln    = <ls_xlikp>-vbeln  " Delivery
+        iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
       IMPORTING
-        ev_internal_int = DATA(lv_internal_int) ).        " Data element for domain BOOLE: TRUE (='X') and FALSE (=' ')
+        et_relation = lt_relation ).
 
 *   Relevant with TM, add planned event ItemCompletedByFU
-    IF lv_internal_int = abap_true."relevant with TM
+    IF lt_relation IS NOT INITIAL."relevant with TM
       CLEAR:
         ls_expeventdata-milestonenum,
         ls_expeventdata-evt_exp_datetime,
@@ -318,13 +319,13 @@ FUNCTION ZGTT_SSOF_EE_DE_HD.
 
     ls_expeventdata-milestone        = zif_gtt_sof_constants=>cs_milestone-odlv_planned_dlv.
     ls_expeventdata-evt_exp_datetime = zcl_gtt_tools=>get_local_timestamp(
-                                          iv_date = <ls_xlikp>-lfdat
-                                          iv_time = <ls_xlikp>-lfuhr ).
+      iv_date = <ls_xlikp>-lfdat
+      iv_time = <ls_xlikp>-lfuhr ).
     TRY.
-      ls_expeventdata-evt_exp_tzone    = COND #( WHEN <ls_xlikp>-tzonrc IS NOT INITIAL
-                                             THEN <ls_xlikp>-tzonrc
-                                             ELSE zcl_gtt_tools=>get_system_time_zone( ) ).
-    CATCH cx_udm_message.
+        ls_expeventdata-evt_exp_tzone    = COND #( WHEN <ls_xlikp>-tzonrc IS NOT INITIAL
+                                               THEN <ls_xlikp>-tzonrc
+                                               ELSE zcl_gtt_tools=>get_system_time_zone( ) ).
+      CATCH cx_udm_message.
     ENDTRY.
     APPEND ls_expeventdata TO e_expeventdata.
 

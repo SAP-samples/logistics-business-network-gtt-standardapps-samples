@@ -61,6 +61,11 @@ public section.
       !IS_EVENTS type TRXAS_EVT_CTAB_WA
     returning
       value(RV_RESULT) type ABAP_BOOL .
+  class-methods GET_SCAC_CODE
+    importing
+      !IV_PARTNER type BU_PARTNER
+    returning
+      value(RV_NUM) type /SAPTRX/PARAMVAL200 .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -456,6 +461,34 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
       is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-update OR
       is_events-update_indicator = zif_gtt_ef_constants=>cs_change_mode-undefined
     ).
+
+  ENDMETHOD.
+
+
+  METHOD get_scac_code.
+
+    DATA:
+      lt_bpsc  TYPE TABLE OF /scmtms/cv_bpscac,
+      lv_lines TYPE i.
+
+    CLEAR:rv_num.
+    CHECK iv_partner IS NOT INITIAL.
+
+    SELECT *
+      INTO TABLE @lt_bpsc
+      FROM /scmtms/cv_bpscac
+     WHERE partner = @iv_partner.
+
+    lv_lines = lines( lt_bpsc ).
+
+    IF lv_lines > 1.
+      DELETE lt_bpsc WHERE scac_valfr > sy-datum OR scac_valto < sy-datum.
+    ENDIF.
+
+    READ TABLE lt_bpsc INTO DATA(ls_bpsc) WITH KEY type = 'BUP006'."Standard Carrier Alpha Code
+    IF sy-subrc = 0.
+      rv_num = zif_gtt_mia_app_constants=>cv_scac_prefix && ls_bpsc-scac.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

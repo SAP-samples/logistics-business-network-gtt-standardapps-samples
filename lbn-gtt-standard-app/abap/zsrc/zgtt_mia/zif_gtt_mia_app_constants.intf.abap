@@ -80,7 +80,8 @@ INTERFACE zif_gtt_mia_app_constants
   CONSTANTS cv_agent_id_type TYPE bu_id_type VALUE 'LBN001' ##NO_TEXT.
   CONSTANTS:
     cv_agent_id_prefix TYPE c LENGTH 4 VALUE 'LBN#' ##NO_TEXT.
-
+  CONSTANTS:
+    cv_scac_prefix TYPE char5 VALUE 'SCAC#'.
   CONSTANTS:
     BEGIN OF cs_shipment_kind,
       shipment TYPE zif_gtt_mia_app_types=>tv_shipment_kind VALUE 'SHP',

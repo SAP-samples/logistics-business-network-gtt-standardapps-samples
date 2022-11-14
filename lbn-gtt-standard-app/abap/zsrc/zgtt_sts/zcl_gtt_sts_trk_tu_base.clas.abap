@@ -344,6 +344,7 @@ protected section.
   methods GET_CARRIER_NAME
     importing
       !IV_TSPID type /SCMTMS/PTY_CARRIER
+      !IV_TSP_SCAC type /SCMTMS/SCACD
     returning
       value(RV_CARRIER) type BU_ID_NUMBER .
   methods GET_STOP_SEQ
@@ -1014,14 +1015,38 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
   METHOD get_carrier_name.
 
     CONSTANTS lc_lbn TYPE char4 VALUE 'LBN#'.
+    DATA:
+      lv_partner TYPE but000-partner.
 
-    SELECT SINGLE idnumber
-      FROM but0id
-      INTO @DATA(lv_idnumber)
-      WHERE partner = @iv_tspid AND
-            type    = @cs_bp_type ##WARN_OK.
-    IF sy-subrc = 0.
-      rv_carrier = lc_lbn && lv_idnumber.
+    CLEAR:rv_carrier.
+
+*   Retrieve BP's LBN id
+    IF iv_tspid IS NOT INITIAL.
+      SELECT SINGLE idnumber
+        FROM but0id
+        INTO @DATA(lv_idnumber)
+        WHERE partner = @iv_tspid AND
+              type    = @cs_bp_type ##WARN_OK.
+      IF sy-subrc = 0.
+        rv_carrier = lc_lbn && lv_idnumber.
+      ENDIF.
+    ENDIF.
+
+*   if BP‘s LBN id is empty,Retrieve SCAC code in the freight document with prefix "SCAC#"
+    IF rv_carrier IS INITIAL AND iv_tsp_scac IS NOT INITIAL.
+      rv_carrier = zif_gtt_sts_constants=>cv_scac_prefix && iv_tsp_scac.
+    ENDIF.
+
+*   if BP‘s LBN id and SCAC code in the freight document is empty,
+*   Retrieve SCAC code in the BP‘s Carrier Role's SCAC code with prefix "SCAC#"
+    IF rv_carrier IS INITIAL AND iv_tspid IS NOT INITIAL.
+      lv_partner = iv_tspid.
+      zcl_gtt_sts_tools=>get_scac_code(
+        EXPORTING
+          iv_partner = lv_partner
+        RECEIVING
+          rv_num     = DATA(lv_scac_number) ).
+      rv_carrier = lv_scac_number.
     ENDIF.
 
   ENDMETHOD.
@@ -1060,7 +1085,8 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
     CASE mv_tor_cat.
       WHEN /scmtms/if_tor_const=>sc_tor_category-active OR
            /scmtms/if_tor_const=>sc_tor_category-booking.
-        ls_tu_info-tspid = get_carrier_name( iv_tspid = is_tor_root-tspid ).
+        ls_tu_info-tspid = get_carrier_name( iv_tspid = is_tor_root-tspid
+                                             iv_tsp_scac = is_tor_root-tsp_scac ).
         ls_tu_info-trmodcod = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = is_tor_root-trmodcod ).
         ls_tu_info-shipping_type  = is_tor_root-shipping_type.
 
@@ -1082,7 +1108,8 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
               <fs_capa>-execution = zif_gtt_sts_constants=>cs_execution_status-ready_for_transp_exec ) AND
             <fs_capa>-tspid IS NOT INITIAL.
 
-            ls_tu_info-tspid = get_carrier_name( iv_tspid = <fs_capa>-tspid ).
+            ls_tu_info-tspid = get_carrier_name( iv_tspid = <fs_capa>-tspid
+                                                 iv_tsp_scac = <fs_capa>-tsp_scac ).
             ls_tu_info-trmodcod = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = <fs_capa>-trmodcod ).
             ls_tu_info-shipping_type  = <fs_capa>-shipping_type.
             EXIT.

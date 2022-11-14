@@ -130,5 +130,6 @@ INTERFACE zif_gtt_sts_constants
     BEGIN OF cs_separator,
       semicolon type char1 VALUE ';',
     END OF cs_separator.
-
+  CONSTANTS:
+    cv_scac_prefix TYPE char5 VALUE 'SCAC#'.
 ENDINTERFACE.
