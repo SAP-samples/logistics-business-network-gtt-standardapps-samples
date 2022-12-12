@@ -1,12 +1,13 @@
 # Fulfillment Tracking Apps for SAP Business Network Global Track and Trace 
 
 ## What's New
-### Nov 12th, 2022
-1. To support tracking without carrier onboarding, the Standard Carrier Alpha Code (SCAC) of a carrier can be retrieved.
-2. For the outbound delivery and the outbound delivery item, remove the configuration check of "Define Transportation-Relevance of Delivery Documents" in control parameters and planned events.
-3. In the scenario "Maintain Tracked Objects on Freight Order/Freight Booking", the issue of missing planned “Departure” and “Arrival” events in the freight unit is fixed.
+### Dec 10th, 2022
+1. Add denominator and numerator fields for the sales order item / outbound delivery item.
+2. Add the configuration table for the outbound delivery type / sales order type.
+3. Support carrier reference document type T67 (Reference Number of Carrier) for the TM scenario.
+4. In the scenario "Maintain Tracked Objects on Freight Order/Freight Booking", if there is multi-layer data from the freight unit to the freight order (example: freight unit -> container unit -> freight order), the relationship between the freight unit and the freight order can still be retrieved.
 
-For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.wdf.sap.corp/TrackAndTrace/GTT-V2-Standard-Apps/blob/test/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
+For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
 
 
 ## Description

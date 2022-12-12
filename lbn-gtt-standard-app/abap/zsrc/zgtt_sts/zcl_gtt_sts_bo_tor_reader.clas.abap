@@ -730,7 +730,8 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
         IF <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-bill_of_landing        OR
            <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-master_bill_of_landing OR
            <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-master_air_waybill     OR
-           <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-carrier_assigned.
+           <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-carrier_assigned       OR
+           <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-carrierreferenceno.
           APPEND <ls_docs>-btd_id  TO ct_carrier_ref_value.
           APPEND <ls_docs>-btd_tco TO ct_carrier_ref_type.
         ELSEIF <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-purchase_order OR

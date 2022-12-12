@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_EE_DE_GI_REL.
+FUNCTION zgtt_ssof_ee_de_gi_rel.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -36,6 +36,11 @@ FUNCTION ZGTT_SSOF_EE_DE_GI_REL.
     <ls_xvbuk> TYPE vbukvb,
 *   Work structure for Sales Document: Header Status and Admin Data Old
     <ls_yvbuk> TYPE vbukvb.
+
+  CLEAR gt_dlv_type.
+  zcl_gtt_sof_toolkit=>get_delivery_type(
+    RECEIVING
+      rt_type = gt_dlv_type ).
 
 * <1> Read necessary application tables from table reference
   PERFORM read_appl_tables_status

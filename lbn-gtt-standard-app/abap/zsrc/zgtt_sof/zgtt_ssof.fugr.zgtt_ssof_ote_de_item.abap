@@ -56,7 +56,9 @@ FUNCTION zgtt_ssof_ote_de_item.
     lo_gtt_toolkit  TYPE REF TO zcl_gtt_sof_toolkit,
     lt_address      TYPE STANDARD TABLE OF gtys_address,
     ls_address      TYPE gtys_address,
-    lt_fu_item      TYPE /scmtms/t_tor_item_tr_k.
+    lt_fu_item      TYPE /scmtms/t_tor_item_tr_k,
+    lv_ebelp        TYPE ebelp,
+    lv_posnr        TYPE posnr_va.
 
   lo_gtt_toolkit = zcl_gtt_sof_toolkit=>get_instance( ).
 
@@ -284,11 +286,24 @@ FUNCTION zgtt_ssof_ote_de_item.
     ENDIF.
     APPEND ls_control_data TO e_control_data.
 
-*   Association Sales Order item
-    ls_control_data-paramname =  gc_cp_yn_de_asso_soitem_no.
-    ls_control_data-value = |{ <ls_xlips>-vgbel ALPHA = OUT }{ <ls_xlips>-vgpos ALPHA = IN }|.
-    CONDENSE ls_control_data-value NO-GAPS.
-    APPEND ls_control_data TO e_control_data.
+    CLEAR:
+      lv_ebelp,
+      lv_posnr.
+    IF <ls_xlips>-vgtyp = if_sd_doc_category=>order.
+      lv_posnr = <ls_xlips>-vgpos.
+*     Association Sales Order item
+      ls_control_data-paramname = gc_cp_yn_de_asso_soitem_no.
+      ls_control_data-value = |{ <ls_xlips>-vgbel ALPHA = OUT }{ lv_posnr ALPHA = IN }|.
+      CONDENSE ls_control_data-value NO-GAPS.
+      APPEND ls_control_data TO e_control_data.
+    ELSEIF <ls_xlips>-vgtyp = if_sd_doc_category=>purchase_order.
+      lv_ebelp = <ls_xlips>-vgpos.
+*     Association purchase Order item
+      ls_control_data-paramname = gc_cp_yn_dl_assoc_poitem_no.
+      ls_control_data-value = |{ <ls_xlips>-vgbel ALPHA = OUT }{ lv_ebelp ALPHA = IN }|.
+      CONDENSE ls_control_data-value NO-GAPS.
+      APPEND ls_control_data TO e_control_data.
+    ENDIF.
 
 *Warehouse No: LIKP-LGNUM
     ls_control_data-paramname =  gc_cp_yn_de_warehouse_no.
@@ -480,6 +495,18 @@ FUNCTION zgtt_ssof_ote_de_item.
 
     ls_control_data-paramname = gc_cp_yn_reported_by.
     ls_control_data-value = sy-uname.
+    CONDENSE ls_control_data-value NO-GAPS.
+    APPEND ls_control_data TO e_control_data.
+
+*   Numerator (factor) for conversion of sales quantity into SKU
+    ls_control_data-paramname = gc_cp_yn_dl_numerator_factor.
+    ls_control_data-value = <ls_xlips>-umvkz.
+    CONDENSE ls_control_data-value NO-GAPS.
+    APPEND ls_control_data TO e_control_data.
+
+*   Denominator (divisor) for conversion of sales Qty into SKU
+    ls_control_data-paramname = gc_cp_yn_dl_denominator_div.
+    ls_control_data-value = <ls_xlips>-umvkn.
     CONDENSE ls_control_data-value NO-GAPS.
     APPEND ls_control_data TO e_control_data.
 

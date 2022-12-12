@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_OTE_DE_ITM_REL.
+FUNCTION zgtt_ssof_ote_de_itm_rel.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -27,6 +27,11 @@ FUNCTION ZGTT_SSOF_OTE_DE_ITM_REL.
   FIELD-SYMBOLS:
     <ls_xlikp> TYPE likpvb,
     <ls_xlips> TYPE lipsvb.
+
+  CLEAR gt_dlv_type.
+  zcl_gtt_sof_toolkit=>get_delivery_type(
+    RECEIVING
+      rt_type = gt_dlv_type ).
 
 * <1> Check if Main table is Delivery Order Item or not.
   IF i_app_object-maintabdef <> gc_bpt_delivery_item_new.

@@ -92,6 +92,12 @@ public section.
       !IV_INPUT type CLIKE
     returning
       value(RV_OUTPUT) type MSEH3 .
+  class-methods GET_DELIVERY_TYPE
+    returning
+      value(RT_TYPE) type RSELOPTION .
+  class-methods GET_SO_TYPE
+    returning
+      value(RT_TYPE) type RSELOPTION .
 protected section.
 
   class-data GO_ME type ref to ZCL_GTT_SOF_TOOLKIT .
@@ -366,6 +372,54 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
         output   = rv_output.
 
     CONDENSE rv_output NO-GAPS.
+
+  ENDMETHOD.
+
+
+  METHOD get_delivery_type.
+
+    DATA:
+      lt_dlvtype TYPE TABLE OF zgtt_dlvtype_rst,
+      rs_type    TYPE rsdsselopt.
+
+    CLEAR rt_type.
+
+    SELECT *
+      INTO TABLE lt_dlvtype
+      FROM zgtt_dlvtype_rst
+     WHERE active = abap_true.
+
+    LOOP AT lt_dlvtype INTO DATA(ls_dlvtype).
+      rs_type-sign = 'I'.
+      rs_type-option = 'EQ'.
+      rs_type-low = ls_dlvtype-lfart.
+      APPEND rs_type TO rt_type.
+      CLEAR rs_type.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_so_type.
+
+    DATA:
+      lt_sotype TYPE TABLE OF zgtt_sotype_rst,
+      rs_type   TYPE rsdsselopt.
+
+    CLEAR rt_type.
+
+    SELECT *
+      INTO TABLE lt_sotype
+      FROM zgtt_sotype_rst
+     WHERE active = abap_true.
+
+    LOOP AT lt_sotype INTO DATA(ls_sotype).
+      rs_type-sign = 'I'.
+      rs_type-option = 'EQ'.
+      rs_type-low = ls_sotype-auart.
+      APPEND rs_type TO rt_type.
+      CLEAR rs_type.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_EE_DE_PACKING_REL.
+FUNCTION zgtt_ssof_ee_de_packing_rel.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -43,6 +43,10 @@ FUNCTION ZGTT_SSOF_EE_DE_PACKING_REL.
 *   Work Structure for Packing Item Old
     <ls_yvepo>  TYPE vepovb.
 
+  CLEAR gt_dlv_type.
+  zcl_gtt_sof_toolkit=>get_delivery_type(
+    RECEIVING
+      rt_type = gt_dlv_type ).
 
 * <1> Read necessary application tables from table reference
   PERFORM read_appl_tables_packing_item

@@ -225,6 +225,18 @@ FUNCTION zgtt_ssof_ote_so_item.
     CONDENSE ls_control_data-value NO-GAPS.
     APPEND ls_control_data TO e_control_data.
 
+*   Numerator (factor) for conversion of sales quantity into SKU
+    ls_control_data-paramname = gc_cp_yn_so_numerator_factor.
+    ls_control_data-value = <ls_xvbap>-umvkz.
+    CONDENSE ls_control_data-value NO-GAPS.
+    APPEND ls_control_data TO e_control_data.
+
+*   Denominator (divisor) for conversion of sales Qty into SKU
+    ls_control_data-paramname = gc_cp_yn_so_denominator_div.
+    ls_control_data-value = <ls_xvbap>-umvkn.
+    CONDENSE ls_control_data-value NO-GAPS.
+    APPEND ls_control_data TO e_control_data.
+
 *   Schedule line table
     LOOP AT lt_xvbep INTO ls_xvbep WHERE vbeln = <ls_xvbap>-vbeln
                                      AND posnr = <ls_xvbap>-posnr

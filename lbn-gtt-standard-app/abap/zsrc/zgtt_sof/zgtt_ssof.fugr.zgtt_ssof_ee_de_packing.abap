@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_EE_DE_PACKING.
+FUNCTION zgtt_ssof_ee_de_packing.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -76,7 +76,10 @@ FUNCTION ZGTT_SSOF_EE_DE_PACKING.
 *   Packing item table new
     lt_xvepo          TYPE STANDARD TABLE OF vepovb,
 *   Packing item table old
-    lt_yvepo          TYPE STANDARD TABLE OF vepovb.
+    lt_yvepo          TYPE STANDARD TABLE OF vepovb,
+    lv_vemng          TYPE vepovb-vemng,
+    lv_vemng_out      TYPE vepovb-vemng,
+    lv_factor         TYPE f.
 
   FIELD-SYMBOLS:
 *   Work Structure for Delivery Header
@@ -158,19 +161,41 @@ FUNCTION ZGTT_SSOF_EE_DE_PACKING.
     APPEND ls_eventid_map TO c_eventid_map.
 
     ls_tracklocation-evtcnt = ls_events-eventid.
-    ls_tracklocation-loccod = zif_gtt_sof_constants=>cs_loctype-ShippingPoint.
+    ls_tracklocation-loccod = zif_gtt_sof_constants=>cs_loctype-shippingpoint.
     ls_tracklocation-locid1 = <ls_xlikp>-vstel.
     APPEND ls_tracklocation TO ct_tracklocation.
 
 *   packing quantity
-    CLEAR ls_parameters.
+    CLEAR:
+     ls_parameters,
+     lv_vemng,
+     lv_vemng_out,
+     lv_factor.
     ls_parameters-evtcnt = ls_events-eventid.
     ls_parameters-param_name = 'QUANTITY'.
     LOOP AT lt_xvepo ASSIGNING <ls_xvepo>
                      WHERE vbeln = <ls_xlips>-vbeln
                      AND   posnr = <ls_xlips>-posnr.
-      ls_parameters-param_value = ls_parameters-param_value + <ls_xvepo>-vemng.
+      lv_vemng = lv_vemng + <ls_xvepo>-vemng.
     ENDLOOP.
+    IF <ls_xvepo> IS ASSIGNED.
+      CALL FUNCTION 'MC_UNIT_CONVERSION'
+        EXPORTING
+          matnr                = <ls_xvepo>-matnr
+          nach_meins           = <ls_xvepo>-altme
+          von_meins            = <ls_xvepo>-vemeh
+        IMPORTING
+          umref                = lv_factor
+        EXCEPTIONS
+          conversion_not_found = 1
+          material_not_found   = 2
+          nach_meins_missing   = 3
+          overflow             = 4
+          von_meins_missing    = 5
+          OTHERS               = 6.
+    ENDIF.
+    lv_vemng_out = lv_vemng * lv_factor.
+    ls_parameters-param_value = lv_vemng_out.
     SHIFT ls_parameters-param_value LEFT  DELETING LEADING space.
     APPEND ls_parameters TO ct_trackparameters.
 

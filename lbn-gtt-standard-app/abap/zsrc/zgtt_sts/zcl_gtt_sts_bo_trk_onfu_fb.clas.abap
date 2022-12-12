@@ -732,6 +732,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
       lv_trxid             TYPE /saptrx/trxid,
       lv_tutrxcod          TYPE /saptrx/trxcod.
 
+    CLEAR et_track_id_data.
     ASSIGN is_app_object-maintabref->* TO <ls_root_new>.
 
     lr_root_old = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_header_old ).

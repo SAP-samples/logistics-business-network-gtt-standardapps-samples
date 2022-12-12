@@ -41,6 +41,11 @@ FUNCTION ZGTT_SSOF_EE_DE_POD_REL.
 *   Work structure for Sales Document: Header Status and Admin Data Old
   <ls_yvbup>  TYPE vbupvb.
 
+  CLEAR gt_dlv_type.
+  zcl_gtt_sof_toolkit=>get_delivery_type(
+    RECEIVING
+      rt_type = gt_dlv_type ).
+
 * <1> Read necessary application tables from table reference
   PERFORM read_appl_tables_pod_items
   TABLES lt_xvbup

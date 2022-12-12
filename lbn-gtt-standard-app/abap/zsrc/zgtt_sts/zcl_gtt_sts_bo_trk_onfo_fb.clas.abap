@@ -11,9 +11,11 @@ public section.
     redefinition .
 protected section.
 
+  methods GET_CONTAINER_MOBILE_TRACK_ID
+    redefinition .
   methods GET_DOCREF_DATA
     redefinition .
-  methods GET_CONTAINER_MOBILE_TRACK_ID
+  methods GET_REQUIREMENT_DOC_LIST
     redefinition .
 private section.
 
@@ -788,6 +790,27 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FB IMPLEMENTATION.
         it_track_id_data_old = lt_track_id_data_old
       CHANGING
         ct_track_id_data     = et_track_id_data ).
+
+  ENDMETHOD.
+
+
+  METHOD get_requirement_doc_list.
+
+    DATA:
+      lv_freight_unit_line_no TYPE int4.
+
+    zcl_gtt_sts_tools=>get_req_info_mul(
+      EXPORTING
+        ir_root     = ir_data
+        iv_old_data = iv_old_data
+      IMPORTING
+        et_req      = DATA(lt_req) ).
+
+    LOOP AT lt_req INTO DATA(ls_req).
+      lv_freight_unit_line_no = lv_freight_unit_line_no + 1.
+      APPEND lv_freight_unit_line_no TO ct_req_doc_line_no.
+      APPEND |{ ls_req-tor_id ALPHA = OUT }| TO ct_req_doc_no.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

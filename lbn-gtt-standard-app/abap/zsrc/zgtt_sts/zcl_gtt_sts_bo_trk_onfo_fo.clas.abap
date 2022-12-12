@@ -13,6 +13,8 @@ protected section.
 
   methods GET_CONTAINER_MOBILE_TRACK_ID
     redefinition .
+  methods GET_REQUIREMENT_DOC_LIST
+    redefinition .
 private section.
 
   types:
@@ -83,6 +85,7 @@ private section.
   methods GET_DATA_FROM_ITEM
     importing
       !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE   ##NEEDED
+      !IR_ROOT type ref to DATA
       !IR_ITEM type ref to DATA
     changing
       !CS_FO_HEADER type TS_FO_HEADER
@@ -203,27 +206,35 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FO IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD GET_DATA_FROM_ITEM.
+  METHOD get_data_from_item.
 
-    FIELD-SYMBOLS <lt_item> TYPE /scmtms/t_em_bo_tor_item.
+    FIELD-SYMBOLS:
+      <ls_root> TYPE /scmtms/s_em_bo_tor_root,
+      <lt_item> TYPE /scmtms/t_em_bo_tor_item.
 
-    ASSIGN ir_item->* TO <lt_item>.
+    ASSIGN ir_root->* TO <ls_root>.
     IF sy-subrc <> 0.
       MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-    ASSIGN <lt_item>[ item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item ] TO FIELD-SYMBOL(<ls_item>).
+    ASSIGN ir_item->* TO <lt_item>.
     IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO lv_dummy.
+      MESSAGE e010(zgtt_sts) INTO lv_dummy ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-    cs_fo_header-inc_class_code   =  <ls_item>-inc_class_code.
-    cs_fo_header-inc_transf_loc_n =  <ls_item>-inc_transf_loc_n.
-    cs_fo_header-country          =  <ls_item>-country.
-    cs_fo_header-platenumber      =  <ls_item>-platenumber.
-    cs_fo_header-res_id           =  <ls_item>-res_id.
+    LOOP AT <lt_item> ASSIGNING FIELD-SYMBOL(<ls_item>).
+      IF <ls_item>-item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item
+       AND <ls_item>-parent_node_id = <ls_root>-node_id.
+        cs_fo_header-inc_class_code   =  <ls_item>-inc_class_code.
+        cs_fo_header-inc_transf_loc_n =  <ls_item>-inc_transf_loc_n.
+        cs_fo_header-country          =  <ls_item>-country.
+        cs_fo_header-platenumber      =  <ls_item>-platenumber.
+        cs_fo_header-res_id           =  <ls_item>-res_id.
+        EXIT.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -374,7 +385,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FO IMPLEMENTATION.
     lv_tutrxcod = zif_gtt_sts_constants=>cs_trxcod-tu_number.
 
     LOOP AT it_item ASSIGNING FIELD-SYMBOL(<ls_item>).
-
+      CHECK <ls_item>-parent_node_id = is_root-node_id.
 *     license plate
       IF <ls_item>-platenumber IS ASSIGNED AND <ls_item>-node_id IS ASSIGNED AND
          <ls_item>-item_cat    IS ASSIGNED AND <ls_item>-item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item.
@@ -505,6 +516,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FO IMPLEMENTATION.
     get_data_from_item(
       EXPORTING
         iv_old_data   = iv_old_data
+        ir_root       = lr_maintabref
         ir_item       = mo_ef_parameters->get_appl_table(
                             SWITCH #( iv_old_data WHEN abap_true THEN zif_gtt_sts_constants=>cs_tabledef-fo_item_old
                                                   ELSE zif_gtt_sts_constants=>cs_tabledef-fo_item_new ) )
@@ -594,6 +606,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FO IMPLEMENTATION.
       <ls_root_new> TYPE /scmtms/s_em_bo_tor_root,
       <lt_root_old> TYPE /scmtms/t_em_bo_tor_root.
 
+    CLEAR et_track_id_data.
     ASSIGN is_app_object-maintabref->* TO <ls_root_new>.
 
     lr_root_old = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_header_old ).
@@ -679,6 +692,27 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FO IMPLEMENTATION.
         it_track_id_data_old = lt_track_id_data_old
       CHANGING
         ct_track_id_data     = et_track_id_data ).
+
+  ENDMETHOD.
+
+
+  METHOD get_requirement_doc_list.
+
+    DATA:
+      lv_freight_unit_line_no TYPE int4.
+
+    zcl_gtt_sts_tools=>get_req_info_mul(
+      EXPORTING
+        ir_root     = ir_data
+        iv_old_data = iv_old_data
+      IMPORTING
+        et_req      = DATA(lt_req) ).
+
+    LOOP AT lt_req INTO DATA(ls_req).
+      lv_freight_unit_line_no = lv_freight_unit_line_no + 1.
+      APPEND lv_freight_unit_line_no TO ct_req_doc_line_no.
+      APPEND |{ ls_req-tor_id ALPHA = OUT }| TO ct_req_doc_no.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

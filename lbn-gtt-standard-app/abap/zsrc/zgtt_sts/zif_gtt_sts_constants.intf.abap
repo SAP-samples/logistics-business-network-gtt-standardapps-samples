@@ -108,6 +108,7 @@ INTERFACE zif_gtt_sts_constants
       master_bill_of_landing TYPE /scmtms/btd_type_code VALUE 'T52',
       master_air_waybill     TYPE /scmtms/btd_type_code VALUE 'T55',
       carrier_assigned       TYPE /scmtms/btd_type_code VALUE 'BN',
+      carrierreferenceno     TYPE /scmtms/btd_type_code VALUE 'T67',
       purchase_order         TYPE /scmtms/btd_type_code VALUE '001',
       inbound_delivery       TYPE /scmtms/btd_type_code VALUE '58',
       outbound_delivery      TYPE /scmtms/btd_type_code VALUE '73',
