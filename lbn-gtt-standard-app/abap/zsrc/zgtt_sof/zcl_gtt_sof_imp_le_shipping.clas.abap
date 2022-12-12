@@ -105,7 +105,7 @@ method IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_BEFORE_OUTPUT.
 endmethod.
 
 
-METHOD IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT .
+METHOD if_ex_le_shp_delivery_proc~save_and_publish_document .
 
   DATA:
     BEGIN OF ls_aotype,
@@ -151,7 +151,9 @@ METHOD IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT .
     lv_count             TYPE i,
     lrt_aotype_rst       TYPE RANGE OF /saptrx/aotype,
     lv_rst_id            TYPE zgtt_rst_id VALUE 'DL_TO_SOIT',
-    lv_objtype           TYPE /saptrx/trk_obj_type VALUE 'ESC_SORDER'.
+    lv_objtype           TYPE /saptrx/trk_obj_type VALUE 'ESC_SORDER',
+    lt_dlv_type          TYPE rseloption,
+    lt_so_type           TYPE rseloption.
 
 * Check package dependent BADI disabling
   lv_structure_package = '/SAPTRX/SCEM_AI_R3'.
@@ -221,7 +223,19 @@ METHOD IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT .
      AND aotype       IN lrt_aotype_rst
      AND torelevant    = abap_true.
 
-  LOOP AT it_xlikp INTO ls_likp WHERE lfart = zif_gtt_sof_constants=>cs_relevance-lfart.
+  CLEAR lt_dlv_type.
+  zcl_gtt_sof_toolkit=>get_delivery_type(
+    RECEIVING
+      rt_type = lt_dlv_type ).
+
+  CLEAR lt_so_type.
+  zcl_gtt_sof_toolkit=>get_so_type(
+    RECEIVING
+      rt_type = lt_so_type ).
+
+  CHECK lt_dlv_type IS NOT INITIAL AND lt_so_type IS NOT INITIAL.
+
+  LOOP AT it_xlikp INTO ls_likp WHERE lfart IN lt_dlv_type.
 
     CLEAR: lt_vbfa_delta, lt_vbap_delta.
 
@@ -248,10 +262,10 @@ METHOD IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT .
           vbfa_tab = lt_vbfas.
       LOOP AT lt_vbfas INTO ls_vbfas WHERE vbtyp_n EQ 'J' AND vbtyp_v EQ 'C'.
         SELECT SINGLE * INTO ls_vbak FROM vbak WHERE vbeln = ls_vbfas-vbelv
-                                                 AND auart = zif_gtt_sof_constants=>cs_relevance-auart.
+                                                 AND auart IN lt_so_type.
         CHECK sy-subrc EQ 0.
         SELECT SINGLE * INTO ls_likp_tmp FROM likp WHERE vbeln = ls_vbfas-vbeln
-                                                     AND lfart = zif_gtt_sof_constants=>cs_relevance-lfart.
+                                                     AND lfart IN lt_dlv_type.
         CHECK sy-subrc EQ 0.
         MOVE-CORRESPONDING ls_vbfas TO ls_vbfa_new.
         APPEND ls_vbfa_new TO lt_vbfa_new.
@@ -269,7 +283,7 @@ METHOD IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT .
         READ TABLE lt_vbap INTO ls_vbap WITH KEY vbeln = ls_vbap_delta-vbeln
                                                  posnr = ls_vbap_delta-posnr.
         SELECT SINGLE * INTO ls_vbak FROM vbak WHERE vbeln = ls_vbap-vbeln
-                                                 AND auart = zif_gtt_sof_constants=>cs_relevance-auart.
+                                                 AND auart IN lt_so_type.
         CHECK sy-subrc EQ 0.
         MOVE-CORRESPONDING ls_vbap TO ls_vbap_new.
         APPEND ls_vbap_new TO lt_vbap_new.
@@ -285,7 +299,7 @@ METHOD IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT .
                                       TRANSPORTING NO FIELDS.
       IF sy-subrc NE 0.
         SELECT SINGLE * INTO ls_vbak FROM vbak WHERE vbeln = ls_vbfa_delta-vbelv
-                                                 AND auart = zif_gtt_sof_constants=>cs_relevance-auart.
+                                                 AND auart IN lt_so_type.
         CHECK sy-subrc EQ 0.
         COLLECT ls_vbfa_delta INTO lt_vbfa_new.
       ENDIF.

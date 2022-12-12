@@ -34,7 +34,9 @@ TYPES:
   END OF gtys_address.
 
 DATA:
-  gv_evtcnt TYPE /saptrx/evtcnt.                            "#EC NEEDED
+  gv_evtcnt   TYPE /saptrx/evtcnt,                            "#EC NEEDED
+  gt_dlv_type TYPE rseloption,
+  gt_so_type  TYPE rseloption.
 
 
 CONSTANTS:
@@ -169,6 +171,10 @@ CONSTANTS:
   gc_cp_yn_so_no                 TYPE /saptrx/paramname     VALUE 'YN_SO_NO',
   gc_cp_yn_so_item_no            TYPE /saptrx/paramname     VALUE 'YN_SO_ITEM_NO',
   gc_cp_yn_so_req_dlv_dt         TYPE /saptrx/paramname     VALUE 'YN_SO_REQ_DLV_DT',
+  gc_cp_yn_so_denominator_div    TYPE /saptrx/paramname     VALUE 'YN_SO_DENOMINATOR_DIVISOR',
+  gc_cp_yn_so_numerator_factor   TYPE /saptrx/paramname     VALUE 'YN_SO_NUMERATOR_FACTOR',
+  gc_cp_yn_dl_denominator_div    TYPE /saptrx/paramname     VALUE 'YN_DL_DENOMINATOR_DIVISOR',
+  gc_cp_yn_dl_numerator_factor   TYPE /saptrx/paramname     VALUE 'YN_DL_NUMERATOR_FACTOR',
   gc_cp_yn_material_no           TYPE /saptrx/paramname     VALUE 'YN_MATERIAL_NO',
   gc_cp_yn_material_txt          TYPE /saptrx/paramname     VALUE 'YN_MATERIAL_TXT',
   gc_cp_yn_plant                 TYPE /saptrx/paramname     VALUE 'YN_PLANT',
@@ -207,6 +213,7 @@ CONSTANTS:
   gc_cp_yn_de_gi_status          TYPE /saptrx/paramname     VALUE 'YN_DLV_GOODS_ISSUE_STATUS',
   gc_cp_yn_de_pod_status         TYPE /saptrx/paramname     VALUE 'YN_DLV_POD_STATUS',
   gc_cp_yn_de_asso_soitem_no     TYPE /saptrx/paramname     VALUE 'YN_DLV_ASSO_SOITEM_NO',
+  gc_cp_yn_dl_assoc_poitem_no    TYPE /saptrx/paramname     VALUE 'YN_DL_ASSOC_POITEM_NO',
   gc_cp_yn_de_warehouse_no       TYPE /saptrx/paramname     VALUE 'YN_DLV_WAREHOUSE_NO',
   gc_cp_yn_de_door_no            TYPE /saptrx/paramname     VALUE 'YN_DLV_DOOR_NO',
   gc_cp_yn_de_door_txt           TYPE /saptrx/paramname     VALUE 'YN_DLV_DOOR_TEXT',

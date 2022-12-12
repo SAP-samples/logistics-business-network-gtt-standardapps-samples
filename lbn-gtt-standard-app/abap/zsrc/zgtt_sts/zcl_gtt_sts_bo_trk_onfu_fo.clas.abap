@@ -85,6 +85,7 @@ private section.
   methods GET_DATA_FROM_ITEM
     importing
       !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE   ##NEEDED
+      !IR_ROOT type ref to DATA
       !IR_ITEM type ref to DATA
     changing
       !CS_FO_HEADER type TS_FO_HEADER
@@ -128,25 +129,33 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FO IMPLEMENTATION.
 
   METHOD GET_DATA_FROM_ITEM.
 
-    FIELD-SYMBOLS <lt_item> TYPE /scmtms/t_em_bo_tor_item.
+    FIELD-SYMBOLS:
+      <ls_root> TYPE /scmtms/s_em_bo_tor_root,
+      <lt_item> TYPE /scmtms/t_em_bo_tor_item.
 
-    ASSIGN ir_item->* TO <lt_item>.
+    ASSIGN ir_root->* TO <ls_root>.
     IF sy-subrc <> 0.
       MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-    ASSIGN <lt_item>[ item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item ] TO FIELD-SYMBOL(<ls_item>).
+    ASSIGN ir_item->* TO <lt_item>.
     IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO lv_dummy.
+      MESSAGE e010(zgtt_sts) INTO lv_dummy ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-    cs_fo_header-inc_class_code   =  <ls_item>-inc_class_code.
-    cs_fo_header-inc_transf_loc_n =  <ls_item>-inc_transf_loc_n.
-    cs_fo_header-country          =  <ls_item>-country.
-    cs_fo_header-platenumber      =  <ls_item>-platenumber.
-    cs_fo_header-res_id           =  <ls_item>-res_id.
+    LOOP AT <lt_item> ASSIGNING FIELD-SYMBOL(<ls_item>).
+      IF <ls_item>-item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item
+       AND <ls_item>-parent_node_id = <ls_root>-node_id.
+        cs_fo_header-inc_class_code   =  <ls_item>-inc_class_code.
+        cs_fo_header-inc_transf_loc_n =  <ls_item>-inc_transf_loc_n.
+        cs_fo_header-country          =  <ls_item>-country.
+        cs_fo_header-platenumber      =  <ls_item>-platenumber.
+        cs_fo_header-res_id           =  <ls_item>-res_id.
+        EXIT.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -419,6 +428,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FO IMPLEMENTATION.
     get_data_from_item(
       EXPORTING
         iv_old_data   = iv_old_data
+        ir_root       = lr_maintabref
         ir_item       = mo_ef_parameters->get_appl_table(
                             SWITCH #( iv_old_data WHEN abap_true THEN zif_gtt_sts_constants=>cs_tabledef-fo_item_old
                                                   ELSE zif_gtt_sts_constants=>cs_tabledef-fo_item_new ) )
@@ -513,6 +523,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FO IMPLEMENTATION.
       lv_trxid             TYPE /saptrx/trxid,
       lv_tutrxcod          TYPE /saptrx/trxcod.
 
+    CLEAR et_track_id_data.
     ASSIGN is_app_object-maintabref->* TO <ls_root_new>.
 
     lr_root_old = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_sts_constants=>cs_tabledef-fo_header_old ).

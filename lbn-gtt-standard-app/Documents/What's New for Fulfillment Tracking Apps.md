@@ -1,4 +1,10 @@
 # What's New for Fulfillment Tracking Apps
+## Dec 10th, 2022
+1. Add denominator and numerator fields for the sales order item / outbound delivery item.
+2. Add the configuration table for the outbound delivery type / sales order type.
+3. Support carrier reference document type T67 (Reference Number of Carrier) for the TM scenario.
+4. In the scenario "Maintain Tracked Objects on Freight Order/Freight Booking", if there is multi-layer data from the freight unit to the freight order (example: freight unit -> container unit -> freight order), the relationship between the freight unit and the freight order can still be retrieved.
+
 ## Nov 12th, 2022
 1. To support tracking without carrier onboarding, the Standard Carrier Alpha Code (SCAC) of a carrier can be retrieved.
 2. For the outbound delivery and the outbound delivery item, remove the configuration check of "Define Transportation-Relevance of Delivery Documents" in control parameters and planned events.

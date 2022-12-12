@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_TRAN" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <TSTC>
+    <TCODE>ZGTT_DLVTYPE_RST</TCODE>
+    <CINFO>Ag==</CINFO>
+   </TSTC>
+   <TSTCC>
+    <TCODE>ZGTT_DLVTYPE_RST</TCODE>
+    <S_WEBGUI>1</S_WEBGUI>
+    <S_WIN32>X</S_WIN32>
+    <S_PLATIN>X</S_PLATIN>
+   </TSTCC>
+   <TSTCT>
+    <SPRSL>E</SPRSL>
+    <TCODE>ZGTT_DLVTYPE_RST</TCODE>
+    <TTEXT>GTT Delivery Type Configuration</TTEXT>
+   </TSTCT>
+   <TSTCP>
+    <TCODE>ZGTT_DLVTYPE_RST</TCODE>
+    <PARAM>/*SM30 VIEWNAME=ZGTT_DLVTYPE_RST;SHOW=X;</PARAM>
+   </TSTCP>
+   <I18N_TPOOL>
+    <TSTCT>
+     <SPRSL>늑</SPRSL>
+     <TTEXT>TRAN ZGTT_DLVTYPE_RST</TTEXT>
+    </TSTCT>
+    <TSTCT>
+     <SPRSL>닱</SPRSL>
+     <TTEXT>[ĢŢŢ∙Ďēĺįʋēŗŷ∙Ţŷρē∙Ĉŏŋƒįğűŗąţįŏŋ∙∙∙]</TTEXT>
+    </TSTCT>
+   </I18N_TPOOL>
+  </asx:values>
+ </asx:abap>
+</abapGit>

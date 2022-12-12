@@ -30,6 +30,24 @@
      <LANGU>닱</LANGU>
      <DESCRIPT>[Ģēţ∙ĈĀƤĀ∙Ĕʋēŋţɱąţċĥķēŷ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_PE_TRK_ONFO_FU_FIL</CLSNAME>
+     <CMPNAME>GET_REQCAPA_INFO</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get Requirement/Capacity Document (Multpile layer)</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_PE_TRK_ONFO_FU_FIL</CLSNAME>
+     <CMPNAME>GET_REQCAPA_INFO</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_PE_TRK_ONFO_FU_FIL</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_PE_TRK_ONFO_FU_FIL</CLSNAME>
+     <CMPNAME>GET_REQCAPA_INFO</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Ģēţ∙Řēƣűįŗēɱēŋţ/Ĉąρąċįţŷ∙Ďŏċűɱēŋţ∙(Μűĺţρįĺē∙ĺąŷēŗ)∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

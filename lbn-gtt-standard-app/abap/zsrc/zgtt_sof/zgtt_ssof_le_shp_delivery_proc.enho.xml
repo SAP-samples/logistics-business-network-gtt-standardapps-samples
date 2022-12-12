@@ -26,6 +26,15 @@
      <ENTRIES>
       <SOTR_TEXT>
        <CONCEPT>42010AEF4DF61EED8EDED83C6A31C349</CONCEPT>
+       <LANGU>늑</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>102</LENGTH>
+       <TEXT>SOTR *42010AEF4DF61EED8EDED83C6A31C349</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>42010AEF4DF61EED8EDED83C6A31C349</CONCEPT>
        <LANGU>E</LANGU>
        <LFD_NUM>0001</LFD_NUM>
        <FLAG_CNTXT>X</FLAG_CNTXT>
@@ -35,12 +44,12 @@
       </SOTR_TEXT>
       <SOTR_TEXT>
        <CONCEPT>42010AEF4DF61EED8EDED83C6A31C349</CONCEPT>
-       <LANGU>늑</LANGU>
+       <LANGU>닱</LANGU>
        <LFD_NUM>0001</LFD_NUM>
        <FLAG_CNTXT>X</FLAG_CNTXT>
        <STATUS>R</STATUS>
        <LENGTH>102</LENGTH>
-       <TEXT>SOTR *42010AEF4DF61EED8EDED83C6A31C349</TEXT>
+       <TEXT>[Ĭɱρĺēɱēŋţąţįŏŋ:∙ĢŢŢ∙-∙Ĕŋĥąŋċēɱēŋţ∙ţŏ∙űρƌąţē∙ţĥē∙įɱρąţēƌ∙şąĺēş∙ŏŗƌēŗş∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
       </SOTR_TEXT>
      </ENTRIES>
     </item>

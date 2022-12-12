@@ -51,7 +51,7 @@ FORM check_aot_relevance
 * Check Sales Organization
 * CHECK is_xvbak-vkorg EQ '1000'.
 * Check Sales Order Type
-  CHECK is_xvbak-auart EQ zif_gtt_sof_constants=>cs_relevance-auart.
+  CHECK gt_so_type IS NOT INITIAL AND is_xvbak-auart IN gt_so_type.
 * Check plant
 * CHECK is_xvbap-werks EQ '1000'.
 
@@ -75,7 +75,7 @@ FORM check_aot_relevance_dlv
   CHANGING ev_aot_relevance TYPE boole_d.
 
 
-  CHECK is_xlikp-lfart EQ zif_gtt_sof_constants=>cs_relevance-lfart.
+  CHECK gt_dlv_type IS NOT INITIAL AND is_xlikp-lfart IN gt_dlv_type.
 
 
 * Set value

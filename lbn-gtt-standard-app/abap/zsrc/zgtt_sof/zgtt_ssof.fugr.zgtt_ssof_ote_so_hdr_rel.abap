@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_OTE_SO_HDR_REL .
+FUNCTION zgtt_ssof_ote_so_hdr_rel .
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -26,6 +26,11 @@ FUNCTION ZGTT_SSOF_OTE_SO_HDR_REL .
 
   FIELD-SYMBOLS:
     <ls_xvbak>       TYPE /saptrx/sd_sds_hdr.
+
+  CLEAR gt_so_type.
+  zcl_gtt_sof_toolkit=>get_so_type(
+    RECEIVING
+      rt_type = gt_so_type ).
 
 * <1> Check if Main table is Sales Order or not.
   IF i_app_object-maintabdef <> gc_bpt_sales_order_header_new.

@@ -13,10 +13,10 @@ protected section.
 
   methods GET_REQUIREMENT_DOC_LIST
     redefinition .
-  PRIVATE SECTION.
+private section.
 
-    TYPES:
-      BEGIN OF ts_fo_header,
+  types:
+    BEGIN OF ts_fo_header,
         shipment_type         TYPE string,
         tor_id                TYPE /scmtms/s_em_bo_tor_root-tor_id,
         mtr                   TYPE /scmtms/s_em_bo_tor_root-mtr,  "/SAPAPO/TR_MOTSCODE,
@@ -66,35 +66,36 @@ protected section.
         resource_tp_id        TYPE tt_resource_tp_id,
       END OF ts_fo_header .
 
-    METHODS get_data_from_root
-      IMPORTING
-        !iv_old_data  TYPE abap_bool DEFAULT abap_false
-        !ir_root      TYPE REF TO data
-      CHANGING
-        !cs_fo_header TYPE ts_fo_header
-      RAISING
-        cx_udm_message .
-    METHODS get_data_from_item
-      IMPORTING
-        !iv_old_data  TYPE abap_bool DEFAULT abap_false   ##NEEDED
-        !ir_item      TYPE REF TO data
-      CHANGING
-        !cs_fo_header TYPE ts_fo_header
-      RAISING
-        cx_udm_message .
-    METHODS get_data_from_textcoll
-      IMPORTING
-        !iv_old_data  TYPE abap_bool DEFAULT abap_false
-        !ir_root      TYPE REF TO data
-      CHANGING
-        !cs_fo_header TYPE ts_fo_header
-      RAISING
-        cx_udm_message .
-    METHODS get_maintabref
-      IMPORTING
-        !is_app_object       TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rr_maintabref) TYPE REF TO data .
+  methods GET_DATA_FROM_ROOT
+    importing
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+      !IR_ROOT type ref to DATA
+    changing
+      !CS_FO_HEADER type TS_FO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_DATA_FROM_ITEM
+    importing
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE   ##NEEDED
+      !IR_ROOT type ref to DATA
+      !IR_ITEM type ref to DATA
+    changing
+      !CS_FO_HEADER type TS_FO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_DATA_FROM_TEXTCOLL
+    importing
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+      !IR_ROOT type ref to DATA
+    changing
+      !CS_FO_HEADER type TS_FO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_MAINTABREF
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RR_MAINTABREF) type ref to DATA .
 ENDCLASS.
 
 
@@ -104,25 +105,33 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
 
   METHOD get_data_from_item.
 
-    FIELD-SYMBOLS <lt_item> TYPE /scmtms/t_em_bo_tor_item.
+    FIELD-SYMBOLS:
+      <ls_root> TYPE /scmtms/s_em_bo_tor_root,
+      <lt_item> TYPE /scmtms/t_em_bo_tor_item.
 
-    ASSIGN ir_item->* TO <lt_item>.
+    ASSIGN ir_root->* TO <ls_root>.
     IF sy-subrc <> 0.
       MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-    ASSIGN <lt_item>[ item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item ] TO FIELD-SYMBOL(<ls_item>).
+    ASSIGN ir_item->* TO <lt_item>.
     IF sy-subrc <> 0.
-      MESSAGE e010(zgtt_sts) INTO lv_dummy.
+      MESSAGE e010(zgtt_sts) INTO lv_dummy ##needed.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-    cs_fo_header-inc_class_code   =  <ls_item>-inc_class_code.
-    cs_fo_header-inc_transf_loc_n =  <ls_item>-inc_transf_loc_n.
-    cs_fo_header-country          =  <ls_item>-country.
-    cs_fo_header-platenumber      =  <ls_item>-platenumber.
-    cs_fo_header-res_id           =  <ls_item>-res_id.
+    LOOP AT <lt_item> ASSIGNING FIELD-SYMBOL(<ls_item>).
+      IF <ls_item>-item_cat = /scmtms/if_tor_const=>sc_tor_item_category-av_item
+       AND <ls_item>-parent_node_id = <ls_root>-node_id.
+        cs_fo_header-inc_class_code   =  <ls_item>-inc_class_code.
+        cs_fo_header-inc_transf_loc_n =  <ls_item>-inc_transf_loc_n.
+        cs_fo_header-country          =  <ls_item>-country.
+        cs_fo_header-platenumber      =  <ls_item>-platenumber.
+        cs_fo_header-res_id           =  <ls_item>-res_id.
+        EXIT.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -267,6 +276,7 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
     get_data_from_item(
       EXPORTING
         iv_old_data   = iv_old_data
+        ir_root       = lr_maintabref
         ir_item       = mo_ef_parameters->get_appl_table(
                             SWITCH #( iv_old_data WHEN abap_true THEN zif_gtt_sts_constants=>cs_tabledef-fo_item_old
                                                   ELSE zif_gtt_sts_constants=>cs_tabledef-fo_item_new ) )

@@ -19,7 +19,7 @@ CLASS ZCL_GTT_SOF_LE_SHIPMNT_IMP IMPLEMENTATION.
   endmethod.
 
 
-METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
+METHOD if_ex_badi_le_shipment~before_update.
 
   DATA:
     BEGIN OF ls_aotype,
@@ -85,7 +85,8 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
     lv_milestonenum           TYPE /saptrx/seq_num,
     lv_length                 TYPE i,
     lv_tmp_vbeln              TYPE vbeln_nach,
-    lv_appobjid               TYPE /saptrx/aoid.
+    lv_appobjid               TYPE /saptrx/aoid,
+    lt_dlv_type               TYPE rseloption.
 
 * Check package dependent BADI disabling
   lv_structure_package = '/SAPTRX/SCEM_AI_R3'.
@@ -155,6 +156,11 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
    WHERE trk_obj_type  = lv_objtype
      AND aotype       IN lrt_aotype_rst
      AND torelevant    = abap_true.
+
+  CLEAR lt_dlv_type.
+  zcl_gtt_sof_toolkit=>get_delivery_type(
+    RECEIVING
+      rt_type = lt_dlv_type ).
 
 * Get the shipment header
   MOVE im_shipments_before_update-new_vttk TO lt_vttk.
@@ -254,7 +260,7 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
           vbfa_tab = lt_vbfas.
       LOOP AT lt_vbfas INTO ls_vbfas WHERE vbtyp_n EQ '8' AND vbtyp_v EQ 'J'.
         SELECT SINGLE * INTO ls_likp FROM likp WHERE vbeln = ls_vbfas-vbelv
-                                                 AND lfart = zif_gtt_sof_constants=>cs_relevance-lfart.
+                                                 AND lfart IN lt_dlv_type.
         CHECK sy-subrc EQ 0.
         SELECT SINGLE * INTO ls_vttk_tmp FROM vttk WHERE tknum = ls_vbfas-vbeln
                                                      AND ( abfer EQ '1' OR abfer EQ '3' ).
@@ -264,7 +270,7 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
       ENDLOOP.
 
       SELECT SINGLE * INTO ls_likp FROM likp WHERE vbeln = ls_likp_delta-vbeln
-                                               AND lfart = zif_gtt_sof_constants=>cs_relevance-lfart.
+                                               AND lfart IN lt_dlv_type.
       IF sy-subrc = 0.
         COLLECT ls_likp INTO lt_likp_new.
       ENDIF.
@@ -281,7 +287,7 @@ METHOD IF_EX_BADI_LE_SHIPMENT~BEFORE_UPDATE.
                                       TRANSPORTING NO FIELDS.
       IF sy-subrc NE 0.
         SELECT SINGLE * INTO ls_likp FROM likp WHERE vbeln = ls_vttp_delta-vbeln
-                                                 AND lfart = zif_gtt_sof_constants=>cs_relevance-lfart.
+                                                 AND lfart IN lt_dlv_type.
         CHECK sy-subrc EQ 0.
         CLEAR ls_vbfa_new.
         ls_vbfa_new-vbelv = ls_vttp_delta-vbeln.

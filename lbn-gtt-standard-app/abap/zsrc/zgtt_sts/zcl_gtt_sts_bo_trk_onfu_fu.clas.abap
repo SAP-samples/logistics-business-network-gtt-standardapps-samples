@@ -43,6 +43,8 @@ public section.
         product_txt           TYPE STANDARD TABLE OF /scmtms/item_description     WITH EMPTY KEY,
         dlv_item_inb_alt_id   TYPE STANDARD TABLE OF char16                       WITH EMPTY KEY,
         dlv_item_oub_alt_id   TYPE STANDARD TABLE OF char16                       WITH EMPTY KEY,
+        dlv_item_inb_logsys   TYPE STANDARD TABLE OF /scmtms/logsys_sending       WITH EMPTY KEY,
+        dlv_item_oub_logsys   TYPE STANDARD TABLE OF /scmtms/logsys_sending       WITH EMPTY KEY,
         capa_doc_line_no      TYPE tt_capacity_doc_line_number,
         capa_doc_no           TYPE tt_capacity_doc_number,
         capa_doc_first_stop   TYPE tt_stop,
@@ -471,6 +473,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FU IMPLEMENTATION.
       IF <ls_tor_item>-base_btd_tco     = cs_base_btd_tco_inb_dlv  AND
          <ls_tor_item>-base_btditem_tco = cs_base_btd_tco_delivery_item.
         APPEND lv_base_btd_alt_item_id TO cs_freight_unit-dlv_item_inb_alt_id.
+        APPEND <ls_tor_item>-base_btd_logsys to cs_freight_unit-dlv_item_inb_logsys.
       ELSE.
         APPEND '' TO cs_freight_unit-dlv_item_inb_alt_id.
       ENDIF.
@@ -478,6 +481,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FU IMPLEMENTATION.
       IF <ls_tor_item>-base_btd_tco     = cs_base_btd_tco_outb_dlv AND
          <ls_tor_item>-base_btditem_tco = cs_base_btd_tco_delivery_item.
         APPEND lv_base_btd_alt_item_id TO cs_freight_unit-dlv_item_oub_alt_id.
+        APPEND <ls_tor_item>-base_btd_logsys to cs_freight_unit-dlv_item_oub_logsys.
       ELSE.
         APPEND '' TO cs_freight_unit-dlv_item_oub_alt_id.
       ENDIF.

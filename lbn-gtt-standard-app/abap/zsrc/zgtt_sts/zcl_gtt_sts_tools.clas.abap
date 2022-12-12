@@ -309,6 +309,8 @@ public section.
     exporting
       !ET_REQ2CAPA_INFO type TT_REQ2CAPA_INFO
       !ET_CAPA_LIST type TT_CAPA_LIST
+      !ET_CAPA_DETAIL type /SCMTMS/T_EM_BO_TOR_ROOT
+      !ET_CAPA_STOP_SEQ type /SCMTMS/T_EM_BO_TOR_STOP
     raising
       CX_UDM_MESSAGE .
   class-methods GET_CAPA_INFO_MUL
@@ -1352,11 +1354,14 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
       lv_order             TYPE numc04,
       lv_counter           TYPE int4,
       lt_capa_list         TYPE tt_capa_list,
-      ls_capa_list         TYPE ts_capa_list.
+      ls_capa_list         TYPE ts_capa_list,
+      lt_stop_tmp          TYPE /scmtms/t_em_bo_tor_stop.
 
     CLEAR:
       et_req2capa_info,
-      et_capa_list.
+      et_capa_list,
+      et_capa_detail,
+      et_capa_stop_seq.
 
     IF it_root_key IS NOT INITIAL.
       lt_root_key = it_root_key.
@@ -1558,6 +1563,29 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
 *   6)Output the result
     et_req2capa_info = lt_req2capa_info.
     et_capa_list = lt_capa_list.
+
+*   7)Prepare capacity detail result.
+    DELETE lt_capa WHERE tor_cat <> /scmtms/if_tor_const=>sc_tor_category-active
+                     AND tor_cat <> /scmtms/if_tor_const=>sc_tor_category-booking.
+    et_capa_detail = CORRESPONDING #( lt_capa MAPPING node_id = key tor_root_node = root_key ).
+
+*   8)prepare Capacity Stop Sequences table
+    LOOP AT lt_capa_stop_seq INTO ls_capa_stop_seq.
+      CLEAR:
+        ls_capa,
+        lt_stop_tmp.
+      READ TABLE lt_capa INTO ls_capa WITH KEY key = ls_capa_stop_seq-root_key.
+      IF sy-subrc = 0.
+        MOVE-CORRESPONDING ls_capa_stop_seq-stop_seq TO lt_stop_tmp.
+        LOOP AT lt_stop_tmp ASSIGNING FIELD-SYMBOL(<ls_stop_tmp>).
+          <ls_stop_tmp>-parent_node_id = ls_capa_stop_seq-root_key.
+          ASSIGN ls_capa_stop_seq-stop_map[ tabix = <ls_stop_tmp>-seq_num ]-stop_key TO FIELD-SYMBOL(<lv_stop_key>).
+          CHECK sy-subrc = 0.
+          <ls_stop_tmp>-node_id = <lv_stop_key>.
+        ENDLOOP.
+        APPEND LINES OF lt_stop_tmp TO et_capa_stop_seq.
+      ENDIF.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -1908,6 +1936,9 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
                       trxid       = <ls_track_id_data_del>-trxid
                       action      = /scmtms/cl_scem_int_c=>sc_param_action-delete ) TO ct_track_id_data.
     ENDLOOP.
+
+    SORT ct_track_id_data BY appsys appobjtype appobjid trxcod trxid.
+    DELETE ADJACENT DUPLICATES FROM ct_track_id_data COMPARING ALL FIELDS.
 
   ENDMETHOD.
 

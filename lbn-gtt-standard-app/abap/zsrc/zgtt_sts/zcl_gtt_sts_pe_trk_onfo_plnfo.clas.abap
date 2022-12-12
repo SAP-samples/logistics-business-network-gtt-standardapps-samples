@@ -5,6 +5,23 @@ class ZCL_GTT_STS_PE_TRK_ONFO_PLNFO definition
 
 public section.
 
+  types:
+    BEGIN OF ts_req2capa_info,
+        req_no              TYPE /scmtms/tor_id,
+        req_key             TYPE /bobf/conf_key,
+        req_stop_key        TYPE /bobf/conf_key,
+        req_assgn_stop_key  TYPE /bobf/conf_key,
+        req_log_locid       TYPE /scmtms/location_id,
+        cap_no              TYPE /scmtms/tor_id,
+        cap_key             TYPE /bobf/conf_key,
+        cap_stop_key        TYPE /bobf/conf_key,
+        cap_plan_trans_time TYPE /scmtms/stop_plan_date,
+        cap_seq             TYPE numc04,
+      END OF ts_req2capa_info .
+
+  types:
+    tt_req2capa_info TYPE TABLE OF ts_req2capa_info .
+
   methods GET_PLANNED_EVENTS
     importing
       !IR_FU_ROOT type ref to DATA
@@ -147,6 +164,14 @@ private section.
       value(RV_RESULT) type ZIF_GTT_STS_EF_TYPES=>TV_CONDITION
     raising
       CX_UDM_MESSAGE .
+  methods PREPARE_DATA_FOR_PLANNED_EVENT
+    importing
+      !IS_CAPA type /SCMTMS/S_EM_BO_TOR_ROOT
+      !IT_STOP_SEQ type /SCMTMS/T_EM_BO_TOR_STOP
+      !IT_REQ2CAPA_INFO type TT_REQ2CAPA_INFO
+    exporting
+      !ET_STOP type /SCMTMS/T_EM_BO_TOR_STOP
+      !ET_STOP_POINTS type ZIF_GTT_STS_EF_TYPES=>TT_STOP_POINTS .
 ENDCLASS.
 
 
@@ -454,15 +479,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
   METHOD get_planned_events.
 
-    FIELD-SYMBOLS:
-      <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
-
     DATA:
-      lo_root             TYPE REF TO data,
-      lr_srvmgr_tor       TYPE REF TO /bobf/if_tra_service_manager,
-      lt_capa             TYPE /scmtms/t_tor_root_k,
-      lt_fu_stop          TYPE /scmtms/t_tor_stop_k,
-      lt_root_key         TYPE /bobf/t_frw_key,
       ls_expeventdata     TYPE zif_gtt_sts_ef_types=>ts_expeventdata,
       lt_tmp_expeventdata TYPE zif_gtt_sts_ef_types=>tt_expeventdata,
       lt_expeventdata     TYPE zif_gtt_sts_ef_types=>tt_expeventdata,
@@ -479,24 +496,21 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
     mv_appobjtype  = iv_appobjtype.
     mv_appobjid  = iv_appobjid.
 
-    CREATE DATA lo_root TYPE /scmtms/s_em_bo_tor_root.
-    ASSIGN lo_root->* TO <ls_tor_root>.
-
-    get_capa_doc(
+    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
       EXPORTING
-        ir_fu_root = ir_fu_root
+        ir_root          = ir_fu_root
+        iv_old_data      = abap_false
       IMPORTING
-        et_fu_stop = lt_fu_stop
-        et_capa    = lt_capa ).
+        et_req2capa_info = DATA(lt_req2capa_info)
+        et_capa_detail   = DATA(lt_capa)
+        et_capa_stop_seq = DATA(lt_capa_stop_seq) ).
 
     LOOP AT lt_capa INTO DATA(ls_capa).
-
-      <ls_tor_root> = CORRESPONDING #( ls_capa MAPPING node_id  = key tor_root_node = root_key ).
 
 *     Check if FO is deleted
       check_is_fo_deleted(
         EXPORTING
-          ir_fo_root = REF #( <ls_tor_root> )
+          ir_fo_root = REF #( ls_capa )
         RECEIVING
           rv_result  = DATA(lv_result) ).
 
@@ -506,7 +520,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       get_tracking_info(
         EXPORTING
-          ir_data        = REF #( <ls_tor_root> )
+          ir_data        = REF #( ls_capa )
         IMPORTING
           et_tracked_obj = DATA(lt_tracked_obj) ).
 
@@ -514,18 +528,18 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
         CONTINUE.
       ENDIF.
 
-      get_data_for_planned_event(
+      prepare_data_for_planned_event(
         EXPORTING
-          ir_root        = REF #( <ls_tor_root> )
-          ir_fu_root     = ir_fu_root
-          it_fu_stop     = lt_fu_stop
+          is_capa          = ls_capa
+          it_stop_seq      = lt_capa_stop_seq
+          it_req2capa_info = lt_req2capa_info
         IMPORTING
-          et_stop        = DATA(lt_stop)
-          et_stop_points = DATA(lt_stop_points) ).
+          et_stop          = DATA(lt_stop)
+          et_stop_points   = DATA(lt_stop_points) ).
 
       shp_arrival(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -533,7 +547,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       decoupling(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -541,7 +555,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       unload_start(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -549,7 +563,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       unload_end(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -557,7 +571,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       pod(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -565,7 +579,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       load_start(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -573,7 +587,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       load_end(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -581,7 +595,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       popu(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -589,7 +603,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       coupling(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -597,7 +611,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
 
       shp_departure(
         EXPORTING
-          ir_root         = REF #( <ls_tor_root> )
+          ir_root         = REF #( ls_capa )
           it_stop         = lt_stop
           it_stop_points  = lt_stop_points
         CHANGING
@@ -1205,4 +1219,45 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_PLNFO IMPLEMENTATION.
     ENDLOOP.
 
   endmethod.
+
+
+  METHOD prepare_data_for_planned_event.
+
+    DATA:
+      lv_tor_id TYPE /scmtms/tor_id,
+      ls_stop   TYPE /scmtms/s_em_bo_tor_stop,
+      lt_stop   TYPE /scmtms/t_em_bo_tor_stop.
+
+    CLEAR:
+      et_stop,
+      et_stop_points.
+
+    lv_tor_id = |{ is_capa-tor_id ALPHA = OUT }|.
+
+    LOOP AT it_stop_seq USING KEY parent_seqnum INTO DATA(ls_stop_seq) WHERE parent_node_id = is_capa-node_id.
+      MOVE-CORRESPONDING ls_stop_seq TO ls_stop.
+      APPEND ls_stop TO lt_stop.
+      CLEAR ls_stop.
+    ENDLOOP.
+
+    zcl_gtt_sts_tools=>get_stop_points(
+      EXPORTING
+        iv_root_id     = lv_tor_id
+        it_stop        = lt_stop
+      IMPORTING
+        et_stop_points = et_stop_points ).
+
+    LOOP AT lt_stop INTO ls_stop.
+      READ TABLE it_req2capa_info INTO DATA(ls_req2capa_info)
+        WITH KEY cap_key      = ls_stop-parent_node_id
+                 cap_stop_key = ls_stop-node_id.
+      IF sy-subrc = 0.
+        APPEND ls_stop TO et_stop.
+      ENDIF.
+      CLEAR:
+        ls_stop,
+        ls_req2capa_info.
+    ENDLOOP.
+
+  ENDMETHOD.
 ENDCLASS.
