@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_SOF_CTP_DAT_TOR_TO_DLH</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>SOF Cross TP data for TOR to Delivery header</DESCRIPT>
+    <DESCRIPT>SOF Cross TP data for TOR to Delivery header(obsolete)</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

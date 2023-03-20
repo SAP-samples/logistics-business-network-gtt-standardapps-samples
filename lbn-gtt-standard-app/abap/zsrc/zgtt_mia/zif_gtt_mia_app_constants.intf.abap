@@ -69,8 +69,10 @@ INTERFACE zif_gtt_mia_app_constants
     END OF cs_abfer .
   CONSTANTS:
     BEGIN OF cs_base_btd_tco,
-      inb_dlv  TYPE /scmtms/base_btd_tco VALUE '58',
-      outb_dlv TYPE /scmtms/base_btd_tco VALUE '73',
+      inb_dlv        TYPE /scmtms/base_btd_tco VALUE '58',
+      outb_dlv       TYPE /scmtms/base_btd_tco VALUE '73',
+      purchase_order TYPE /scmtms/base_btd_tco VALUE '001',
+      sales_order    TYPE /scmtms/base_btd_tco VALUE '114',
     END OF cs_base_btd_tco .
   CONSTANTS:
     BEGIN OF cs_start_evtcnt,

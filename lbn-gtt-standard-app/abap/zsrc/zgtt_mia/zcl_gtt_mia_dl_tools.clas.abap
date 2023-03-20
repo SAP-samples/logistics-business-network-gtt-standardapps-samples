@@ -90,20 +90,6 @@ public section.
       value(RV_TRACK_ID) type /SAPTRX/TRXID
     raising
       CX_UDM_MESSAGE .
-  class-methods IS_APPROPRIATE_DL_ITEM
-    importing
-      !IR_STRUCT type ref to DATA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  class-methods IS_APPROPRIATE_DL_TYPE
-    importing
-      !IR_STRUCT type ref to DATA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -384,53 +370,5 @@ CLASS ZCL_GTT_MIA_DL_TOOLS IMPLEMENTATION.
     rv_track_id   = |{ lv_vbeln ALPHA = OUT }{ lv_posnr ALPHA = IN }|.
 
     CONDENSE rv_track_id NO-GAPS.
-  ENDMETHOD.
-
-
-  METHOD is_appropriate_dl_item.
-
-    DATA: it_tvlp  TYPE STANDARD TABLE OF tvlp.
-
-    DATA(lv_pstyv)  = CONV pstyv_vl( zcl_gtt_tools=>get_field_of_structure(
-                                       ir_struct_data = ir_struct
-                                       iv_field_name  = 'PSTYV' ) ).
-
-    CALL FUNCTION 'MCV_TVLP_READ'
-      EXPORTING
-        i_pstyv   = lv_pstyv
-      TABLES
-        t_tvlp    = it_tvlp
-      EXCEPTIONS
-        not_found = 1
-        OTHERS    = 2.
-
-    IF sy-subrc = 0.
-      rv_result = boolc( it_tvlp[ 1 ]-vbtyp = zif_gtt_mia_app_constants=>cs_vbtyp-delivery AND
-                         it_tvlp[ 1 ]-bwart IS NOT INITIAL ).
-    ELSE.
-      MESSAGE e057(00) WITH lv_pstyv '' '' 'TVLP'
-        INTO DATA(lv_dummy).
-      zcl_gtt_tools=>throw_exception( ).
-    ENDIF.
-
-  ENDMETHOD.
-
-
-  METHOD is_appropriate_dl_type.
-
-    DATA: ls_tvlk   TYPE tvlk.
-
-    DATA(lv_lfart)  = CONV lfart( zcl_gtt_tools=>get_field_of_structure(
-                                    ir_struct_data = ir_struct
-                                    iv_field_name  = 'LFART' ) ).
-
-    CALL FUNCTION 'CSO_O_DLV_TYPE_GET'
-      EXPORTING
-        pi_dlv_type = lv_lfart
-      IMPORTING
-        pe_tvlk     = ls_tvlk.
-
-    rv_result = boolc( ls_tvlk-vbtyp = zif_gtt_mia_app_constants=>cs_vbtyp-delivery ).
-
   ENDMETHOD.
 ENDCLASS.

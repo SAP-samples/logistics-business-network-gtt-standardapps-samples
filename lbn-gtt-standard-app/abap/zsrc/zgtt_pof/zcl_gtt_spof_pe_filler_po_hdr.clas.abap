@@ -110,7 +110,7 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_HDR IMPLEMENTATION.
     IF <lt_ekpo> IS ASSIGNED.
       LOOP AT <lt_ekpo> ASSIGNING <ls_ekpo>
         WHERE ebeln = lv_ebeln.
-        IF zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = REF #( <ls_ekpo> ) ) = abap_true.
+        IF zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_app_objects-maintabref ir_ekpo = REF #( <ls_ekpo> ) ) = abap_true.
 
           ct_expeventdata = VALUE #( BASE ct_expeventdata (
                   appsys            = mo_ef_parameters->get_appsys(  )

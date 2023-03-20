@@ -74,7 +74,7 @@ FORM check_aot_relevance_dlv
   USING    is_xlikp         TYPE likpvb
   CHANGING ev_aot_relevance TYPE boole_d.
 
-
+  CHECK is_xlikp-vbtyp = if_sd_doc_category=>delivery. "Outbound delivery
   CHECK gt_dlv_type IS NOT INITIAL AND is_xlikp-lfart IN gt_dlv_type.
 
 

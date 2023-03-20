@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_OTE_SO_HD.
+FUNCTION zgtt_ssof_ote_so_hd.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -33,7 +33,10 @@ FUNCTION ZGTT_SSOF_OTE_SO_HD.
 *    net value conversion
     rv_external     TYPE netwr_ak,
     lv_external     TYPE bapicurr_d,
-    lt_xvbap        TYPE STANDARD TABLE OF vbapvb.
+    lt_xvbap        TYPE STANDARD TABLE OF vbapvb,
+    lt_vbeln        TYPE vbeln_vl_t,
+    lv_count        TYPE i,
+    lv_kunnr        TYPE vbpavb-kunnr.
 
   FIELD-SYMBOLS:
     <ls_xvbap> TYPE vbapvb,
@@ -172,6 +175,13 @@ FUNCTION ZGTT_SSOF_OTE_SO_HD.
 *   Ship-to Party
     ls_control_data-paramname = gc_cp_yn_so_ship_to.
     ls_control_data-value     = ls_xvbpa-kunnr.
+    zcl_gtt_tools=>convert_to_external_frmt(
+      EXPORTING
+        iv_input  = ls_control_data-value
+      IMPORTING
+        ev_output = lv_kunnr ).
+    ls_control_data-value = lv_kunnr.
+    CLEAR lv_kunnr.
     APPEND ls_control_data TO e_control_data.
 
 *   Ship-to Party type
@@ -189,12 +199,47 @@ FUNCTION ZGTT_SSOF_OTE_SO_HD.
 
     ls_control_data-paramname = gc_cp_yn_so_sold_to.
     ls_control_data-value     = ls_xvbpa-kunnr.
+    zcl_gtt_tools=>convert_to_external_frmt(
+      EXPORTING
+        iv_input  = ls_control_data-value
+      IMPORTING
+        ev_output = lv_kunnr ).
+    ls_control_data-value = lv_kunnr.
+    CLEAR lv_kunnr.
     APPEND ls_control_data TO e_control_data.
 
 *   Sold-to Party type
     ls_control_data-paramname = gc_cp_yn_so_sold_to_type.
     ls_control_data-value     = zif_gtt_sof_constants=>cs_loctype-bp.
     APPEND ls_control_data TO e_control_data.
+
+*   Outbound Delivery TPs table
+    CLEAR lt_vbeln.
+    zcl_gtt_tools=>get_delivery_by_ref_doc(
+      EXPORTING
+        iv_vgbel = <ls_xvbak>-vbeln
+      IMPORTING
+        et_vbeln = lt_vbeln ).
+
+    LOOP AT lt_vbeln INTO DATA(ls_vbeln).
+      lv_count = lv_count + 1.
+      ls_control_data-paramname  = gc_cp_yn_odlv_line_no.
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-value      = lv_count.
+      APPEND ls_control_data TO e_control_data.
+
+      ls_control_data-paramname  = gc_cp_yn_odlv_no.
+      ls_control_data-paramindex = lv_count.
+      SHIFT ls_vbeln LEFT DELETING LEADING '0'.
+      ls_control_data-value = ls_vbeln.
+      APPEND ls_control_data TO e_control_data.
+    ENDLOOP.
+    IF lt_vbeln IS INITIAL.
+      ls_control_data-paramname  = gc_cp_yn_odlv_line_no.
+      ls_control_data-paramindex = '1'.
+      ls_control_data-value      = ''.
+      APPEND ls_control_data TO e_control_data.
+    ENDIF.
 
 *   Actual Business Time zone
     CALL FUNCTION 'GET_SYSTEM_TIMEZONE'

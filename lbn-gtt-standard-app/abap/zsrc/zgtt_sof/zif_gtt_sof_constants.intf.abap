@@ -45,4 +45,10 @@ interface ZIF_GTT_SOF_CONSTANTS
       fu_completed       TYPE /saptrx/appl_event_tag VALUE 'FU_COMPLETED',
       odlv_planned_dlv   TYPE /saptrx/appl_event_tag VALUE 'ODLV_PLANNED_DLV',
     END OF cs_milestone .
+
+  CONSTANTS:
+    BEGIN OF cs_tabledef,
+      so_header_new       TYPE /saptrx/strucdatadef VALUE 'SALES_ORDER_HEADER_NEW',
+      so_item_new         TYPE /saptrx/strucdatadef VALUE 'SALES_ORDER_ITEMS_NEW',
+    END OF cs_tabledef .
 endinterface.

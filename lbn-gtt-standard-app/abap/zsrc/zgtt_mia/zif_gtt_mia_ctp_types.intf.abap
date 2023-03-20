@@ -10,6 +10,8 @@ INTERFACE zif_gtt_mia_ctp_types
       quantityuom   TYPE meins,
       product_id    TYPE /scmtms/product_id,
       product_descr TYPE /scmtms/item_description,
+      base_uom_val  TYPE /scmtms/qua_base_uom_val,
+      base_uom_uni  TYPE /scmtms/qua_base_uom_uni,
       change_mode   TYPE /bobf/conf_change_mode,
     END OF ts_fu_list .
   TYPES:
@@ -55,6 +57,8 @@ INTERFACE zif_gtt_mia_ctp_types
       quantityuom   TYPE /scmtms/qua_pcs_uni,
       product_id    TYPE /scmtms/product_id,
       product_descr TYPE /scmtms/item_description,
+      base_uom_val  TYPE /scmtms/qua_base_uom_val,
+      base_uom_uni  TYPE /scmtms/qua_base_uom_uni,
       change_mode   TYPE /bobf/conf_change_mode,
     END OF ts_delivery_chng .
   TYPES:

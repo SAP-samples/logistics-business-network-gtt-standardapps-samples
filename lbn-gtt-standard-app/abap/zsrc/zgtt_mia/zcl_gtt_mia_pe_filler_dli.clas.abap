@@ -361,8 +361,8 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLI IMPLEMENTATION.
 
     rv_result = zif_gtt_ef_constants=>cs_condition-false.
 
-    IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_type( ir_struct = is_app_objects-mastertabref ) = abap_true AND
-       zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = is_app_objects-maintabref ) = abap_true.
+    IF zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = is_app_objects-mastertabref ) = abap_true AND
+       zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = is_app_objects-mastertabref ir_lips = is_app_objects-maintabref ) = abap_true.
 
       IF is_time_of_delivery_changed( is_app_objects = is_app_objects ) = abap_true.
         rv_result = zif_gtt_ef_constants=>cs_condition-true.

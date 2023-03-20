@@ -737,7 +737,8 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
         ELSEIF <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-purchase_order OR
            <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-inbound_delivery   OR
            <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-outbound_delivery  OR
-           <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-sales_order.
+           <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-sales_order        OR
+           <ls_docs>-btd_tco = zif_gtt_sts_constants=>cs_btd_type_code-stock_transport_order.
           APPEND <ls_docs>-btd_id  TO ct_shipper_ref_value.
           APPEND <ls_docs>-btd_tco TO ct_shipper_ref_type.
         ENDIF.

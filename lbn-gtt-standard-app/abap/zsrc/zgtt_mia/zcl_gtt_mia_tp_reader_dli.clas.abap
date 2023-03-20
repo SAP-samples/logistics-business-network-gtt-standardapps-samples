@@ -17,7 +17,7 @@ private section.
   types TV_LINE_NO type I .
   types TV_FREIGHTUNIT type /SCMTMS/TOR_ID .
   types TV_ITEMNUMBER type /SCMTMS/ITEM_ID .
-  types TV_QUANTITY type MENGE_D .
+  types TV_QUANTITY type /SCMTMS/QUA_BASE_UOM_VAL.
   types TV_QUANTITYUOM type MEINS .
   types TV_PRODUCT_ID type /SCMTMS/PRODUCT_ID .
   types TV_PRODUCT_DESCR type /SCMTMS/ITEM_DESCRIPTION .
@@ -138,6 +138,8 @@ private section.
       fu_quantityuom   TYPE tt_quantityuom,
       fu_product_id    TYPE tt_product_id,
       fu_product_descr TYPE tt_product_descr,
+      fu_base_uom_val  TYPE tt_quantity,
+      fu_base_uom_uni  TYPE tt_quantityuom,
       fu_no_logsys     type tt_logsys,
       appsys           TYPE tt_appsys,
       trxcod           type tt_trxcod,
@@ -233,6 +235,8 @@ private section.
       fu_quantityuom   TYPE /saptrx/paramname VALUE 'YN_DL_FU_UNITS',
       fu_product_id    TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT',
       fu_product_descr TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT_DESCR',
+      fu_base_uom_val  TYPE /saptrx/paramname VALUE 'YN_FU_BASE_UOM_VAL',
+      fu_base_uom_uni  TYPE /saptrx/paramname VALUE 'YN_FU_BASE_UOM_UNI',
       fu_no_logsys     TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO_LOGSYS',
       appsys           TYPE /saptrx/paramname VALUE 'E1EHPTID_APPSYS',
       trxcod           TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXCOD',
@@ -346,9 +350,14 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD FILL_ITEM_FROM_LIPS_STRUCT.
+  METHOD fill_item_from_lips_struct.
 
     FIELD-SYMBOLS: <ls_lips> TYPE lipsvb.
+    DATA:
+      lv_vrkme TYPE lips-vrkme,
+      lv_voleh TYPE lips-voleh,
+      lv_gewei TYPE lips-gewei,
+      lv_matnr TYPE lips-matnr.
 
     DATA(lv_lgtor_old) = cs_dl_item-lgtor.
 
@@ -401,6 +410,36 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
       cs_dl_item-po_item = zcl_gtt_mia_dl_tools=>get_formated_po_item(
         ir_lips = ir_lips ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = cs_dl_item-vrkme
+        RECEIVING
+          rv_output = lv_vrkme ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = cs_dl_item-voleh
+        RECEIVING
+          rv_output = lv_voleh ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = cs_dl_item-gewei
+        RECEIVING
+          rv_output = lv_gewei ).
+
+      zcl_gtt_tools=>convert_matnr_to_external_frmt(
+        EXPORTING
+          iv_material = cs_dl_item-matnr
+        IMPORTING
+          ev_result   = lv_matnr ).
+
+      cs_dl_item-vrkme = lv_vrkme.
+      cs_dl_item-voleh = lv_voleh.
+      cs_dl_item-gewei = lv_gewei.
+      cs_dl_item-matnr = lv_matnr.
+
     ELSE.
       MESSAGE e002(zgtt) WITH 'LIKP' INTO DATA(lv_dummy).
       zcl_gtt_tools=>throw_exception( ).
@@ -578,8 +617,8 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
-    IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_type( ir_struct = is_app_object-mastertabref ) = abap_true AND
-       zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = is_app_object-maintabref ) = abap_true AND
+    IF zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = is_app_object-mastertabref ) = abap_true AND
+       zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = is_app_object-mastertabref ir_lips = is_app_object-maintabref ) = abap_true AND
        is_object_changed( is_app_object = is_app_object ) = abap_true.
 
       CASE is_app_object-update_indicator.
@@ -666,6 +705,8 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
         APPEND <ls_tor_item>-quantityuom TO ls_item_with_fu-fu_quantityuom.
         APPEND <ls_tor_item>-product_id TO ls_item_with_fu-fu_product_id.
         APPEND <ls_tor_item>-product_descr TO ls_item_with_fu-fu_product_descr.
+        APPEND <ls_tor_item>-base_uom_uni TO ls_item_with_fu-fu_base_uom_uni.
+        APPEND <ls_tor_item>-base_uom_val TO ls_item_with_fu-fu_base_uom_val.
         APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-fu_no_logsys.
         APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-appsys.
         APPEND zif_gtt_ef_constants=>cs_trxcod-fu_number TO ls_item_with_fu-trxcod.
@@ -838,7 +879,12 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
   METHOD get_tor_items_for_dlv_item.
 
-    DATA: lt_fu_item     TYPE /scmtms/t_tor_item_tr_k.
+    DATA:
+      lt_fu_item      TYPE /scmtms/t_tor_item_tr_k,
+      lv_qua_pcs_uni  TYPE /scmtms/qua_pcs_uni,
+      lv_base_uom_uni TYPE /scmtms/qua_base_uom_uni,
+      lv_matnr        TYPE lips-matnr.
+
     CLEAR: et_tor_id,et_tor_item.
 
     zcl_gtt_mia_tm_tools=>get_tor_items_for_dlv_items(
@@ -866,14 +912,39 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
       et_tor_id  = VALUE #( BASE et_tor_id (
          tor_id = ls_tor_data-tor_id
       ) ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = <ls_fu_item>-qua_pcs_uni
+        RECEIVING
+          rv_output = lv_qua_pcs_uni ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = <ls_fu_item>-base_uom_uni
+        RECEIVING
+          rv_output = lv_base_uom_uni ).
+
+      zcl_gtt_tools=>convert_matnr_to_external_frmt(
+        EXPORTING
+          iv_material = <ls_fu_item>-product_id
+        IMPORTING
+          ev_result   = lv_matnr ).
+
       et_tor_item  = VALUE #( BASE et_tor_item (
                 tor_id        = ls_tor_data-tor_id
                 item_id       = <ls_fu_item>-item_id
                 quantity     = <ls_fu_item>-qua_pcs_val
-                quantityuom  = <ls_fu_item>-qua_pcs_uni
-                product_id   = <ls_fu_item>-product_id
+                quantityuom  = lv_qua_pcs_uni
+                product_id   = lv_matnr
                 product_descr = <ls_fu_item>-item_descr
+                base_uom_val  = <ls_fu_item>-base_uom_val
+                base_uom_uni  = lv_base_uom_uni
               ) ).
+      CLEAR:
+        lv_qua_pcs_uni,
+        lv_base_uom_uni,
+        lv_matnr.
     ENDLOOP.
     SORT et_tor_id BY tor_id.
     DELETE ADJACENT DUPLICATES FROM et_tor_id  COMPARING tor_id.

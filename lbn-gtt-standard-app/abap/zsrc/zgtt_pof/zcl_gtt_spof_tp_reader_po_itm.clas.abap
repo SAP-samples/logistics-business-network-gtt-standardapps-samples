@@ -222,7 +222,8 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_ITM IMPLEMENTATION.
     TYPES: tt_eket    TYPE STANDARD TABLE OF ueket.
 
     DATA: lv_sched_num   TYPE tv_sched_num VALUE 0,
-          lv_sched_vrkme TYPE lips-vrkme.
+          lv_sched_vrkme TYPE lips-vrkme,
+          lv_meins_ext   TYPE ekpo-meins.
 
     FIELD-SYMBOLS: <lt_eket>  TYPE tt_eket.
 
@@ -235,6 +236,12 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_ITM IMPLEMENTATION.
     DATA(lv_meins) = CONV vrkme( zcl_gtt_tools=>get_field_of_structure(
                                    ir_struct_data = ir_ekpo
                                    iv_field_name  = 'MEINS' ) ).
+    zcl_gtt_tools=>convert_unit_output(
+      EXPORTING
+        iv_input  = lv_meins
+      RECEIVING
+        rv_output = lv_meins_ext ).
+
     CLEAR: cs_po_item-eindt,
            cs_po_item-sched_num[],
            cs_po_item-sched_eindt[],
@@ -259,7 +266,7 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_ITM IMPLEMENTATION.
         APPEND lv_sched_num    TO cs_po_item-sched_num.
         APPEND <ls_eket>-eindt TO cs_po_item-sched_eindt.
         APPEND <ls_eket>-menge TO cs_po_item-sched_menge.
-        APPEND lv_meins        TO cs_po_item-sched_meins.
+        APPEND lv_meins_ext    TO cs_po_item-sched_meins.
       ENDLOOP.
     ELSE.
       MESSAGE e002(zgtt) WITH 'EKET' INTO DATA(lv_dummy).
@@ -358,6 +365,10 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_ITM IMPLEMENTATION.
 
   METHOD fill_item_from_ekpo_struct.
     FIELD-SYMBOLS: <ls_ekpo>  TYPE any.
+    DATA:
+      lv_meins TYPE ekpo-meins,
+      lv_voleh TYPE ekpo-voleh,
+      lv_gewei TYPE ekpo-gewei.
 
     ASSIGN ir_ekpo->* TO <ls_ekpo>.
 
@@ -367,6 +378,28 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_ITM IMPLEMENTATION.
       cs_po_item-netwr = zcl_gtt_tools=>convert_to_external_amount(
         iv_currency = cs_po_item-waers
         iv_internal = cs_po_item-netwr ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = cs_po_item-meins
+        RECEIVING
+          rv_output = lv_meins ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = cs_po_item-voleh
+        RECEIVING
+          rv_output = lv_voleh ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = cs_po_item-gewei
+        RECEIVING
+          rv_output = lv_gewei ).
+
+      cs_po_item-meins = lv_meins.
+      cs_po_item-voleh = lv_voleh.
+      cs_po_item-gewei = lv_gewei.
     ELSE.
       MESSAGE e002(zgtt) WITH 'EKPO' INTO DATA(lv_dummy).
       zcl_gtt_tools=>throw_exception( ).
@@ -526,7 +559,7 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_ITM IMPLEMENTATION.
   method ZIF_GTT_TP_READER~CHECK_RELEVANCE.
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
-    IF zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_app_object-maintabref ) = abap_true AND
+    IF zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_app_object-mastertabref ir_ekpo = is_app_object-maintabref ) = abap_true AND
        is_object_changed( is_app_object = is_app_object ) = abap_true.
 
       CASE is_app_object-update_indicator.

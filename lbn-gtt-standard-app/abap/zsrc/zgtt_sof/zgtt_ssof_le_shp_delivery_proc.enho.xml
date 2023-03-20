@@ -11,58 +11,10 @@
      <IMPL_NAME>ZGTT_SSOF_IM_LE_SHIPPING</IMPL_NAME>
      <IMPL_CLASS>ZCL_GTT_SOF_IMP_LE_SHIPPING</IMPL_CLASS>
      <ACTIVE>X</ACTIVE>
-     <IMPL_SHORTTEXT>Implementation: GTT - Enhancement to update the impated sales orders</IMPL_SHORTTEXT>
-     <IMPL_SHORTTEXT_ID>42010AEF4DF61EED8EDED83C6A31C349</IMPL_SHORTTEXT_ID>
+     <IMPL_SHORTTEXT>BADI implementation for update impacted sales order</IMPL_SHORTTEXT>
+     <IMPL_SHORTTEXT_ID>42010AEF4DF61EDDAEFE481042C90253</IMPL_SHORTTEXT_ID>
     </ENH_BADI_IMPL_DATA>
    </IMPL>
-   <SOTR>
-    <item>
-     <HEADER>
-      <CONCEPT>42010AEF4DF61EED8EDED83C6A31C349</CONCEPT>
-      <CREA_LAN>E</CREA_LAN>
-      <TRALA_TYPE>1</TRALA_TYPE>
-      <OBJID_VEC>AAI=</OBJID_VEC>
-     </HEADER>
-     <ENTRIES>
-      <SOTR_TEXT>
-       <CONCEPT>42010AEF4DF61EED8EDED83C6A31C349</CONCEPT>
-       <LANGU>늑</LANGU>
-       <LFD_NUM>0001</LFD_NUM>
-       <FLAG_CNTXT>X</FLAG_CNTXT>
-       <STATUS>R</STATUS>
-       <LENGTH>102</LENGTH>
-       <TEXT>SOTR *42010AEF4DF61EED8EDED83C6A31C349</TEXT>
-      </SOTR_TEXT>
-      <SOTR_TEXT>
-       <CONCEPT>42010AEF4DF61EED8EDED83C6A31C349</CONCEPT>
-       <LANGU>E</LANGU>
-       <LFD_NUM>0001</LFD_NUM>
-       <FLAG_CNTXT>X</FLAG_CNTXT>
-       <STATUS>R</STATUS>
-       <LENGTH>102</LENGTH>
-       <TEXT>Implementation: GTT - Enhancement to update the impated sales orders</TEXT>
-      </SOTR_TEXT>
-      <SOTR_TEXT>
-       <CONCEPT>42010AEF4DF61EED8EDED83C6A31C349</CONCEPT>
-       <LANGU>닱</LANGU>
-       <LFD_NUM>0001</LFD_NUM>
-       <FLAG_CNTXT>X</FLAG_CNTXT>
-       <STATUS>R</STATUS>
-       <LENGTH>102</LENGTH>
-       <TEXT>[Ĭɱρĺēɱēŋţąţįŏŋ:∙ĢŢŢ∙-∙Ĕŋĥąŋċēɱēŋţ∙ţŏ∙űρƌąţē∙ţĥē∙įɱρąţēƌ∙şąĺēş∙ŏŗƌēŗş∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
-      </SOTR_TEXT>
-     </ENTRIES>
-    </item>
-   </SOTR>
-   <SOTR_USE>
-    <SOTR_USE>
-     <PGMID>R3TR</PGMID>
-     <OBJECT>ENHO</OBJECT>
-     <OBJ_NAME>ZGTT_SSOF_LE_SHP_DELIVERY_PROC</OBJ_NAME>
-     <CONCEPT>42010AEF4DF61EED8EDED83C6A31C349</CONCEPT>
-     <LFD_NUM>0001</LFD_NUM>
-    </SOTR_USE>
-   </SOTR_USE>
   </asx:values>
  </asx:abap>
 </abapGit>

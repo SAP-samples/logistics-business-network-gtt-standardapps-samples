@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_SOF_CTP_SND</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Send TOR data to Delivery</DESCRIPT>
+    <DESCRIPT>Send TOR data to Delivery(obsolete)</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

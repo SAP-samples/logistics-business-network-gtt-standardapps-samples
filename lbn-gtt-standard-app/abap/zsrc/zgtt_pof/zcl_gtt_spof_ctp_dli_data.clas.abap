@@ -97,17 +97,21 @@ CLASS ZCL_GTT_SPOF_CTP_DLI_DATA IMPLEMENTATION.
           l_archived TYPE boole_d,
           lv_ebelp   TYPE ebelp.
     DATA: lt_eket  TYPE STANDARD TABLE OF eket,
-          lt_ueket TYPE zif_gtt_spof_app_types=>tt_ueket.
+          lt_ueket TYPE zif_gtt_spof_app_types=>tt_ueket,
+          ls_likp  TYPE likpvb.
     CLEAR: et_ekko, et_ekpo, et_ekes, et_eket.
 
     LOOP AT it_xlips ASSIGNING FIELD-SYMBOL(<ls_xlips>).
-      CHECK zcl_gtt_spof_po_tools=>is_appropriate_dl_item( ir_struct = REF #( <ls_xlips> ) ) = abap_true.
-      TRY.
-          DATA(ls_likp) = it_xlikp[ vbeln = <ls_xlips>-vbeln ].
-          CHECK zcl_gtt_spof_po_tools=>is_appropriate_dl_type( ir_struct = REF #( ls_likp ) ) = abap_true.
-        CATCH cx_sy_itab_line_not_found.
-          CONTINUE.
-      ENDTRY.
+      CLEAR ls_likp.
+      READ TABLE it_xlikp INTO ls_likp WITH KEY vbeln = <ls_xlips>-vbeln.
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
+      CHECK zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = REF #( ls_likp ) ir_lips = REF #( <ls_xlips> ) ) = abap_true
+         OR zcl_gtt_tools=>is_appropriate_odlv_item( ir_likp = REF #( ls_likp ) ir_lips = REF #( <ls_xlips> ) ) = abap_true."Support STO Scenario
+
+      CHECK zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = REF #( ls_likp ) ) = abap_true
+         OR zcl_gtt_tools=>is_appropriate_odlv_type( ir_likp = REF #( ls_likp ) ) = abap_true."Support STO Scenario
 
       DATA(lv_ebeln)  = <ls_xlips>-vgbel.
       DATA(lv_vgpos)  = <ls_xlips>-vgpos.
@@ -120,6 +124,11 @@ CLASS ZCL_GTT_SPOF_CTP_DLI_DATA IMPLEMENTATION.
             es_ekko    = ls_ekko
             e_archived = l_archived
         ).
+
+        IF ls_ekko IS INITIAL.
+          CONTINUE.
+        ENDIF.
+
         lv_ebelp = lv_vgpos+1(5).
         zcl_gtt_spof_po_tools=>get_po_item(
           EXPORTING
@@ -132,7 +141,7 @@ CLASS ZCL_GTT_SPOF_CTP_DLI_DATA IMPLEMENTATION.
         ).
 
         IF ls_ekpo IS NOT INITIAL AND
-          zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = REF #( ls_ekpo ) ) = abap_true.
+          zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = REF #( ls_ekko ) ir_ekpo = REF #( ls_ekpo ) ) = abap_true.
           TRY.
               DATA(ls_duplicate_ekko) = et_ekko[ ebeln = lv_ebeln ].
             CATCH cx_sy_itab_line_not_found.

@@ -1188,7 +1188,7 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
         lv_order += 1.
       ENDIF.
       lv_tmp_value = |{ lv_tor_id }{ iv_tu_no }{ lv_order }|.
-      CONDENSE lv_tmp_value.
+      CONDENSE lv_tmp_value NO-GAPS.
       APPEND VALUE #( stop_id   = lv_tmp_value
                       log_locid = <ls_stop>-log_locid
                       seq_num   = <ls_stop>-seq_num ) TO et_stop_points.

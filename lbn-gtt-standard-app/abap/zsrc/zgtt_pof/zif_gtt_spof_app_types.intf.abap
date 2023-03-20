@@ -15,4 +15,12 @@ INTERFACE zif_gtt_spof_app_types
   TYPES ts_uekko TYPE ekko .
   TYPES:
     tt_uekko TYPE STANDARD TABLE OF ts_uekko .
+  types:
+    BEGIN OF ts_ref_list,
+      vgbel TYPE vgbel,
+      vbeln TYPE vbeln_vl_t,
+     END OF ts_ref_list .
+  types:
+    tt_ref_list TYPE STANDARD TABLE OF ts_ref_list .
+
 ENDINTERFACE.

@@ -113,6 +113,7 @@ INTERFACE zif_gtt_sts_constants
       inbound_delivery       TYPE /scmtms/btd_type_code VALUE '58',
       outbound_delivery      TYPE /scmtms/btd_type_code VALUE '73',
       sales_order            TYPE /scmtms/btd_type_code VALUE '114',
+      stock_transport_order  TYPE /scmtms/btd_type_code VALUE 'STO',
     END OF cs_btd_type_code.
   CONSTANTS:
     BEGIN OF cs_text_type,

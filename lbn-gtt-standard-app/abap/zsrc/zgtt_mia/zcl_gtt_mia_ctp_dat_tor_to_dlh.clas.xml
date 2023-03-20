@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_CTP_DAT_TOR_TO_DLH</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Cross TP data from FU to DLH</DESCRIPT>
+    <DESCRIPT>Cross TP data from FU to DLH(obsolete)</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

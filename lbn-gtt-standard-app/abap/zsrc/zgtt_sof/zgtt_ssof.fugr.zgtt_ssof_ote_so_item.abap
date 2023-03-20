@@ -37,7 +37,9 @@ FUNCTION zgtt_ssof_ote_so_item.
     ls_xvbpa        TYPE vbpavb,
     lt_xvbep        TYPE STANDARD TABLE OF vbepvb,
     lt_xvbup        TYPE STANDARD TABLE OF vbupvb,
-    lt_xvbpa        TYPE STANDARD TABLE OF vbpavb.
+    lt_xvbpa        TYPE STANDARD TABLE OF vbpavb,
+    lv_kunnr        TYPE vbpavb-kunnr,
+    lv_matnr        TYPE vbap-matnr.
 
 * Read Schedule Item New
   PERFORM read_appl_table
@@ -112,7 +114,13 @@ FUNCTION zgtt_ssof_ote_so_item.
 
 *   Material Number
     ls_control_data-paramname =  gc_cp_yn_material_no.
-    ls_control_data-value     = <ls_xvbap>-matnr.
+    zcl_gtt_tools=>convert_matnr_to_external_frmt(
+      EXPORTING
+        iv_material = <ls_xvbap>-matnr
+      IMPORTING
+        ev_result   = lv_matnr ).
+    ls_control_data-value = lv_matnr.
+    CLEAR lv_matnr.
     APPEND ls_control_data TO e_control_data.
 
 *   Material description
@@ -189,6 +197,13 @@ FUNCTION zgtt_ssof_ote_so_item.
 *   Ship-to Party
     ls_control_data-paramname = gc_cp_yn_so_ship_to.
     ls_control_data-value     = ls_xvbpa-kunnr.
+    zcl_gtt_tools=>convert_to_external_frmt(
+      EXPORTING
+        iv_input  = ls_control_data-value
+      IMPORTING
+        ev_output = lv_kunnr ).
+    ls_control_data-value = lv_kunnr.
+    CLEAR lv_kunnr.
     APPEND ls_control_data TO e_control_data.
 
 *   Ship-to Party type

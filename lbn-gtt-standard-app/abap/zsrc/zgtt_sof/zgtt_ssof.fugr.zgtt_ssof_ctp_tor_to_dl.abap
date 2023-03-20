@@ -1,17 +1,17 @@
 FUNCTION ZGTT_SSOF_CTP_TOR_TO_DL .
-*"--------------------------------------------------------------------
+*"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
 *"     REFERENCE(IT_TOR_ROOT_SSTRING) TYPE  /SCMTMS/T_EM_BO_TOR_ROOT
 *"     REFERENCE(IT_TOR_ROOT_BEFORE_SSTRING) TYPE
-*"                             /SCMTMS/T_EM_BO_TOR_ROOT
+*"        /SCMTMS/T_EM_BO_TOR_ROOT
 *"     REFERENCE(IT_TOR_ITEM_SSTRING) TYPE  /SCMTMS/T_EM_BO_TOR_ITEM
 *"     REFERENCE(IT_TOR_ITEM_BEFORE_SSTRING) TYPE
-*"                             /SCMTMS/T_EM_BO_TOR_ITEM
+*"        /SCMTMS/T_EM_BO_TOR_ITEM
 *"     REFERENCE(IT_TOR_STOP_SSTRING) TYPE  /SCMTMS/T_EM_BO_TOR_STOP
 *"     REFERENCE(IT_TOR_STOP_ADDR_SSTRING) TYPE
-*"                             /SCMTMS/T_EM_BO_LOC_ADDR
-*"--------------------------------------------------------------------
+*"        /SCMTMS/T_EM_BO_LOC_ADDR
+*"----------------------------------------------------------------------
   FIELD-SYMBOLS:
      <lt_delivery_chng> TYPE zif_gtt_sof_ctp_types=>tt_delivery_chng.
 

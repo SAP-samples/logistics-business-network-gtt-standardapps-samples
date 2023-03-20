@@ -1,20 +1,20 @@
-CLASS zcl_gtt_mia_ctp_snd_tor_to_dli DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_ctp_snd
-  CREATE PRIVATE .
+class ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI definition
+  public
+  inheriting from ZCL_GTT_CTP_SND
+  create private .
 
-  PUBLIC SECTION.
+public section.
 
-    CLASS-METHODS get_instance
-      RETURNING
-        VALUE(ro_sender) TYPE REF TO zcl_gtt_mia_ctp_snd_tor_to_dli
-      RAISING
-        cx_udm_message .
-    METHODS prepare_idoc_data
-      IMPORTING
-        !io_dl_item_data TYPE REF TO zcl_gtt_mia_ctp_dat_tor_to_dli
-      RAISING
-        cx_udm_message .
+  class-methods GET_INSTANCE
+    returning
+      value(RO_SENDER) type ref to ZCL_GTT_MIA_CTP_SND_TOR_TO_DLI
+    raising
+      CX_UDM_MESSAGE .
+  methods PREPARE_IDOC_DATA
+    importing
+      !IO_DL_ITEM_DATA type ref to ZCL_GTT_MIA_CTP_DAT_TOR_TO_DLI
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
 
     METHODS get_aotype_restriction_id

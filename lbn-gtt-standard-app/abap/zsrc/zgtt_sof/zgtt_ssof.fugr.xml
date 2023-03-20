@@ -149,7 +149,7 @@
     </item>
     <item>
      <FUNCNAME>ZGTT_SSOF_CTP_TOR_TO_DL</FUNCNAME>
-     <SHORT_TEXT>Cross TP Update from TM TOR to Outbound Delivery</SHORT_TEXT>
+     <SHORT_TEXT>Cross TP Update from TM TOR to Outbound Delivery(obsolete)</SHORT_TEXT>
      <IMPORT>
       <RSIMP>
        <PARAMETER>IT_TOR_ROOT_SSTRING</PARAMETER>

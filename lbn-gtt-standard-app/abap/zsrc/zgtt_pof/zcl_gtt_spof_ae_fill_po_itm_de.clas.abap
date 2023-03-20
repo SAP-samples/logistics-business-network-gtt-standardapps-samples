@@ -46,12 +46,14 @@ CLASS ZCL_GTT_SPOF_AE_FILL_PO_ITM_DE IMPLEMENTATION.
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
     IF is_events-maintabdef = zif_gtt_spof_app_constants=>cs_tabledef-po_item_new AND
-       zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_events-maintabref ) = abap_true AND
+       zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_events-mastertabref ir_ekpo = is_events-maintabref ) = abap_true AND
        is_appropriate_mode( is_events = is_events ) = abap_true.
 
-      lv_loekz_old = zcl_gtt_tools=>get_field_of_structure(
-        ir_struct_data = is_events-mainoldtabref
-        iv_field_name  = 'LOEKZ' ).
+      IF is_events-mainoldtabref IS BOUND.
+        lv_loekz_old = zcl_gtt_tools=>get_field_of_structure(
+          ir_struct_data = is_events-mainoldtabref
+          iv_field_name  = 'LOEKZ' ).
+      ENDIF.
 
       lv_loekz_new = zcl_gtt_tools=>get_field_of_structure(
         ir_struct_data = is_events-maintabref

@@ -39,6 +39,7 @@ PRIVATE SECTION.
       fu_relev    TYPE abap_bool,
       lifex       TYPE likp-lifex,
       dlv_version TYPE c LENGTH 4,
+      ref_odlv_no TYPE likp-lifex,
     END OF ts_dl_header .
 
   CONSTANTS:
@@ -69,6 +70,7 @@ PRIVATE SECTION.
       fu_relev    TYPE /saptrx/paramname VALUE 'YN_DL_FU_RELEVANT',
       lifex       TYPE /saptrx/paramname VALUE 'YN_DL_ASN_NUMBER',
       dlv_version TYPE /saptrx/paramname VALUE 'YN_DL_DELIVERY_VERSION',
+      ref_odlv_no TYPE /saptrx/paramname VALUE 'YN_DL_REFERENCE_ODLV_NO',
     END OF cs_mapping .
   DATA mo_ef_parameters TYPE REF TO zif_gtt_ef_parameters .
 
@@ -144,8 +146,9 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
         WHERE updkz = zif_gtt_ef_constants=>cs_change_mode-insert OR
               updkz = zif_gtt_ef_constants=>cs_change_mode-delete.
 
-        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
-             ir_struct = REF #( <ls_lips> ) ) = abap_true.
+        IF zcl_gtt_tools=>is_appropriate_dl_item(
+             ir_likp = is_app_object-maintabref
+             ir_lips = REF #( <ls_lips> ) ) = abap_true.
           ct_track_id_data = VALUE #( BASE ct_track_id_data (
                     appsys      = mo_ef_parameters->get_appsys( )
                     appobjtype  = is_app_object-appobjtype
@@ -177,6 +180,10 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     FIELD-SYMBOLS: <ls_likp>  TYPE likpvb.
 
+    DATA:
+      lv_voleh TYPE likp-voleh,
+      lv_gewei TYPE likp-gewei.
+
     ASSIGN ir_likp->* TO <ls_likp>.
 
     IF <ls_likp> IS ASSIGNED.
@@ -204,6 +211,13 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
       cs_dl_header-proli    = boolc( cs_dl_header-proli IS NOT INITIAL ).
       cs_dl_header-recv_loc = <ls_likp>-vstel."Shipping Point / Receiving Point
+      CLEAR:cs_dl_header-lifex.
+      IF <ls_likp>-spe_lifex_type = /spe/cl_dlv_doc=>c_lifex_type-vendor.  "External Identification from Vendor
+        cs_dl_header-lifex = <ls_likp>-lifex.      "External ASN Id
+      ELSEIF <ls_likp>-spe_lifex_type = /spe/cl_dlv_doc=>c_lifex_type-sto. "Stock Transfer: Number of Preceding Outbound Delivery
+        cs_dl_header-ref_odlv_no = <ls_likp>-lifex."Reference Outbound Delivery No.
+        SHIFT cs_dl_header-ref_odlv_no LEFT DELETING LEADING '0'.
+      ENDIF.
       IF <ls_likp>-lgnum IS NOT INITIAL AND
          <ls_likp>-lgtor IS NOT INITIAL.
 
@@ -215,6 +229,22 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
           CATCH cx_udm_message.
         ENDTRY.
       ENDIF.
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = cs_dl_header-voleh
+        RECEIVING
+          rv_output = lv_voleh ).
+
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = cs_dl_header-gewei
+        RECEIVING
+          rv_output = lv_gewei ).
+
+      cs_dl_header-voleh = lv_voleh.
+      cs_dl_header-gewei = lv_gewei.
+
     ELSE.
       MESSAGE e002(zgtt) WITH 'LIKP' INTO DATA(lv_dummy).
       zcl_gtt_tools=>throw_exception( ).
@@ -316,7 +346,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
-    IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_type( ir_struct = is_app_object-maintabref ) = abap_true AND
+    IF zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = is_app_object-maintabref ) = abap_true AND
        is_object_changed( is_app_object = is_app_object ) = abap_true.
 
       CASE is_app_object-update_indicator.

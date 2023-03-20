@@ -119,8 +119,9 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
     IF <lt_lips_fs> IS ASSIGNED.
       LOOP AT <lt_lips_fs> ASSIGNING <ls_lips>
         WHERE vbeln = lv_vbeln AND updkz <> zif_gtt_ef_constants=>cs_change_mode-delete.
-        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
-             ir_struct = REF #( <ls_lips> ) ) = abap_true.
+        IF zcl_gtt_tools=>is_appropriate_dl_item(
+             ir_likp = is_app_objects-maintabref
+             ir_lips = REF #( <ls_lips> ) ) = abap_true.
 
           DATA(lv_tzonrc) = zcl_gtt_tools=>get_field_of_structure(
             ir_struct_data = is_app_objects-maintabref
@@ -167,8 +168,9 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
       LOOP AT <lt_lips_fs> ASSIGNING <ls_lips>
         WHERE vbeln = lv_vbeln AND updkz <> zif_gtt_ef_constants=>cs_change_mode-delete.
 
-        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
-             ir_struct = REF #( <ls_lips> ) ) = abap_true.
+        IF zcl_gtt_tools=>is_appropriate_dl_item(
+             ir_likp = is_app_objects-maintabref
+             ir_lips = REF #( <ls_lips> ) ) = abap_true.
 
            DATA(lv_tzonrc) = zcl_gtt_tools=>get_field_of_structure(
             ir_struct_data = is_app_objects-maintabref
@@ -197,7 +199,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
 
   METHOD add_planned_delivery_event.
 
-    IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_type( ir_struct = is_app_objects-maintabref ) = abap_true.
+    IF zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = is_app_objects-maintabref ) = abap_true.
       DATA(lv_plant) = CONV werks_d( zcl_gtt_tools=>get_field_of_structure(
                             ir_struct_data = is_app_objects-maintabref
                             iv_field_name  = 'WERKS' ) ).
@@ -276,8 +278,9 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
       LOOP AT <lt_lips_fs> ASSIGNING <ls_lips>
         WHERE vbeln = lv_vbeln AND updkz <> zif_gtt_ef_constants=>cs_change_mode-delete.
 
-        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item(
-             ir_struct = REF #( <ls_lips> ) ) = abap_true.
+        IF zcl_gtt_tools=>is_appropriate_dl_item(
+             ir_likp = is_app_objects-maintabref
+             ir_lips = REF #( <ls_lips> ) ) = abap_true.
           APPEND <ls_lips> TO lt_lips.
         ENDIF.
       ENDLOOP.
@@ -335,7 +338,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
 
     rv_result = zif_gtt_ef_constants=>cs_condition-false.
 
-    IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_type( ir_struct = is_app_objects-maintabref ) = abap_true.
+    IF zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = is_app_objects-maintabref ) = abap_true.
 
       IF is_time_of_delivery_changed( is_app_objects = is_app_objects ) = abap_true.
         rv_result = zif_gtt_ef_constants=>cs_condition-true.

@@ -143,6 +143,18 @@ CLASS ZCL_GTT_CTP_TOR_TO_IDLVIT IMPLEMENTATION.
         )
         (
           paramindex  = lv_count
+          paramname   = cs_mapping-fu_base_uom_val
+          value       = zcl_gtt_tools=>get_pretty_value(
+                          iv_value = <ls_fu_list>-base_uom_val )
+        )
+        (
+          paramindex  = lv_count
+          paramname   = cs_mapping-fu_base_uom_uni
+          value       = zcl_gtt_tools=>get_pretty_value(
+                          iv_value = <ls_fu_list>-base_uom_uni )
+        )
+        (
+          paramindex  = lv_count
           paramname   = cs_mapping-fu_freightunit_logsys
           value       = mv_appsys
         )

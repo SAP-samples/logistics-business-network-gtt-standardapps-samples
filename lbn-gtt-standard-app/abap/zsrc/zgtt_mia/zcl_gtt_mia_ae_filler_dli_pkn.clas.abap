@@ -167,8 +167,8 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PKN IMPLEMENTATION.
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
     IF is_events-maintabdef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new AND
-       zcl_gtt_mia_dl_tools=>is_appropriate_dl_type( ir_struct = is_events-mastertabref ) = abap_true AND
-       zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = is_events-maintabref ) = abap_true.
+       zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = is_events-mastertabref ) = abap_true AND
+       zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = is_events-mastertabref ir_lips = is_events-maintabref ) = abap_true.
 
       CASE is_events-update_indicator.
         WHEN zif_gtt_ef_constants=>cs_change_mode-insert OR
