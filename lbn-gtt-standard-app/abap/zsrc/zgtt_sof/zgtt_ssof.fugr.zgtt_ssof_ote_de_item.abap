@@ -58,7 +58,9 @@ FUNCTION zgtt_ssof_ote_de_item.
     ls_address      TYPE gtys_address,
     lt_fu_item      TYPE /scmtms/t_tor_item_tr_k,
     lv_ebelp        TYPE ebelp,
-    lv_posnr        TYPE posnr_va.
+    lv_posnr        TYPE posnr_va,
+    lv_kunnr        TYPE vbpavb-kunnr,
+    lv_matnr        TYPE lips-matnr.
 
   lo_gtt_toolkit = zcl_gtt_sof_toolkit=>get_instance( ).
 
@@ -181,7 +183,13 @@ FUNCTION zgtt_ssof_ote_de_item.
 
 *   Material
     ls_control_data-paramname = gc_cp_yn_material_no.
-    ls_control_data-value     = <ls_xlips>-matnr.
+    zcl_gtt_tools=>convert_matnr_to_external_frmt(
+      EXPORTING
+        iv_material = <ls_xlips>-matnr
+      IMPORTING
+        ev_result   = lv_matnr ).
+    ls_control_data-value = lv_matnr.
+    CLEAR lv_matnr.
     APPEND ls_control_data TO e_control_data.
 
 *   Material description
@@ -379,7 +387,13 @@ FUNCTION zgtt_ssof_ote_de_item.
 
 *Destination (LIKP-KUNNR)
     ls_control_data-paramname =  gc_cp_yn_de_dest.
-    ls_control_data-value     = <ls_xlikp>-kunnr.
+    zcl_gtt_tools=>convert_to_external_frmt(
+      EXPORTING
+        iv_input  = <ls_xlikp>-kunnr
+      IMPORTING
+        ev_output = lv_kunnr ).
+    ls_control_data-value = lv_kunnr.
+    CLEAR lv_kunnr.
     APPEND ls_control_data TO e_control_data.
 
 *Destination location type
@@ -442,6 +456,13 @@ FUNCTION zgtt_ssof_ote_de_item.
     ls_control_data-paramname = gc_cp_yn_so_ship_to.
     IF <ls_xvbpa> IS ASSIGNED.
       ls_control_data-value     = <ls_xvbpa>-kunnr.
+      zcl_gtt_tools=>convert_to_external_frmt(
+        EXPORTING
+          iv_input  = ls_control_data-value
+        IMPORTING
+          ev_output = lv_kunnr ).
+      ls_control_data-value = lv_kunnr.
+      CLEAR lv_kunnr.
     ELSE.
       CLEAR ls_control_data-value.
     ENDIF.
@@ -581,14 +602,36 @@ FUNCTION zgtt_ssof_ote_de_item.
 
       ls_control_data-paramindex = lv_count.
       ls_control_data-paramname = gc_cp_yn_fu_product.
-      ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
-        iv_value = ls_fu_item-product_id ).
+      zcl_gtt_tools=>convert_matnr_to_external_frmt(
+        EXPORTING
+          iv_material = ls_fu_item-product_id
+        IMPORTING
+          ev_result   = lv_matnr ).
+      ls_control_data-value = lv_matnr.
+      CLEAR lv_matnr.
       APPEND ls_control_data TO e_control_data.
 
       ls_control_data-paramindex = lv_count.
       ls_control_data-paramname = gc_cp_yn_fu_product_descr.
       ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
         iv_value = ls_fu_item-item_descr ).
+      APPEND ls_control_data TO e_control_data.
+
+*     Base Unit of Measure
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_base_uom_uni.
+      zcl_gtt_sof_toolkit=>convert_unit_output(
+        EXPORTING
+          iv_input  = ls_fu_item-base_uom_uni
+        RECEIVING
+          rv_output = ls_control_data-value ).
+      APPEND ls_control_data TO e_control_data.
+
+*     Base Quantity
+      ls_control_data-paramindex = lv_count.
+      ls_control_data-paramname = gc_cp_yn_fu_base_uom_val.
+      ls_control_data-value = zcl_gtt_sof_tm_tools=>get_pretty_value(
+        iv_value = ls_fu_item-base_uom_val ).
       APPEND ls_control_data TO e_control_data.
 
       ls_control_data-paramindex = lv_count.

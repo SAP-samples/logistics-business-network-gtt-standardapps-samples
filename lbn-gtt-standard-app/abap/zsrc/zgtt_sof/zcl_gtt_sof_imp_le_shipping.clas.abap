@@ -9,10 +9,35 @@ public section.
 
   interfaces IF_BADI_INTERFACE .
   interfaces IF_EX_LE_SHP_DELIVERY_PROC .
+
+  methods SEND_SO_HD_IDOC
+    importing
+      !IV_APPSYS type LOGSYS
+      !IV_TZONE type TIMEZONE
+      !IT_SO_TYPE type RSELOPTION
+      !IT_DLV_TYPE type RSELOPTION
+      !IT_XLIKP type SHP_LIKP_T
+      !IT_XLIPS type SHP_LIPS_T .
 protected section.
 *"* protected components of class CL_EXM_IM_LE_SHP_DELIVERY_PROC
 *"* do not include other source files here!!!
 private section.
+
+  methods CHECK_DLV_ITEM
+    importing
+      !IV_PSTYV type PSTYV_VL
+    returning
+      value(RV_RESULT) type ABAP_BOOL .
+  methods PREPARE_PLN_EVT
+    importing
+      !IV_APPSYS type LOGSYS
+      !IV_OBJ_TYPE type /SAPTRX/TRK_OBJ_TYPE
+      !IV_AOT_TYPE type /SAPTRX/AOTYPE
+      !IV_SERVER_NAME type /SAPTRX/TRXSERVERNAME
+      !IS_VBAK type /SAPTRX/SD_SDS_HDR
+      !IT_VBAP type VA_VBAPVB_T
+    exporting
+      !ET_EXP_EVENT type /SAPTRX/BAPI_TRK_EE_TAB .
 *"* private components of class CL_EXM_IM_LE_SHP_DELIVERY_PROC
 *"* do not include other source files here!!!
 ENDCLASS.
@@ -215,13 +240,15 @@ METHOD if_ex_le_shp_delivery_proc~save_and_publish_document .
    WHERE rst_id = @lv_rst_id.
 
 * Prepare AOT list
-  SELECT trk_obj_type  AS obj_type
-         aotype        AS aot_type
-    INTO TABLE lt_aotype
-    FROM /saptrx/aotypes
-   WHERE trk_obj_type  = lv_objtype
-     AND aotype       IN lrt_aotype_rst
-     AND torelevant    = abap_true.
+  IF lrt_aotype_rst IS NOT INITIAL.
+    SELECT trk_obj_type  AS obj_type
+           aotype        AS aot_type
+      INTO TABLE lt_aotype
+      FROM /saptrx/aotypes
+     WHERE trk_obj_type  = lv_objtype
+       AND aotype       IN lrt_aotype_rst
+       AND torelevant    = abap_true.
+  ENDIF.
 
   CLEAR lt_dlv_type.
   zcl_gtt_sof_toolkit=>get_delivery_type(
@@ -235,6 +262,16 @@ METHOD if_ex_le_shp_delivery_proc~save_and_publish_document .
 
   CHECK lt_dlv_type IS NOT INITIAL AND lt_so_type IS NOT INITIAL.
 
+* Send SO header IDOC
+  send_so_hd_idoc(
+    iv_appsys   = lv_appsys
+    iv_tzone    = lv_tzone
+    it_so_type  = lt_so_type
+    it_dlv_type = lt_dlv_type
+    it_xlikp    = it_xlikp
+    it_xlips    = it_xlips ).
+
+* Send SO Item IDOC
   LOOP AT it_xlikp INTO ls_likp WHERE lfart IN lt_dlv_type.
 
     CLEAR: lt_vbfa_delta, lt_vbap_delta.
@@ -394,4 +431,297 @@ ENDMETHOD. "IF_EX_LE_SHP_DELIVERY_PROC~SAVE_AND_PUBLISH_DOCUMENT
 method IF_EX_LE_SHP_DELIVERY_PROC~SAVE_DOCUMENT_PREPARE .
 
 endmethod. "IF_EX_LE_SHP_DELIVERY_PROC~SAVE_DOCUMENT_PREPARE
+
+
+  METHOD CHECK_DLV_ITEM.
+
+    DATA:
+      lt_tvlp  TYPE STANDARD TABLE OF tvlp.
+
+    CLEAR: rv_result.
+
+    CALL FUNCTION 'MCV_TVLP_READ'
+      EXPORTING
+        i_pstyv   = iv_pstyv
+      TABLES
+        t_tvlp    = lt_tvlp
+      EXCEPTIONS
+        not_found = 1
+        OTHERS    = 2.
+
+    IF sy-subrc = 0.
+      READ TABLE lt_tvlp INTO DATA(ls_tvlp)
+        WITH KEY vbtyp = if_sd_doc_category=>delivery.
+      IF sy-subrc = 0.
+        rv_result = abap_true.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD prepare_pln_evt.
+
+    DATA:
+      ls_app_obj_types      TYPE /saptrx/aotypes,
+      lt_all_appl_tables    TYPE trxas_tabcontainer,
+      lt_app_type_cntl_tabs TYPE trxas_apptype_tabs,
+      ls_app_objects        TYPE trxas_appobj_ctab_wa,
+      lt_app_objects        TYPE trxas_appobj_ctabs,
+      lv_appobjid           TYPE /saptrx/aoid.
+
+    CLEAR: et_exp_event[].
+
+    lv_appobjid = is_vbak-vbeln.
+    CONDENSE lv_appobjid NO-GAPS.
+    SHIFT lv_appobjid LEFT DELETING LEADING '0'.
+
+    ls_app_obj_types-trk_obj_type  = iv_obj_type.
+    ls_app_obj_types-aotype  = iv_aot_type.
+    ls_app_obj_types-trxservername = iv_server_name.
+    ls_app_objects = CORRESPONDING #( ls_app_obj_types ).
+
+    ls_app_objects-appobjtype     = iv_aot_type.
+    ls_app_objects-appobjid       = lv_appobjid.
+    ls_app_objects-maintabref     = REF #( is_vbak ).
+    ls_app_objects-maintabdef     = zif_gtt_sof_constants=>cs_tabledef-so_header_new.
+
+    lt_app_objects                = VALUE #( ( ls_app_objects ) ).
+
+    lt_all_appl_tables            = VALUE #(
+    (
+      tabledef    = zif_gtt_sof_constants=>cs_tabledef-so_item_new
+      tableref    = REF #( it_vbap )
+     ) ).
+
+    CALL FUNCTION 'ZGTT_SSOF_EE_SO_HD'
+      EXPORTING
+        i_appsys                  = iv_appsys
+        i_app_obj_types           = ls_app_obj_types
+        i_all_appl_tables         = lt_all_appl_tables
+        i_app_type_cntl_tabs      = lt_app_type_cntl_tabs
+        i_app_objects             = lt_app_objects
+      TABLES
+        e_expeventdata            = et_exp_event
+      EXCEPTIONS
+        parameter_error           = 1
+        exp_event_determ_error    = 2
+        table_determination_error = 3
+        stop_processing           = 4
+        OTHERS                    = 5.
+
+    IF sy-subrc <> 0.
+      "zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD send_so_hd_idoc.
+
+    DATA:
+      BEGIN OF ts_aotype,
+        obj_type TYPE /saptrx/trk_obj_type,
+        aot_type TYPE /saptrx/aotype,
+      END OF ts_aotype.
+
+    DATA:
+      lrt_aotype_rst  TYPE RANGE OF /saptrx/aotype,
+      lv_rst_id       TYPE zgtt_rst_id VALUE 'DL_TO_SOHD',
+      lt_aotype       LIKE STANDARD TABLE OF ts_aotype,
+      lv_objtype      TYPE /saptrx/trk_obj_type VALUE 'ESC_SORDER',
+      ls_aotype       LIKE ts_aotype,
+      lv_trxserver_id TYPE /saptrx/trxservername,
+      ls_trxserv      TYPE /saptrx/trxserv,
+      ls_control      TYPE LINE OF /saptrx/bapi_trk_control_tab,
+      ls_appobj_ctabs	TYPE LINE OF trxas_appobj_ctabs,
+      lt_appobj_ctabs	TYPE trxas_appobj_ctabs,
+      lt_control      TYPE /saptrx/bapi_trk_control_tab,
+      lt_info         TYPE /saptrx/bapi_trk_info_tab,
+      lt_tracking_id  TYPE /saptrx/bapi_trk_trkid_tab,
+      lt_exp_events   TYPE /saptrx/bapi_trk_ee_tab,
+      lv_appsys       TYPE logsys,
+      lv_tzone        TYPE timezone,
+      lv_count        TYPE i,
+      lt_xlips        TYPE shp_lips_t,
+      lt_tvlp         TYPE STANDARD TABLE OF tvlp,
+      lt_vbak         TYPE TABLE OF vbak,
+      lt_vbap         TYPE va_vbapvb_t,
+      ls_vbak_hdr     TYPE /saptrx/sd_sds_hdr.
+
+    lv_appsys = iv_appsys.
+    lv_tzone = iv_tzone.
+
+    SELECT rst_option AS option,
+           rst_sign   AS sign,
+           rst_low    AS low,
+           rst_high   AS high
+      INTO CORRESPONDING FIELDS OF TABLE @lrt_aotype_rst
+      FROM zgtt_aotype_rst
+     WHERE rst_id = @lv_rst_id.
+
+*   Prepare AOT list
+    IF lrt_aotype_rst IS NOT INITIAL.
+      SELECT trk_obj_type  AS obj_type
+             aotype        AS aot_type
+        INTO TABLE lt_aotype
+        FROM /saptrx/aotypes
+       WHERE trk_obj_type  = lv_objtype
+         AND aotype       IN lrt_aotype_rst
+         AND torelevant    = abap_true.
+    ENDIF.
+
+    LOOP AT it_xlips INTO DATA(ls_xlips).
+      READ TABLE it_xlikp INTO DATA(ls_xlikp)
+        WITH KEY vbeln = ls_xlips-vbeln.
+      IF sy-subrc = 0 AND ls_xlikp-lfart IN it_dlv_type AND check_dlv_item( ls_xlips-pstyv ) = abap_true.
+        APPEND ls_xlips TO lt_xlips.
+      ENDIF.
+      CLEAR ls_xlips.
+    ENDLOOP.
+
+    IF lt_xlips IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    zcl_gtt_tools=>get_po_so_by_delivery(
+      EXPORTING
+        iv_vgtyp    = if_sd_doc_category=>order
+        it_xlikp    = it_xlikp
+        it_xlips    = lt_xlips
+      IMPORTING
+        et_ref_list = DATA(lt_ref_list) ).
+
+    IF lt_ref_list IS NOT INITIAL.
+      SELECT *
+        INTO TABLE lt_vbak
+        FROM vbak
+         FOR ALL ENTRIES IN lt_ref_list
+       WHERE vbeln = lt_ref_list-vgbel.
+
+      SELECT *
+        INTO CORRESPONDING FIELDS OF TABLE lt_vbap
+        FROM vbap
+         FOR ALL ENTRIES IN lt_ref_list
+       WHERE vbeln = lt_ref_list-vgbel.
+    ENDIF.
+
+    LOOP AT lt_aotype INTO ls_aotype.
+
+      CLEAR:
+        lv_trxserver_id,
+        ls_trxserv,
+        ls_appobj_ctabs,
+        lt_appobj_ctabs,
+        lt_control.
+
+      SELECT SINGLE trxservername INTO lv_trxserver_id  FROM /saptrx/aotypes
+                                                        WHERE trk_obj_type EQ ls_aotype-obj_type
+                                                        AND   aotype  EQ ls_aotype-aot_type.
+
+      SELECT SINGLE trx_server_id trx_server em_version INTO ( ls_trxserv-trx_server_id, ls_trxserv-trx_server , ls_trxserv-em_version )
+                                                        FROM /saptrx/trxserv
+                                                       WHERE trx_server_id = lv_trxserver_id.
+
+      LOOP AT lt_ref_list INTO DATA(ls_ref_list).
+        CLEAR:
+         ls_vbak_hdr,
+         ls_appobj_ctabs,
+         lt_control,
+         lt_info,
+         lt_tracking_id,
+         lt_exp_events,
+         lt_appobj_ctabs.
+
+        READ TABLE lt_vbak INTO DATA(ls_vbak)
+          WITH KEY vbeln = ls_ref_list-vgbel.
+        IF sy-subrc = 0 AND ls_vbak-auart NOT IN it_so_type.
+          CONTINUE.
+        ENDIF.
+
+        MOVE-CORRESPONDING ls_vbak TO ls_vbak_hdr.
+
+        ls_appobj_ctabs-trxservername = ls_trxserv-trx_server_id.
+        ls_appobj_ctabs-appobjtype    = ls_aotype-aot_type.
+        ls_appobj_ctabs-appobjid = ls_ref_list-vgbel.
+        SHIFT ls_appobj_ctabs-appobjid LEFT DELETING LEADING '0'.
+        APPEND ls_appobj_ctabs TO lt_appobj_ctabs.
+
+        CLEAR: ls_control.
+        ls_control-appsys  = lv_appsys.
+        ls_control-appobjtype = ls_aotype-aot_type.
+        ls_control-appobjid = ls_ref_list-vgbel.
+        SHIFT ls_control-appobjid LEFT DELETING LEADING '0'.
+        ls_control-paramname = 'YN_SO_NO'.
+        ls_control-value     = ls_ref_list-vgbel.
+        CONDENSE ls_control-value NO-GAPS.
+        SHIFT ls_control-value LEFT DELETING LEADING '0'.
+        APPEND ls_control TO lt_control.
+        ls_control-paramname = 'ACTUAL_BUSINESS_TIMEZONE'.
+        ls_control-value     = lv_tzone.
+        APPEND ls_control TO lt_control.
+        ls_control-paramname = 'ACTUAL_BUSINESS_DATETIME'.
+        CONCATENATE '0' sy-datum sy-uzeit INTO ls_control-value.
+        APPEND ls_control TO lt_control.
+        ls_control-paramname = 'REPORTED_BY'.
+        ls_control-value = sy-uname.
+        APPEND ls_control TO lt_control.
+
+        CLEAR: lv_count.
+        LOOP AT ls_ref_list-vbeln INTO DATA(ls_vbeln).
+
+          lv_count = lv_count + 1.
+          ls_control-paramname = 'YN_ODLV_LINE_NO'.
+          ls_control-paramindex = lv_count.
+          ls_control-value = lv_count.
+          SHIFT ls_control-value LEFT DELETING LEADING space.
+          APPEND ls_control TO lt_control.
+
+          ls_control-paramname = 'YN_ODLV_NO'.
+          ls_control-paramindex = lv_count.
+          ls_control-value      = ls_vbeln.
+          SHIFT ls_control-value LEFT DELETING LEADING '0'.
+          APPEND ls_control TO lt_control.
+        ENDLOOP.
+        IF ls_ref_list-vbeln IS INITIAL.
+          ls_control-paramname = 'YN_ODLV_LINE_NO'.
+          ls_control-paramindex = '1'.
+          ls_control-value = ''.
+          APPEND ls_control TO lt_control.
+        ENDIF.
+
+        prepare_pln_evt(
+          EXPORTING
+            iv_appsys      = lv_appsys
+            iv_obj_type    = ls_aotype-obj_type
+            iv_aot_type    = ls_aotype-aot_type
+            iv_server_name = lv_trxserver_id
+            is_vbak        = ls_vbak_hdr
+            it_vbap        = lt_vbap
+          IMPORTING
+            et_exp_event   = lt_exp_events ).
+
+        IF lt_control IS NOT INITIAL.
+          /saptrx/cl_send_idocs=>send_idoc_ehpost01(
+            EXPORTING
+              it_control      = lt_control
+              it_info         = lt_info
+              it_tracking_id  = lt_tracking_id
+              it_exp_event    = lt_exp_events
+              is_trxserv      = ls_trxserv
+              iv_appsys       = lv_appsys
+              it_appobj_ctabs = lt_appobj_ctabs ).
+
+          " when GTTV.2 version
+          IF /saptrx/cl_send_idocs=>st_idoc_data[] IS NOT INITIAL.
+            /saptrx/cl_send_idocs=>send_idoc_gttmsg01(
+              IMPORTING
+                et_bapireturn = DATA(lt_bapiret) ).
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+
+    ENDLOOP.
+
+  ENDMETHOD.
 ENDCLASS.

@@ -153,7 +153,9 @@ CLASS ZCL_GTT_SPOF_AE_FILL_PO_ITM_GR IMPLEMENTATION.
 
 
   METHOD is_appropriate_po_item.
-    DATA: ls_ekpo  TYPE ekpo.
+    DATA:
+      ls_ekpo TYPE ekpo,
+      ls_ekko TYPE ekko.
 
     DATA(lv_ebeln)  = CONV ebeln( zcl_gtt_tools=>get_field_of_structure(
                                     ir_struct_data = ir_md_pos
@@ -162,6 +164,15 @@ CLASS ZCL_GTT_SPOF_AE_FILL_PO_ITM_GR IMPLEMENTATION.
     DATA(lv_ebelp)  = CONV ebelp( zcl_gtt_tools=>get_field_of_structure(
                                     ir_struct_data = ir_md_pos
                                     iv_field_name  = 'EBELP' ) ).
+
+    CALL FUNCTION 'ME_EKKO_SINGLE_READ'
+      EXPORTING
+        pi_ebeln         = lv_ebeln
+      IMPORTING
+        po_ekko          = ls_ekko
+      EXCEPTIONS
+        no_records_found = 1
+        OTHERS           = 2.
 
     CALL FUNCTION 'ME_EKPO_SINGLE_READ'
       EXPORTING
@@ -175,7 +186,7 @@ CLASS ZCL_GTT_SPOF_AE_FILL_PO_ITM_GR IMPLEMENTATION.
 
     rv_result   = boolc(
       sy-subrc = 0 AND
-      zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = REF #( ls_ekpo ) ) = abap_true
+      zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = REF #( ls_ekko ) ir_ekpo = REF #( ls_ekpo ) ) = abap_true
     ).
   ENDMETHOD.
 
@@ -241,10 +252,9 @@ CLASS ZCL_GTT_SPOF_AE_FILL_PO_ITM_GR IMPLEMENTATION.
     DATA: lt_ekbe TYPE zcl_gtt_spof_ae_fill_po_itm_gr=>lt_ekbe_t,
           lt_ekbz TYPE zcl_gtt_spof_ae_fill_po_itm_gr=>lt_ekbz_t.
 
-    DATA: lv_total_quantity TYPE menge_d VALUE 0.
-
-    DATA(lv_current_quantity) = get_goods_receipt_quantity(
-      ir_goods_receipt = is_events-maintabref ).
+    DATA:
+      lv_total_quantity TYPE menge_d VALUE 0,
+      lv_base_btd_tco   TYPE /scmtms/base_btd_tco.
 
     lv_ebeln = zcl_gtt_tools=>get_field_of_structure(
       ir_struct_data = is_events-maintabref
@@ -282,7 +292,8 @@ CLASS ZCL_GTT_SPOF_AE_FILL_PO_ITM_GR IMPLEMENTATION.
         et_ekbe = lt_ekbe
     ).
 
-    LOOP AT lt_ekbe INTO DATA(ls_ekbe) WHERE vgabe NE '7'.
+    LOOP AT lt_ekbe INTO DATA(ls_ekbe) WHERE vgabe NE '7'
+                                        AND ( bwart = '101' OR bwart = '102' ).
       IF ls_ekbe-shkzg EQ 'H'.
         ls_ekbe-menge = ls_ekbe-menge * ( -1 ).
       ENDIF.
@@ -299,9 +310,20 @@ CLASS ZCL_GTT_SPOF_AE_FILL_PO_ITM_GR IMPLEMENTATION.
       lv_total_quantity = lv_total_quantity + ls_ekbe-menge.
     ENDLOOP.
 
-    DATA(lv_diff) = get_goods_receipt_quantity_dif( is_events = is_events ).
-    lv_diff = lv_diff * ls_ekpo-umren / ls_ekpo-umrez.
-    rv_quantity = lv_total_quantity + lv_diff.
+    zcl_gtt_tools=>get_tco_for_doc(
+      EXPORTING
+        is_ekko         = ls_ekko
+      RECEIVING
+        rv_base_btd_tco = lv_base_btd_tco ).
+
+    IF lv_base_btd_tco = /scmtms/if_common_c=>c_btd_tco-stocktransportorder.
+      rv_quantity = lv_total_quantity .
+    ELSEIF lv_base_btd_tco = /scmtms/if_common_c=>c_btd_tco-purchaseorder.
+      DATA(lv_diff) = get_goods_receipt_quantity_dif( is_events = is_events ).
+      lv_diff = lv_diff * ls_ekpo-umren / ls_ekpo-umrez.
+      rv_quantity = lv_total_quantity + lv_diff.
+    ENDIF.
+
   ENDMETHOD.
 
 

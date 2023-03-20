@@ -1,4 +1,12 @@
 # What's New for Fulfillment Tracking Apps 
+## Mar 18th, 2023
+1. SAP Business Network Global Track and Trace now supports the tracking of stock transport orders. 
+2. Add the configuration table for the inbound delivery type and purchase order type.    
+3. Add sales order and purchase order numbers in shipper reference documents of the LE-TRA shipment. 
+4. To keep the unit of measure consistent between the delivery and its freight unit, add the freight unit's base quantity and base unit of measure to inbound and outbound delivery items.
+5. Correct the unit of measure in the inbound delivery header / inbound delivery item / purchase order item / freight unit / freight order.
+6. Remove the leading zero in the ship-to party, sold-to party and material ID of the inbound delivery item / sales order / sales order item / sales order item / outbound delivery header / outbound delivery item. 
+
 ## Dec 10th, 2022
 1. Add denominator and numerator fields for the sales order item / outbound delivery item.
 2. Add the configuration table for the outbound delivery type / sales order type.

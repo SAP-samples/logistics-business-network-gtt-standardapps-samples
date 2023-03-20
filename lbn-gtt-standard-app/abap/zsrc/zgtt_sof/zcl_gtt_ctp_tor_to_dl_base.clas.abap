@@ -34,6 +34,8 @@ PROTECTED SECTION.
       fu_product_id         TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT',
       fu_product_descr      TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT_DESCR',
       fu_freightunit_logsys TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO_LOGSYS',
+      fu_base_uom_val       TYPE /saptrx/paramname VALUE 'YN_FU_BASE_UOM_VAL',
+      fu_base_uom_uni       TYPE /saptrx/paramname VALUE 'YN_FU_BASE_UOM_UNI',
       appsys                TYPE /saptrx/paramname VALUE 'E1EHPTID_APPSYS',
       trxcod                TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXCOD',
       trxid                 TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXID',
@@ -138,15 +140,20 @@ ENDCLASS.
 CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
 
 
-  METHOD ADD_DELIVERY_ITEM.
+  METHOD add_delivery_item.
 
-    DATA: ls_delivery_item TYPE zif_gtt_sof_ctp_types=>ts_delivery_chng.
+    DATA:
+      ls_delivery_item TYPE zif_gtt_sof_ctp_types=>ts_delivery_chng,
+      lv_matnr         TYPE mara-matnr.
 
     ls_delivery_item-vbeln        = |{ is_tor_item-base_btd_id ALPHA = IN }|.
     ls_delivery_item-posnr        = is_tor_item-base_btditem_id.
     ls_delivery_item-tor_id       = is_tor_root-tor_id.
     ls_delivery_item-item_id      = is_tor_item-item_id.
     ls_delivery_item-quantity     = is_tor_item-qua_pcs_val.
+    ls_delivery_item-product_descr = is_tor_item-item_descr.
+    ls_delivery_item-base_uom_val  = is_tor_item-base_uom_val.
+    ls_delivery_item-change_mode  = iv_change_mode.
 
     zcl_gtt_sof_toolkit=>convert_unit_output(
       EXPORTING
@@ -154,9 +161,19 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
       RECEIVING
         rv_output = ls_delivery_item-quantityuom ).
 
-    ls_delivery_item-product_id   = is_tor_item-product_id.
-    ls_delivery_item-product_descr = is_tor_item-item_descr.
-    ls_delivery_item-change_mode  = iv_change_mode.
+    zcl_gtt_sof_toolkit=>convert_unit_output(
+      EXPORTING
+        iv_input  = is_tor_item-base_uom_uni
+      RECEIVING
+        rv_output = ls_delivery_item-base_uom_uni ).
+
+    zcl_gtt_tools=>convert_matnr_to_external_frmt(
+      EXPORTING
+        iv_material = is_tor_item-product_id
+      IMPORTING
+        ev_result   = lv_matnr ).
+    ls_delivery_item-product_id = lv_matnr.
+    CLEAR lv_matnr.
 
     INSERT ls_delivery_item INTO TABLE ct_delivery_item.
 
@@ -339,6 +356,8 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
           product_id    = <ls_delivery_chng>-product_id
           product_descr = <ls_delivery_chng>-product_descr
           change_mode   = <ls_delivery_chng>-change_mode
+          base_uom_val  = <ls_delivery_chng>-base_uom_val
+          base_uom_uni  = <ls_delivery_chng>-base_uom_uni
         ) ).
 
         UNASSIGN <ls_delivery_item>.

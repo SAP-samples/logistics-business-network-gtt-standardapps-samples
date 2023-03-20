@@ -21,6 +21,14 @@ private section.
   types:
     tt_dl_item_id  TYPE STANDARD TABLE OF ts_dl_item_id .
 
+  types:
+    BEGIN OF ts_dl_header,
+      vbeln TYPE vbeln_vl,
+      lfart TYPE lfart,
+    END OF ts_dl_header.
+  types:
+    tt_dl_header TYPE STANDARD TABLE OF ts_dl_header.
+
   data MO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
   data MO_BO_READER type ref to ZIF_GTT_TP_READER .
 
@@ -91,6 +99,13 @@ private section.
       value(RV_EINDT) type EINDT
     raising
       CX_UDM_MESSAGE .
+  methods ADD_ODLV_ITEM_COMPLETED_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -103,7 +118,7 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
 
     lv_enable_conf = zcl_gtt_spof_po_tools=>is_enable_confirmation_po_item( ir_ekpo = is_app_objects-maintabref ).
 
-    IF lv_enable_conf = abap_true AND zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_app_objects-maintabref ) = abap_true.
+    IF lv_enable_conf = abap_true AND zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_app_objects-mastertabref ir_ekpo = is_app_objects-maintabref ) = abap_true.
       ct_expeventdata = VALUE #( BASE ct_expeventdata (
         appsys            = mo_ef_parameters->get_appsys(  )
         appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
@@ -119,7 +134,7 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
     DATA: lv_loekz   TYPE ekpo-loekz,
           lv_gr_conf TYPE abap_bool.
 
-    lv_gr_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_app_objects-maintabref ).
+    lv_gr_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_app_objects-mastertabref ir_ekpo = is_app_objects-maintabref ).
 
     IF lv_gr_conf EQ abap_true.
       " clear expecting datetime and timezone when Item is marked as deleted
@@ -213,7 +228,7 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
       ir_struct_data = is_app_objects-maintabref
       iv_field_name  = 'EBELP' ).
 
-    lv_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_app_objects-maintabref ).
+    lv_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_app_objects-mastertabref ir_ekpo = is_app_objects-maintabref ).
 
     IF <lt_ekes> IS ASSIGNED AND lv_conf = abap_true.
       LOOP AT <lt_ekes> ASSIGNING <ls_ekes>
@@ -280,14 +295,14 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
      WHERE vbeln = i_vbeln.
 
     IF sy-subrc = 0 AND
-       zcl_gtt_spof_po_tools=>is_appropriate_dl_type(
-         ir_struct = REF #( ls_likp ) ) = abap_true.
+       zcl_gtt_tools=>is_appropriate_dl_type(
+         ir_likp = REF #( ls_likp ) ) = abap_true.
 
       SELECT SINGLE * INTO ls_lips
          FROM lips
          WHERE vbeln = i_vbeln AND posnr = i_posnr.
 
-      IF sy-subrc = 0 AND zcl_gtt_spof_po_tools=>is_appropriate_dl_item( ir_struct = REF #( ls_lips ) ) = abap_true.
+      IF sy-subrc = 0 AND zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = REF #( ls_likp ) ir_lips = REF #( ls_lips ) ) = abap_true.
         rv_result = abap_true.
       ENDIF.
     ELSE.
@@ -302,11 +317,11 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
         ls_likp,
         ls_lips.
       READ TABLE <ft_likp> INTO ls_likp INDEX 1.
-      IF zcl_gtt_spof_po_tools=>is_appropriate_dl_type( ir_struct = REF #( ls_likp ) ) = abap_true.
+      IF zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = REF #( ls_likp ) ) = abap_true.
 
         READ TABLE <ft_lips> INTO ls_lips WITH KEY vbeln = i_vbeln
                                                    posnr = i_posnr.
-        IF sy-subrc = 0 AND zcl_gtt_spof_po_tools=>is_appropriate_dl_item( ir_struct = REF #( ls_lips ) ) = abap_true.
+        IF sy-subrc = 0 AND zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = REF #( ls_likp ) ir_lips = REF #( ls_lips ) ) = abap_true.
           rv_result = abap_true.
         ENDIF.
 
@@ -328,7 +343,7 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
 
     rv_result = zif_gtt_ef_constants=>cs_condition-false.
 
-    IF zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_app_objects-maintabref ) = abap_true.
+    IF zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_app_objects-mastertabref ir_ekpo = is_app_objects-maintabref ) = abap_true.
 
       IF is_app_objects-update_indicator = zif_gtt_ef_constants=>cs_change_mode-insert.
         rv_result = zif_gtt_ef_constants=>cs_condition-true.
@@ -395,6 +410,13 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
       CHANGING
         ct_expeventdata = ct_expeventdata ).
 
+*   If it is a STO purchase order item,add outbound delivery item completed planned event
+    add_odlv_item_completed_event(
+      EXPORTING
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
   ENDMETHOD.
 
 
@@ -403,7 +425,7 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
           lv_conf        TYPE abap_bool,
           lv_latest_date TYPE eindt.
 
-    lv_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_app_objects-maintabref ).
+    lv_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_app_objects-mastertabref ir_ekpo = is_app_objects-maintabref ).
 
     IF lv_conf EQ abap_true.
       lv_latest_date = get_latest_delivery_date(
@@ -483,5 +505,124 @@ CLASS ZCL_GTT_SPOF_PE_FILLER_PO_ITM IMPLEMENTATION.
     rv_datetime = zcl_gtt_tools=>get_local_timestamp(
       iv_date = i_delivery_date
       iv_time = CONV t( '235959' ) ).
+  ENDMETHOD.
+
+
+  METHOD add_odlv_item_completed_event.
+
+    FIELD-SYMBOLS:
+      <lt_likp> TYPE va_likpvb_t,
+      <lt_lips> TYPE va_lipsvb_t.
+
+    DATA:
+      lv_ebeln     TYPE ebeln,
+      lv_ebelp     TYPE ebelp,
+      lv_conf      TYPE abap_bool,
+      lt_dl_item   TYPE tt_dl_item_id,
+      lt_dl_header TYPE tt_dl_header,
+      ls_dl_header TYPE ts_dl_header,
+      lr_likp      TYPE REF TO data,
+      lr_lips      TYPE REF TO data,
+      ls_dlv_data  TYPE ts_dl_item_id,
+      lt_dlv_data  TYPE tt_dl_item_id,
+      lv_locid2    TYPE /saptrx/loc_id_2.
+
+    lv_ebeln = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = is_app_objects-maintabref
+      iv_field_name  = 'EBELN' ).
+
+    lv_ebelp = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = is_app_objects-maintabref
+      iv_field_name  = 'EBELP' ).
+
+    lv_conf = zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_app_objects-mastertabref ir_ekpo = is_app_objects-maintabref ).
+
+    CHECK lv_conf = abap_true.
+
+    zcl_gtt_sof_toolkit=>get_delivery_type(
+      RECEIVING
+        rt_type = DATA(lt_delv_type) ).
+
+*   PO item planned event also can be called from outbound delivery cross PO item(STO scenario)
+*   (function module ZGTT_SPOF_CTP_DL_TO_PO -> ZGTT_SPOF_EE_PO_ITM -> Method ADD_ODLV_ITEM_COMPLETED_EVENT of class ZCL_GTT_SPOF_PE_FILLER_PO_ITM )
+*   In this case,the outbound delivery header and item data were stored in the cache table,retrive data from cache table is a more efficient way.
+    TRY.
+        lr_likp = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_spof_app_constants=>cs_tabledef-dl_header_new ).
+        lr_lips = mo_ef_parameters->get_appl_table( iv_tabledef = zif_gtt_spof_app_constants=>cs_tabledef-dl_item_new ).
+      CATCH cx_udm_message.
+    ENDTRY.
+    IF lr_likp IS BOUND AND lr_lips IS BOUND.
+      ASSIGN lr_likp->* TO <lt_likp>.
+      ASSIGN lr_lips->* TO <lt_lips>.
+    ENDIF.
+
+*   Based on PO number,get delivery data from cache
+    IF <lt_likp> IS ASSIGNED AND <lt_lips> IS ASSIGNED.
+      LOOP AT <lt_lips> ASSIGNING FIELD-SYMBOL(<fs_lips>)
+        WHERE vgbel = lv_ebeln
+          AND vgpos = lv_ebelp
+          AND vgtyp = if_sd_doc_category=>purchase_order.
+        READ TABLE <lt_likp> ASSIGNING FIELD-SYMBOL(<fs_likp>)
+          WITH KEY vbeln = <fs_lips>-vbeln
+                   vbtyp = if_sd_doc_category=>delivery.
+        IF sy-subrc = 0 AND <fs_likp>-lfart IN lt_delv_type.
+          ls_dlv_data-vbeln = <fs_lips>-vbeln.
+          ls_dlv_data-posnr = <fs_lips>-posnr.
+          APPEND ls_dlv_data TO lt_dlv_data.
+          CLEAR ls_dlv_data.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+*   Based on PO number,get delivery data from DB
+    SELECT vbeln
+           posnr
+      INTO TABLE lt_dl_item
+      FROM lips
+     WHERE vgbel = lv_ebeln
+       AND vgpos = lv_ebelp
+       AND vgtyp = if_sd_doc_category=>purchase_order.
+
+    IF lt_dl_item IS NOT INITIAL.
+      SELECT vbeln
+             lfart
+        INTO TABLE lt_dl_header
+        FROM likp
+         FOR ALL ENTRIES IN lt_dl_item
+       WHERE vbeln = lt_dl_item-vbeln
+         AND vbtyp = if_sd_doc_category=>delivery.
+    ENDIF.
+
+    LOOP AT lt_dl_item ASSIGNING FIELD-SYMBOL(<ls_dl_item>).
+      CLEAR:ls_dl_header.
+      READ TABLE lt_dl_header INTO ls_dl_header
+        WITH KEY vbeln = <ls_dl_item>-vbeln.
+      IF sy-subrc = 0 AND ls_dl_header-lfart IN lt_delv_type.
+        ls_dlv_data-vbeln = <ls_dl_item>-vbeln.
+        ls_dlv_data-posnr = <ls_dl_item>-posnr.
+        APPEND ls_dlv_data TO lt_dlv_data.
+        CLEAR ls_dlv_data.
+      ENDIF.
+    ENDLOOP.
+
+*   Merge the delivery data and delete the duplicated record
+    SORT lt_dlv_data BY vbeln posnr.
+    DELETE ADJACENT DUPLICATES FROM lt_dlv_data COMPARING ALL FIELDS.
+
+    LOOP AT lt_dlv_data INTO ls_dlv_data.
+      lv_locid2 = |{ ls_dlv_data-vbeln ALPHA = OUT }{ ls_dlv_data-posnr ALPHA = IN }|.
+      CONDENSE lv_locid2 NO-GAPS.
+      ct_expeventdata = VALUE #( BASE ct_expeventdata (
+           appsys            = mo_ef_parameters->get_appsys(  )
+           appobjtype        = mo_ef_parameters->get_app_obj_types( )-aotype
+           language          = sy-langu
+           appobjid          = is_app_objects-appobjid
+           milestone         = zif_gtt_sof_constants=>cs_milestone-dlv_item_completed
+           locid2            = lv_locid2
+           milestonenum      = zcl_gtt_tools=>get_next_sequence_id(
+                               it_expeventdata = ct_expeventdata )   ) ).
+
+    ENDLOOP.
+
   ENDMETHOD.
 ENDCLASS.

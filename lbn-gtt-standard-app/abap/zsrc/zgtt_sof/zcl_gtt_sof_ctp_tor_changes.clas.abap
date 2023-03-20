@@ -78,14 +78,18 @@ CLASS ZCL_GTT_SOF_CTP_TOR_CHANGES IMPLEMENTATION.
 
   METHOD add_delivery_item.
 
-    DATA: ls_delivery_item TYPE zif_gtt_sof_ctp_types=>ts_delivery_chng.
+    DATA:
+      ls_delivery_item TYPE zif_gtt_sof_ctp_types=>ts_delivery_chng,
+      lv_matnr         TYPE mara-matnr.
 
-    ls_delivery_item-vbeln        = convert_dlv_number(
-                                      iv_dlv_num = is_tor_item-base_btd_id ).
+    ls_delivery_item-vbeln        = |{ is_tor_item-base_btd_id ALPHA = IN }|.
     ls_delivery_item-posnr        = is_tor_item-base_btditem_id.
     ls_delivery_item-tor_id       = is_tor_root-tor_id.
     ls_delivery_item-item_id      = is_tor_item-item_id.
     ls_delivery_item-quantity     = is_tor_item-qua_pcs_val.
+    ls_delivery_item-product_descr = is_tor_item-item_descr.
+    ls_delivery_item-base_uom_val  = is_tor_item-base_uom_val.
+    ls_delivery_item-change_mode  = iv_change_mode.
 
     zcl_gtt_sof_toolkit=>convert_unit_output(
       EXPORTING
@@ -93,9 +97,19 @@ CLASS ZCL_GTT_SOF_CTP_TOR_CHANGES IMPLEMENTATION.
       RECEIVING
         rv_output = ls_delivery_item-quantityuom ).
 
-    ls_delivery_item-product_id   = is_tor_item-product_id.
-    ls_delivery_item-product_descr = is_tor_item-item_descr.
-    ls_delivery_item-change_mode  = iv_change_mode.
+    zcl_gtt_sof_toolkit=>convert_unit_output(
+      EXPORTING
+        iv_input  = is_tor_item-base_uom_uni
+      RECEIVING
+        rv_output = ls_delivery_item-base_uom_uni ).
+
+    zcl_gtt_tools=>convert_matnr_to_external_frmt(
+      EXPORTING
+        iv_material = is_tor_item-product_id
+      IMPORTING
+        ev_result   = lv_matnr ).
+    ls_delivery_item-product_id = lv_matnr.
+    CLEAR lv_matnr.
 
     INSERT ls_delivery_item INTO TABLE ct_delivery_item.
 

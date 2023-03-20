@@ -51,13 +51,15 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PA IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD GET_PUT_AWAY_QUANTITY_DIFF.
+  METHOD get_put_away_quantity_diff.
 
     DATA: lv_mng_old TYPE menge_d VALUE 0,
           lv_mng_new TYPE menge_d.
 
     IF is_events-update_indicator <> zif_gtt_ef_constants=>cs_change_mode-insert.
-      lv_mng_old  = get_put_away_quantity( ir_data = is_events-mainoldtabref ).
+      IF is_events-mainoldtabref IS BOUND.
+        lv_mng_old  = get_put_away_quantity( ir_data = is_events-mainoldtabref ).
+      ENDIF.
     ENDIF.
 
     lv_mng_new  = get_put_away_quantity( ir_data = is_events-maintabref ).
@@ -75,8 +77,8 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLI_PA IMPLEMENTATION.
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
     IF is_events-maintabdef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new AND
-       zcl_gtt_mia_dl_tools=>is_appropriate_dl_type( ir_struct = is_events-mastertabref ) = abap_true AND
-       zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = is_events-maintabref ) = abap_true.
+       zcl_gtt_tools=>is_appropriate_dl_type( ir_likp = is_events-mastertabref ) = abap_true AND
+       zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = is_events-mastertabref ir_lips = is_events-maintabref ) = abap_true.
 
       CASE is_events-update_indicator.
         WHEN zif_gtt_ef_constants=>cs_change_mode-insert OR

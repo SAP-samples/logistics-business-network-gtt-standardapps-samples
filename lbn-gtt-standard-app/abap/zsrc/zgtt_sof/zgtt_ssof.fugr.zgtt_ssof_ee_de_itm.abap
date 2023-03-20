@@ -244,10 +244,12 @@ FUNCTION zgtt_ssof_ee_de_itm.
         ls_expeventdata-locid2.
 
       LOOP AT lt_relation INTO ls_relation.
+        ls_expeventdata-milestonenum  = lv_milestonenum.
         ls_expeventdata-milestone = zif_gtt_sof_constants=>cs_milestone-fu_completed.
         ls_expeventdata-locid2 = ls_relation-freight_unit_number.
         SHIFT ls_expeventdata-locid2 LEFT DELETING LEADING '0'.
         APPEND ls_expeventdata TO e_expeventdata.
+        ADD 1 TO lv_milestonenum.
       ENDLOOP.
     ELSE."Not relevant with TM
 *     Not relevant with TM, add planned event HeaderCompleted
@@ -258,8 +260,66 @@ FUNCTION zgtt_ssof_ee_de_itm.
         ls_expeventdata-loctype,
         ls_expeventdata-locid1,
         ls_expeventdata-locid2.
+      ls_expeventdata-milestonenum  = lv_milestonenum.
       ls_expeventdata-milestone = zif_gtt_sof_constants=>cs_milestone-dlv_hd_completed.
       APPEND ls_expeventdata TO e_expeventdata.
+      ADD 1 TO lv_milestonenum.
+    ENDIF.
+
+    CLEAR:
+      ls_expeventdata-milestonenum,
+      ls_expeventdata-evt_exp_datetime,
+      ls_expeventdata-evt_exp_tzone,
+      ls_expeventdata-loctype,
+      ls_expeventdata-locid1,
+      ls_expeventdata-locid2,
+      lv_timezone.
+
+*   if it is a STO outbound delivery item,add Header Goods Receipt and Item Goods Receipt
+    IF <ls_xlips>-vgtyp = if_sd_doc_category=>purchase_order
+       AND ls_eerel-z_wbsta = gc_true.
+
+*     Goods Receipt without event match key
+*     Trigger Condition: STO outbound delivery item & GM relevant & LE-TRA scenario
+      IF lt_relation IS INITIAL.
+        ls_expeventdata-milestonenum  = lv_milestonenum.
+        ls_expeventdata-milestone = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt.
+        TRY.
+            ls_expeventdata-evt_exp_tzone    = COND #( WHEN <ls_xlikp>-tzonrc IS NOT INITIAL
+                                                   THEN <ls_xlikp>-tzonrc
+                                                   ELSE zcl_gtt_tools=>get_system_time_zone( ) ).
+          CATCH cx_udm_message.
+        ENDTRY.
+        ls_expeventdata-evt_exp_datetime = |0{ <ls_xlikp>-lfdat }{ <ls_xlikp>-lfuhr }|.
+        APPEND ls_expeventdata TO e_expeventdata.
+        ADD 1 TO lv_milestonenum.
+      ENDIF.
+
+*     Goods Receipt with event match key
+*     Trigger Condition: STO outbound delivery item & GM relevant & item not flagged as Deleted
+      CLEAR:
+        ls_expeventdata-milestonenum,
+        ls_expeventdata-evt_exp_datetime,
+        ls_expeventdata-evt_exp_tzone,
+        ls_expeventdata-loctype,
+        ls_expeventdata-locid1,
+        ls_expeventdata-locid2.
+
+      ls_expeventdata-milestonenum  = lv_milestonenum.
+      ls_expeventdata-milestone = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt.
+      TRY.
+          ls_expeventdata-evt_exp_tzone    = COND #( WHEN <ls_xlikp>-tzonrc IS NOT INITIAL
+                                                 THEN <ls_xlikp>-tzonrc
+                                                 ELSE zcl_gtt_tools=>get_system_time_zone( ) ).
+        CATCH cx_udm_message.
+      ENDTRY.
+      ls_expeventdata-evt_exp_datetime = |0{ <ls_xlikp>-lfdat }{ <ls_xlikp>-lfuhr }|.
+      ls_expeventdata-locid1 = <ls_xlips>-werks.
+      ls_expeventdata-locid2 = |{ <ls_xlips>-vbeln ALPHA = OUT }{ <ls_xlips>-posnr ALPHA = IN }|.
+      CONDENSE ls_expeventdata-locid2 NO-GAPS.
+      ls_expeventdata-loctype = zif_gtt_ef_constants=>cs_loc_types-plant.
+      APPEND ls_expeventdata TO e_expeventdata.
+      ADD 1 TO lv_milestonenum.
     ENDIF.
 
     READ TABLE e_expeventdata WITH KEY appobjid = ls_app_objects-appobjid TRANSPORTING NO FIELDS.

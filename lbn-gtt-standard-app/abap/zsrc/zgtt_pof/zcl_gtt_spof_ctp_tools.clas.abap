@@ -34,6 +34,19 @@ public section.
       !ET_EXP_EVENT type /SAPTRX/BAPI_TRK_EE_TAB
     raising
       CX_UDM_MESSAGE .
+  class-methods GET_PO_HD_PLANNED_EVT
+    importing
+      !IV_APPSYS type LOGSYS
+      !IS_AOTYPE type ZIF_GTT_CTP_TYPES=>TS_AOTYPE
+      !IS_EKKO type ZIF_GTT_SPOF_APP_TYPES=>TS_UEKKO
+      !IT_EKPO type ZIF_GTT_SPOF_APP_TYPES=>TT_UEKPO
+      !IT_EKET type ZIF_GTT_SPOF_APP_TYPES=>TT_UEKET
+      !IT_LIKP type VA_LIKPVB_T
+      !IT_LIPS type VA_LIPSVB_T
+    exporting
+      !ET_EXP_EVENT type /SAPTRX/BAPI_TRK_EE_TAB
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
 private section.
 ENDCLASS.
@@ -111,7 +124,9 @@ CLASS ZCL_GTT_SPOF_CTP_TOOLS IMPLEMENTATION.
 
     CLEAR: et_exp_event[].
 
-    ls_app_obj_types              = CORRESPONDING #( is_aotype ).
+    ls_app_obj_types-trk_obj_type  = is_aotype-obj_type.
+    ls_app_obj_types-aotype        = is_aotype-aot_type.
+    ls_app_obj_types-trxservername = is_aotype-server_name.
 
     ls_app_objects                = CORRESPONDING #( ls_app_obj_types ).
     ls_app_objects-appobjtype     = is_aotype-aot_type.
@@ -144,7 +159,71 @@ CLASS ZCL_GTT_SPOF_CTP_TOOLS IMPLEMENTATION.
     CALL FUNCTION 'ZGTT_SPOF_EE_PO_ITM'
       EXPORTING
         i_appsys                  = iv_appsys
-        i_app_obj_types           = CORRESPONDING /saptrx/aotypes( is_aotype )
+        i_app_obj_types           = ls_app_obj_types
+        i_all_appl_tables         = lt_all_appl_tables
+        i_app_type_cntl_tabs      = lt_app_type_cntl_tabs
+        i_app_objects             = lt_app_objects
+      TABLES
+        e_expeventdata            = et_exp_event
+      EXCEPTIONS
+        parameter_error           = 1
+        exp_event_determ_error    = 2
+        table_determination_error = 3
+        stop_processing           = 4
+        OTHERS                    = 5.
+
+    IF sy-subrc <> 0.
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_po_hd_planned_evt.
+
+    DATA:
+      ls_app_obj_types      TYPE /saptrx/aotypes,
+      lt_all_appl_tables    TYPE trxas_tabcontainer,
+      lt_app_type_cntl_tabs TYPE trxas_apptype_tabs,
+      ls_app_objects        TYPE trxas_appobj_ctab_wa,
+      lt_app_objects        TYPE trxas_appobj_ctabs.
+
+    CLEAR: et_exp_event[].
+
+    ls_app_obj_types-trk_obj_type  = is_aotype-obj_type.
+    ls_app_obj_types-aotype        = is_aotype-aot_type.
+    ls_app_obj_types-trxservername = is_aotype-server_name.
+
+    ls_app_objects                = CORRESPONDING #( ls_app_obj_types ).
+    ls_app_objects-appobjtype     = is_aotype-aot_type.
+    ls_app_objects-appobjid       = zcl_gtt_spof_po_tools=>get_tracking_id_po_hdr( ir_ekko = REF #( is_ekko ) ).
+    ls_app_objects-maintabref     = REF #( is_ekko ).
+    ls_app_objects-maintabdef     = zif_gtt_spof_app_constants=>cs_tabledef-po_header_new.
+
+    lt_app_objects                = VALUE #( ( ls_app_objects ) ).
+
+    lt_all_appl_tables            = VALUE #(
+    (
+      tabledef    = zif_gtt_spof_app_constants=>cs_tabledef-po_item_new
+      tableref    = REF #( it_ekpo )
+     )
+     (
+      tabledef    = zif_gtt_spof_app_constants=>cs_tabledef-po_sched_new
+      tableref    = REF #( it_eket )
+     )
+     (
+      tabledef    = zif_gtt_spof_app_constants=>cs_tabledef-dl_header_new
+      tableref    = REF #( it_likp )
+     )
+     (
+      tabledef    = zif_gtt_spof_app_constants=>cs_tabledef-dl_item_new
+      tableref    = REF #( it_lips )
+     ) ).
+
+    CALL FUNCTION 'ZGTT_SPOF_EE_PO_HDR'
+      EXPORTING
+        i_appsys                  = iv_appsys
+        i_app_obj_types           = ls_app_obj_types
         i_all_appl_tables         = lt_all_appl_tables
         i_app_type_cntl_tabs      = lt_app_type_cntl_tabs
         i_app_objects             = lt_app_objects

@@ -4,6 +4,28 @@ class ZCL_GTT_TOOLS definition
 
 public section.
 
+  types:
+    BEGIN OF ts_ref_doc,
+      vbeln TYPE lips-vbeln,
+      vgbel TYPE lips-vgbel,
+   END OF ts_ref_doc .
+  types:
+    tt_ref_doc TYPE STANDARD TABLE OF ts_ref_doc .
+  types:
+    BEGIN OF ts_ref_list,
+      vgbel TYPE vgbel,
+      vbeln TYPE vbeln_vl_t,
+     END OF ts_ref_list .
+  types:
+    tt_ref_list TYPE STANDARD TABLE OF ts_ref_list .
+  types:
+    BEGIN OF ts_likp,
+      vbeln type likp-vbeln,
+      vbtyp type likp-vbtyp,
+    END OF ts_likp .
+  types:
+    tt_likp TYPE STANDARD TABLE OF ts_likp .
+
   class-methods ARE_FIELDS_DIFFERENT
     importing
       !IR_DATA1 type ref to DATA
@@ -137,6 +159,71 @@ public section.
       !IV_TEXTID type SOTR_CONC default ''
     raising
       CX_UDM_MESSAGE .
+  class-methods IS_APPROPRIATE_ODLV_TYPE
+    importing
+      !IR_LIKP type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods IS_APPROPRIATE_ODLV_ITEM
+    importing
+      !IR_LIKP type ref to DATA
+      !IR_LIPS type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_DELIVERY_TYPE
+    returning
+      value(RT_TYPE) type RSELOPTION .
+  class-methods IS_APPROPRIATE_DL_TYPE
+    importing
+      !IR_LIKP type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods IS_APPROPRIATE_DL_ITEM
+    importing
+      !IR_LIKP type ref to DATA
+      !IR_LIPS type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_TCO_FOR_DOC
+    importing
+      !IS_EKKO type EKKO
+    returning
+      value(RV_BASE_BTD_TCO) type /SCMTMS/BASE_BTD_TCO .
+  class-methods GET_DELIVERY_BY_REF_DOC
+    importing
+      !IV_VGBEL type VGBEL
+    exporting
+      !ET_VBELN type VBELN_VL_T .
+  class-methods GET_PO_SO_BY_DELIVERY
+    importing
+      !IV_VGTYP type VBTYPL_V
+      !IT_XLIKP type SHP_LIKP_T
+      !IT_XLIPS type SHP_LIPS_T
+    exporting
+      !ET_REF_LIST type TT_REF_LIST .
+  class-methods CONVERT_UNIT_OUTPUT
+    importing
+      !IV_INPUT type CLIKE
+    returning
+      value(RV_OUTPUT) type MSEH3 .
+  class-methods CONVERT_TO_EXTERNAL_FRMT
+    importing
+      !IV_INPUT type CLIKE
+    exporting
+      value(EV_OUTPUT) type CLIKE .
+  class-methods CONVERT_MATNR_TO_EXTERNAL_FRMT
+    importing
+      !IV_MATERIAL type MATNR
+    exporting
+      !EV_RESULT type MATNR .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -688,6 +775,373 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
         m_msgv2 = sy-msgv2
         m_msgv3 = sy-msgv3
         m_msgv4 = sy-msgv4.
+
+  ENDMETHOD.
+
+
+  METHOD is_appropriate_odlv_item.
+
+    DATA:
+      lt_tvlp     TYPE STANDARD TABLE OF tvlp,
+      lt_dlv_type TYPE rseloption.
+
+    CLEAR rv_result.
+
+    zcl_gtt_tools=>get_delivery_type(
+      RECEIVING
+        rt_type = lt_dlv_type ).
+
+    CHECK lt_dlv_type IS NOT INITIAL.
+
+    DATA(lv_lfart) = CONV lfart( zcl_gtt_tools=>get_field_of_structure(
+                                   ir_struct_data = ir_likp
+                                   iv_field_name  = 'LFART' ) ).
+
+    IF lv_lfart NOT IN lt_dlv_type.
+      RETURN.
+    ENDIF.
+
+    DATA(lv_pstyv)  = CONV pstyv_vl( zcl_gtt_tools=>get_field_of_structure(
+                                       ir_struct_data = ir_lips
+                                       iv_field_name  = 'PSTYV' ) ).
+
+    CALL FUNCTION 'MCV_TVLP_READ'
+      EXPORTING
+        i_pstyv   = lv_pstyv
+      TABLES
+        t_tvlp    = lt_tvlp
+      EXCEPTIONS
+        not_found = 1
+        OTHERS    = 2.
+
+    IF sy-subrc = 0.
+      rv_result = boolc( lt_tvlp[ 1 ]-vbtyp = if_sd_doc_category=>delivery ).
+    ELSE.
+      MESSAGE e057(00) WITH lv_pstyv '' '' 'TVLP'
+        INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD is_appropriate_odlv_type.
+
+    DATA:
+      lt_dlv_type TYPE rseloption.
+
+    CLEAR rv_result.
+
+    zcl_gtt_tools=>get_delivery_type(
+      RECEIVING
+        rt_type = lt_dlv_type ).
+
+    CHECK lt_dlv_type IS NOT INITIAL.
+
+    DATA(lv_lfart) = CONV lfart( zcl_gtt_tools=>get_field_of_structure(
+                                   ir_struct_data = ir_likp
+                                   iv_field_name  = 'LFART' ) ).
+
+    IF lv_lfart NOT IN lt_dlv_type.
+      RETURN.
+    ENDIF.
+
+    DATA(lv_vbtyp)  = CONV vbtyp( zcl_gtt_tools=>get_field_of_structure(
+                                    ir_struct_data = ir_likp
+                                    iv_field_name  = 'VBTYP' ) ).
+
+    rv_result = boolc( lv_vbtyp = if_sd_doc_category=>delivery ).
+
+  ENDMETHOD.
+
+
+  METHOD get_delivery_type.
+
+    DATA:
+      lt_dlvtype TYPE TABLE OF zgtt_dlvtype_rst,
+      rs_type    TYPE rsdsselopt.
+
+    CLEAR rt_type.
+
+    SELECT *
+      INTO TABLE lt_dlvtype
+      FROM zgtt_dlvtype_rst
+     WHERE active = abap_true.
+
+    LOOP AT lt_dlvtype INTO DATA(ls_dlvtype).
+      rs_type-sign = 'I'.
+      rs_type-option = 'EQ'.
+      rs_type-low = ls_dlvtype-lfart.
+      APPEND rs_type TO rt_type.
+      CLEAR rs_type.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD is_appropriate_dl_item.
+
+    DATA:
+      lt_tvlp     TYPE STANDARD TABLE OF tvlp,
+      lt_dlv_type TYPE rseloption.
+
+    CLEAR rv_result.
+
+    zcl_gtt_tools=>get_delivery_type(
+      RECEIVING
+        rt_type = lt_dlv_type ).
+
+    CHECK lt_dlv_type IS NOT INITIAL.
+
+    DATA(lv_lfart) = CONV lfart( zcl_gtt_tools=>get_field_of_structure(
+                                   ir_struct_data = ir_likp
+                                   iv_field_name  = 'LFART' ) ).
+
+    IF lv_lfart NOT IN lt_dlv_type.
+      RETURN.
+    ENDIF.
+
+    DATA(lv_pstyv)  = CONV pstyv_vl( zcl_gtt_tools=>get_field_of_structure(
+                                       ir_struct_data = ir_lips
+                                       iv_field_name  = 'PSTYV' ) ).
+
+    CALL FUNCTION 'MCV_TVLP_READ'
+      EXPORTING
+        i_pstyv   = lv_pstyv
+      TABLES
+        t_tvlp    = lt_tvlp
+      EXCEPTIONS
+        not_found = 1
+        OTHERS    = 2.
+
+    IF sy-subrc = 0.
+      rv_result = boolc( lt_tvlp[ 1 ]-vbtyp = if_sd_doc_category=>delivery_shipping_notif AND
+                         lt_tvlp[ 1 ]-bwart IS NOT INITIAL ).
+    ELSE.
+      MESSAGE e057(00) WITH lv_pstyv '' '' 'TVLP'
+        INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD is_appropriate_dl_type.
+
+    DATA:
+      lt_dlv_type TYPE rseloption.
+
+    CLEAR rv_result.
+
+    zcl_gtt_tools=>get_delivery_type(
+      RECEIVING
+        rt_type = lt_dlv_type ).
+
+    CHECK lt_dlv_type IS NOT INITIAL.
+
+    DATA(lv_lfart) = CONV lfart( zcl_gtt_tools=>get_field_of_structure(
+                                   ir_struct_data = ir_likp
+                                   iv_field_name  = 'LFART' ) ).
+
+    IF lv_lfart NOT IN lt_dlv_type.
+      RETURN.
+    ENDIF.
+
+    DATA(lv_vbtyp)  = CONV vbtyp( zcl_gtt_tools=>get_field_of_structure(
+                                    ir_struct_data = ir_likp
+                                    iv_field_name  = 'VBTYP' ) ).
+
+    rv_result = boolc( lv_vbtyp = if_sd_doc_category=>delivery_shipping_notif ).
+
+  ENDMETHOD.
+
+
+  METHOD convert_matnr_to_external_frmt.
+
+    CLEAR ev_result.
+    CALL FUNCTION 'CONVERSION_EXIT_MATN1_OUTPUT'
+      EXPORTING
+        input  = iv_material
+      IMPORTING
+        output = ev_result.
+
+  ENDMETHOD.
+
+
+  METHOD CONVERT_TO_EXTERNAL_FRMT.
+
+    CLEAR:ev_output.
+
+    CALL FUNCTION 'CONVERSION_EXIT_ALPHA_OUTPUT'
+      EXPORTING
+        input  = iv_input
+      IMPORTING
+        output = ev_output.
+
+  ENDMETHOD.
+
+
+  METHOD convert_unit_output.
+
+    CLEAR:rv_output.
+
+    CALL FUNCTION 'CONVERSION_EXIT_CUNIT_OUTPUT'
+      EXPORTING
+        input    = iv_input
+        language = sy-langu
+      IMPORTING
+        output   = rv_output.
+
+    CONDENSE rv_output NO-GAPS.
+
+  ENDMETHOD.
+
+
+  METHOD get_delivery_by_ref_doc.
+
+    CLEAR et_vbeln.
+    SELECT vbeln
+      INTO TABLE et_vbeln
+      FROM lips
+     WHERE vgbel = iv_vgbel.
+
+    SORT et_vbeln BY table_line.
+    DELETE ADJACENT DUPLICATES FROM et_vbeln COMPARING ALL FIELDS.
+
+  ENDMETHOD.
+
+
+  METHOD get_po_so_by_delivery.
+
+    DATA:
+      lt_ref_doc_curr TYPE tt_ref_doc,
+      ls_ref_doc_curr TYPE ts_ref_doc,
+      lt_ref_doc_db   TYPE tt_ref_doc,
+      ls_ref_doc_db   TYPE ts_ref_doc,
+      lt_ref_doc_all  TYPE tt_ref_doc,
+      ls_ref_doc_all  TYPE ts_ref_doc,
+      lt_ref_list     TYPE tt_ref_list,
+      ls_ref_list     TYPE ts_ref_list,
+      ls_likp         TYPE likpvb,
+      lt_likp_dt      TYPE tt_likp,
+      ls_likp_dt      TYPE ts_likp.
+
+    CLEAR et_ref_list.
+
+    LOOP AT it_xlips INTO DATA(ls_lips) WHERE vgtyp = iv_vgtyp.
+*    For purchase order,only need the inbound delivery
+      IF ls_lips-vgtyp = if_sd_doc_category=>purchase_order.
+        CLEAR ls_likp.
+        READ TABLE it_xlikp INTO ls_likp WITH KEY vbeln = ls_lips-vbeln.
+        IF sy-subrc = 0.
+          IF ls_likp-vbtyp = if_sd_doc_category=>delivery.
+            CONTINUE.
+          ENDIF.
+        ENDIF.
+      ENDIF.
+      ls_ref_doc_curr-vbeln = ls_lips-vbeln.
+      ls_ref_doc_curr-vgbel = ls_lips-vgbel.
+      APPEND ls_ref_doc_curr TO lt_ref_doc_curr.
+      CLEAR ls_ref_doc_curr.
+    ENDLOOP.
+
+    SORT lt_ref_doc_curr BY vbeln vgbel.
+    DELETE ADJACENT DUPLICATES FROM lt_ref_doc_curr COMPARING ALL FIELDS.
+
+    IF lt_ref_doc_curr IS NOT INITIAL.
+      SELECT vbeln
+             vgbel
+        INTO TABLE lt_ref_doc_db
+        FROM lips
+         FOR ALL ENTRIES IN lt_ref_doc_curr
+       WHERE vgbel = lt_ref_doc_curr-vgbel.
+    ENDIF.
+
+    IF lt_ref_doc_db IS NOT INITIAL.
+      SELECT vbeln
+             vbtyp
+        INTO TABLE lt_likp_dt
+        FROM likp
+         FOR ALL ENTRIES IN lt_ref_doc_db
+       WHERE vbeln = lt_ref_doc_db-vbeln.
+    ENDIF.
+
+*   For purchase order,only need the inbound delivery
+    IF iv_vgtyp = if_sd_doc_category=>purchase_order.
+      LOOP AT lt_ref_doc_db INTO ls_ref_doc_db.
+        CLEAR ls_likp_dt.
+        READ TABLE lt_likp_dt INTO ls_likp_dt WITH KEY vbeln = ls_ref_doc_db-vbeln.
+        IF sy-subrc = 0.
+          IF ls_likp_dt-vbtyp = if_sd_doc_category=>delivery.
+            DELETE lt_ref_doc_db.
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+    ENDIF.
+
+    APPEND LINES OF lt_ref_doc_curr TO lt_ref_doc_all.
+    APPEND LINES OF lt_ref_doc_db TO lt_ref_doc_all.
+
+    SORT lt_ref_doc_all BY vbeln vgbel.
+    DELETE ADJACENT DUPLICATES FROM lt_ref_doc_all COMPARING ALL FIELDS.
+
+    LOOP AT lt_ref_doc_all INTO ls_ref_doc_all
+      GROUP BY ls_ref_doc_all-vgbel ASSIGNING FIELD-SYMBOL(<ft_ref_group>).
+
+      LOOP AT GROUP <ft_ref_group> ASSIGNING FIELD-SYMBOL(<fs_ref>).
+        ls_ref_list-vgbel = <fs_ref>-vgbel.
+*       Do not consider the deleted delivery
+        CLEAR ls_likp.
+        READ TABLE it_xlikp INTO ls_likp WITH KEY vbeln = <fs_ref>-vbeln.
+        IF sy-subrc = 0 AND ls_likp-updkz = /bobf/if_frw_c=>sc_modify_delete.
+          CLEAR <fs_ref>-vbeln.
+        ENDIF.
+        IF <fs_ref>-vbeln IS NOT INITIAL.
+          APPEND <fs_ref>-vbeln TO ls_ref_list-vbeln.
+        ENDIF.
+      ENDLOOP.
+      IF ls_ref_list IS NOT INITIAL.
+        APPEND ls_ref_list TO lt_ref_list.
+      ENDIF.
+      CLEAR ls_ref_list.
+    ENDLOOP.
+
+    et_ref_list = lt_ref_list.
+
+  ENDMETHOD.
+
+
+  METHOD get_tco_for_doc.
+
+    DATA:
+      ls_ekko TYPE ekko.
+
+    CLEAR:rv_base_btd_tco.
+
+    ls_ekko = is_ekko.
+
+*   Read MM type code
+    TRY.
+        cl_mmpur_db_utility_general=>get_t161(
+          EXPORTING
+            im_bsart = ls_ekko-bsart
+            im_bstyp = ls_ekko-bstyp
+          RECEIVING
+            re_t161  = DATA(ls_t161) ).
+      CATCH cx_mmpur_not_found INTO DATA(lo_cx_mmpur).
+        lo_cx_mmpur->get_messages(
+          IMPORTING
+            et_msg = DATA(lt_exception_msg) ).
+        CLEAR ls_t161.
+    ENDTRY.
+
+    /scmtms/cl_logint_cmn_reuse=>get_tco_for_doc(
+      EXPORTING
+        iv_bstyp      = ls_ekko-bstyp
+        iv_reswk      = ls_ekko-reswk
+        iv_msr_active = ls_t161-msr_active
+      IMPORTING
+        ev_btd_tco    = rv_base_btd_tco ).
 
   ENDMETHOD.
 ENDCLASS.

@@ -16,7 +16,21 @@ FUNCTION zgtt_ctp_tor_to_dl .
     lv_base_btd_tco    TYPE /scmtms/base_btd_tco,
     lo_tor_to_dlv_hd   TYPE REF TO zif_gtt_ctp_tor_to_dl,
     lo_tor_to_dlv_it   TYPE REF TO zif_gtt_ctp_tor_to_dl,
-    lv_result          TYPE syst_binpt.
+    lv_result          TYPE syst_binpt,
+    lt_callstack       TYPE abap_callstack.
+
+  CALL FUNCTION 'SYSTEM_CALLSTACK'
+    IMPORTING
+      callstack = lt_callstack.
+
+* read the call stack to check if a outbound delivery being created based on purchase order
+  READ TABLE lt_callstack TRANSPORTING NO FIELDS WITH KEY mainprogram = 'SAPLV50R_CREA'
+                                                          include     = 'LV50R_CREAU01'
+                                                          blocktype   = 'FUNCTION'
+                                                          blockname   = 'SHP_VL10_DELIVERY_CREATE'.
+  IF sy-subrc = 0.
+    RETURN.
+  ENDIF.
 
   zcl_gtt_sof_tm_tools=>get_tor_stop_before(
     EXPORTING

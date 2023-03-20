@@ -6,6 +6,13 @@ public section.
 
   interfaces ZIF_GTT_TP_READER .
 
+  TYPES:
+    BEGIN OF ts_ref_doc,
+      vgbel TYPE lips-vgbel,
+      vgtyp TYPE lips-vgtyp,
+    END OF ts_ref_doc.
+  TYPES: tt_ref_doc TYPE TABLE OF ts_ref_doc.
+
   methods CONSTRUCTOR
     importing
       !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
@@ -254,11 +261,15 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD FILL_HEADER_FROM_VTTP.
+  METHOD fill_header_from_vttp.
 
     TYPES: tt_vttp  TYPE STANDARD TABLE OF vttpvb.
-    DATA: lv_count TYPE i VALUE 0,
-          lv_vbeln TYPE vbeln_vl.
+    DATA: lv_count        TYPE i VALUE 0,
+          lv_vbeln        TYPE vbeln_vl,
+          lt_ref_doc      TYPE tt_ref_doc,
+          lv_base_btd_tco TYPE /scmtms/base_btd_tco,
+          lv_vgbel        TYPE lips-vgbel,
+          ls_ekko         TYPE ekko.
 
     FIELD-SYMBOLS: <ls_vttk> TYPE vttkvb,
                    <lt_vttp> TYPE tt_vttp.
@@ -267,6 +278,42 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
     ASSIGN ir_vttp->* TO <lt_vttp>.
 
     IF sy-subrc = 0.
+      CLEAR lt_ref_doc.
+      IF <lt_vttp> IS NOT INITIAL.
+        SELECT vgbel
+               vgtyp
+          INTO TABLE lt_ref_doc
+          FROM lips
+           FOR ALL ENTRIES IN <lt_vttp>
+         WHERE vbeln = <lt_vttp>-vbeln.
+      ENDIF.
+
+      LOOP AT lt_ref_doc INTO DATA(ls_ref_doc).
+        CLEAR:
+          lv_vgbel,
+          lv_base_btd_tco,
+          ls_ekko.
+        lv_vgbel = ls_ref_doc-vgbel.
+        SHIFT lv_vgbel LEFT DELETING LEADING '0'.
+        IF ls_ref_doc-vgtyp = if_sd_doc_category=>order.
+          APPEND zif_gtt_mia_app_constants=>cs_base_btd_tco-sales_order TO cs_header-shpdoc_ref_typ.
+          APPEND lv_vgbel TO cs_header-shpdoc_ref_val.
+        ELSEIF ls_ref_doc-vgtyp = if_sd_doc_category=>purchase_order.
+
+          SELECT SINGLE *
+            INTO ls_ekko
+            FROM ekko
+           WHERE ebeln = ls_ref_doc-vgbel.
+
+          zcl_gtt_tools=>get_tco_for_doc(
+            EXPORTING
+              is_ekko         = ls_ekko
+            RECEIVING
+              rv_base_btd_tco = lv_base_btd_tco ).
+          APPEND lv_base_btd_tco TO cs_header-shpdoc_ref_typ.
+          APPEND lv_vgbel TO cs_header-shpdoc_ref_val.
+        ENDIF.
+      ENDLOOP.
 
       LOOP AT <lt_vttp> ASSIGNING FIELD-SYMBOL(<ls_vttp>)
         WHERE tknum = <ls_vttk>-tknum.
@@ -585,7 +632,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
     rv_result = zif_gtt_ef_constants=>cs_condition-false.
 
     IF zcl_gtt_mia_sh_tools=>is_appropriate_type( ir_vttk = is_app_object-maintabref ) = abap_true AND
-       zcl_gtt_mia_sh_tools=>is_delivery_assigned( ir_vttp = lr_vttp ) = abap_true AND
+      " zcl_gtt_mia_sh_tools=>is_delivery_assigned( ir_vttp = lr_vttp ) = abap_true AND
        is_object_changed( is_app_object = is_app_object ) = abap_true.
 
       CASE is_app_object-update_indicator.
@@ -610,7 +657,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ZIF_GTT_TP_READER~GET_DATA.
+  METHOD zif_gtt_tp_reader~get_data.
 
     FIELD-SYMBOLS: <ls_header>  TYPE ts_sh_header.
 
@@ -634,6 +681,9 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
         ir_vttp   = lr_vttp
       CHANGING
         cs_header = <ls_header> ).
+    IF <ls_header>-shpdoc_ref_val IS INITIAL.
+      APPEND '' TO <ls_header>-shpdoc_ref_val.
+    ENDIF.
 
     fill_header_from_vtts(
       EXPORTING
@@ -678,6 +728,9 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
         ir_vttp   = lo_sh_data->get_vttp( )
       CHANGING
         cs_header = <ls_header> ).
+    IF <ls_header>-shpdoc_ref_val IS INITIAL.
+      APPEND '' TO <ls_header>-shpdoc_ref_val.
+    ENDIF.
 
     fill_header_from_vtts(
       EXPORTING

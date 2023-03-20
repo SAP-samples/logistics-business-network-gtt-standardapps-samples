@@ -321,7 +321,11 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
         FOR ALL ENTRIES IN is_ship-likp
         WHERE vbeln = is_ship-likp-vbeln.
 
-        IF zcl_gtt_mia_dl_tools=>is_appropriate_dl_item( ir_struct = REF #( ls_lips ) ) = abap_true.
+        READ TABLE is_ship-likp INTO DATA(ls_likp) WITH KEY vbeln = ls_lips-vbeln.
+        IF sy-subrc <> 0.
+          CONTINUE.
+        ENDIF.
+        IF zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = REF #( ls_likp ) ir_lips = REF #( ls_lips ) ) = abap_true.
           INSERT ls_lips INTO TABLE et_lips.
         ENDIF.
       ENDSELECT.
@@ -382,8 +386,8 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
               WHERE vbeln = <ls_vbfas>-vbelv.
 
             IF sy-subrc = 0 AND
-               zcl_gtt_mia_dl_tools=>is_appropriate_dl_type(
-                 ir_struct = REF #( ls_likp ) ) = abap_true.
+               zcl_gtt_tools=>is_appropriate_dl_type(
+                 ir_likp = REF #( ls_likp ) ) = abap_true.
 
               ls_vbfa       = CORRESPONDING #( <ls_vbfas> ).
               ls_vbfa-tknum = <ls_likp_dlt>-tknum.
@@ -422,8 +426,8 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
           WHERE vbeln = <ls_vttp_dlt>-vbeln.
 
         IF sy-subrc = 0 AND
-               zcl_gtt_mia_dl_tools=>is_appropriate_dl_type(
-                 ir_struct = REF #( ls_likp ) ) = abap_true.
+               zcl_gtt_tools=>is_appropriate_dl_type(
+                 ir_likp = REF #( ls_likp ) ) = abap_true.
 
           ls_vbfa-tknum = <ls_vttp_dlt>-tknum.
           ls_vbfa-vbelv = <ls_vttp_dlt>-vbeln.

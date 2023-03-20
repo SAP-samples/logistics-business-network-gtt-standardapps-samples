@@ -10,31 +10,36 @@ public section.
     importing
       !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    TYPES tv_item_num TYPE i .
-
-    TYPES tv_ind_po_itm_del TYPE abap_bool .
-    TYPES tv_ind_po_itm_no TYPE char20 .
-    TYPES tv_ind_po_no TYPE char10 .
-    TYPES:
-      tt_ind_po_itm_del   TYPE STANDARD TABLE OF tv_ind_po_itm_del
+  types TV_ITEM_NUM type I .
+  types TV_IND_PO_ITM_DEL type ABAP_BOOL .
+  types TV_IND_PO_ITM_NO type CHAR20 .
+  types TV_IND_PO_NO type CHAR10 .
+  types TV_IN_DLV_LINE_NO type INT4 .
+  types TV_IN_DLV_NO type VBELN_VL .
+  types:
+    tt_ind_po_itm_del   TYPE STANDARD TABLE OF tv_ind_po_itm_del
                             WITH EMPTY KEY .
-    TYPES:
-      tt_ind_po_itm_no  TYPE STANDARD TABLE OF tv_ind_po_itm_no
+  types:
+    tt_ind_po_itm_no  TYPE STANDARD TABLE OF tv_ind_po_itm_no
                             WITH EMPTY KEY .
-    TYPES:
-      tt_ind_po_no   TYPE STANDARD TABLE OF tv_ind_po_no
+  types:
+    tt_ind_po_no   TYPE STANDARD TABLE OF tv_ind_po_no
                             WITH EMPTY KEY .
-    TYPES:
-
-      tt_item_num TYPE STANDARD TABLE OF tv_item_num WITH EMPTY KEY .
-    TYPES tv_ebelp TYPE char15 .
-    TYPES:
-      tt_ebelp TYPE STANDARD TABLE OF tv_ebelp WITH EMPTY KEY .
-    TYPES:
-      BEGIN OF ts_po_header,
+  types:
+    tt_item_num TYPE STANDARD TABLE OF tv_item_num WITH EMPTY KEY .
+  types TV_EBELP type CHAR15 .
+  types:
+    tt_ebelp TYPE STANDARD TABLE OF tv_ebelp WITH EMPTY KEY .
+  types:
+    tt_in_dlv_line_no TYPE STANDARD TABLE OF TV_IN_DLV_LINE_NO WITH EMPTY KEY .
+  types:
+    tt_in_dlv_no      TYPE STANDARD TABLE OF TV_IN_DLV_NO WITH EMPTY KEY .
+  types:
+    BEGIN OF ts_po_header,
         ebeln           TYPE ekko-ebeln,
+        bsart           TYPE ekko-bsart,
         lifnr           TYPE ekko-lifnr,
         lifnr_lt        TYPE /saptrx/loc_id_type,
         werks           TYPE ekpo-werks,
@@ -56,11 +61,14 @@ public section.
         ind_po_no       TYPE tt_ind_po_no,
         ind_po_itm_no   TYPE tt_ind_po_itm_no,
         ind_po_itm_del  TYPE tt_ind_po_itm_del,
+        in_dlv_line_no  TYPE tt_in_dlv_line_no,
+        in_dlv_no       TYPE tt_in_dlv_no,
       END OF ts_po_header .
 
-    CONSTANTS:
-      BEGIN OF cs_mapping,
+  constants:
+    BEGIN OF cs_mapping,
         ebeln           TYPE /saptrx/paramname VALUE 'YN_PO_NUMBER',
+        bsart           TYPE /saptrx/paramname VALUE 'YN_PO_DOCUMENT_TYPE',
         lifnr           TYPE /saptrx/paramname VALUE 'YN_PO_SUPPLIER_ID',
         lifnr_lt        TYPE /saptrx/paramname VALUE 'YN_PO_SUPPLIER_LOC_TYPE',
         werks           TYPE /saptrx/paramname VALUE 'YN_PO_RECEIVING_LOCATION',
@@ -82,62 +90,72 @@ public section.
         ind_po_no       TYPE /saptrx/paramname VALUE 'YN_PO_IND_PO_NO',
         ind_po_itm_no   TYPE /saptrx/paramname VALUE 'YN_PO_IND_PO_ITEM_NO',
         ind_po_itm_del  TYPE /saptrx/paramname VALUE 'YN_PO_IND_PO_ITEM_DELETED',
+        in_dlv_line_no  TYPE /saptrx/paramname VALUE 'YN_IDLV_LINE_NO',
+        in_dlv_no       TYPE /saptrx/paramname VALUE 'YN_IDLV_NO',
       END OF cs_mapping .
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_ef_parameters .
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
 
-    METHODS is_object_changed
-      IMPORTING
-        !is_app_object   TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_from_ekko_struct
-      IMPORTING
-        !ir_ekko      TYPE REF TO data
-      CHANGING
-        !cs_po_header TYPE ts_po_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_from_ekpo_table
-      IMPORTING
-        !iv_ebeln     TYPE ebeln
-        !ir_ekpo      TYPE REF TO data
-      CHANGING
-        !cs_po_header TYPE ts_po_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_from_eket_table
-      IMPORTING
-        !iv_ebeln     TYPE ebeln
-        !ir_ekpo      TYPE REF TO data
-        !ir_eket      TYPE REF TO data
-      CHANGING
-        !cs_po_header TYPE ts_po_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_location_types
-      CHANGING
-        !cs_po_header TYPE ts_po_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_from_ekko_table
-      IMPORTING
-        !iv_ebeln     TYPE ebeln
-        !ir_ekko      TYPE REF TO data
-      CHANGING
-        !cs_po_header TYPE ts_po_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_supplier_lbn_id
-      CHANGING
-        !cs_po_header TYPE ts_po_header .
-    METHODS fill_header_receiving_address
-      CHANGING
-        !cs_po_header TYPE ts_po_header .
-    METHODS format_to_remove_leading_zero
-      CHANGING
-        !cs_po_header TYPE ts_po_header .
+  methods IS_OBJECT_CHANGED
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_FROM_EKKO_STRUCT
+    importing
+      !IR_EKKO type ref to DATA
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_FROM_EKPO_TABLE
+    importing
+      !IV_EBELN type EBELN
+      !IR_EKKO type ref to DATA
+      !IR_EKPO type ref to DATA
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_FROM_EKET_TABLE
+    importing
+      !IV_EBELN type EBELN
+      !IR_EKPO type ref to DATA
+      !IR_EKET type ref to DATA
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_LOCATION_TYPES
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_FROM_EKKO_TABLE
+    importing
+      !IV_EBELN type EBELN
+      !IR_EKKO type ref to DATA
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_SUPPLIER_LBN_ID
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER .
+  methods FILL_HEADER_RECEIVING_ADDRESS
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER .
+  methods FORMAT_TO_REMOVE_LEADING_ZERO
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER .
+  methods FILL_INBOUND_DLV_TABLE
+    importing
+      !IV_EBELN type EBELN
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -272,7 +290,9 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
           lv_dummy    TYPE char100.
 
     FIELD-SYMBOLS: <lt_ekpo>  TYPE ANY TABLE,
+                   <lt_ekko>  TYPE ANY TABLE,
                    <ls_ekpo>  TYPE any,
+                   <ls_ekko>  TYPE any,
                    <lv_ebeln> TYPE any,
                    <lv_ebelp> TYPE any,
                    <lv_loekz> TYPE any,
@@ -289,10 +309,10 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
            cs_po_header-ind_po_itm_no[],
            cs_po_header-ind_po_itm_del[].
 
-
+    ASSIGN ir_ekko->* TO <lt_ekko>.
     ASSIGN ir_ekpo->* TO <lt_ekpo>.
 
-    IF <lt_ekpo> IS ASSIGNED.
+    IF <lt_ekpo> IS ASSIGNED AND <lt_ekko> IS ASSIGNED.
       LOOP AT <lt_ekpo> ASSIGNING <ls_ekpo>.
         ASSIGN COMPONENT 'EBELN' OF STRUCTURE <ls_ekpo> TO <lv_ebeln>.
         ASSIGN COMPONENT 'EBELP' OF STRUCTURE <ls_ekpo> TO <lv_ebelp>.
@@ -307,8 +327,19 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
            <lv_werks> IS ASSIGNED AND
            <lv_netwr> IS ASSIGNED.
 
-          IF <lv_ebeln>  = iv_ebeln AND
-             zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = REF #( <ls_ekpo> ) ) = abap_true.
+          LOOP AT <lt_ekko> ASSIGNING <ls_ekko>.
+            ASSIGN COMPONENT 'EBELN' OF STRUCTURE <ls_ekko> TO FIELD-SYMBOL(<lv_ekko_ebeln>).
+            IF <lv_ekko_ebeln> IS ASSIGNED.
+              IF <lv_ekko_ebeln> = <lv_ebeln>.
+                EXIT.
+              ELSE.
+                UNASSIGN <ls_ekko>.
+              ENDIF.
+            ENDIF.
+          ENDLOOP.
+
+          IF <lv_ebeln>  = iv_ebeln AND <ls_ekko> IS ASSIGNED AND
+             zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = REF #( <ls_ekko> ) ir_ekpo = REF #( <ls_ekpo> ) ) = abap_true.
 
             " Add PO Item number into result table
             ADD 1 TO lv_item_num.
@@ -481,6 +512,8 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
     fill_header_from_ekpo_table(
       EXPORTING
         iv_ebeln      = <ls_header>-ebeln
+        ir_ekko       = mo_ef_parameters->get_appl_table(
+                          iv_tabledef = zif_gtt_spof_app_constants=>cs_tabledef-po_header_new )
         ir_ekpo       = mo_ef_parameters->get_appl_table(
                           iv_tabledef = zif_gtt_spof_app_constants=>cs_tabledef-po_item_new )
       CHANGING
@@ -506,6 +539,14 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
 
     " Receiving address
     fill_header_receiving_address(
+      CHANGING
+        cs_po_header = <ls_header> ).
+
+    fill_inbound_dlv_table(
+      EXPORTING
+        iv_ebeln      = CONV #( zcl_gtt_tools=>get_field_of_structure(
+                                  ir_struct_data = is_app_object-maintabref
+                                  iv_field_name  = 'EBELN'  ) )
       CHANGING
         cs_po_header = <ls_header> ).
 
@@ -535,6 +576,8 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
     fill_header_from_ekpo_table(
       EXPORTING
         iv_ebeln      = <ls_header>-ebeln
+        ir_ekko       = mo_ef_parameters->get_appl_table(
+                          iv_tabledef = zif_gtt_spof_app_constants=>cs_tabledef-po_header_old )
         ir_ekpo       = mo_ef_parameters->get_appl_table(
                           iv_tabledef = zif_gtt_spof_app_constants=>cs_tabledef-po_item_old )
       CHANGING
@@ -560,6 +603,14 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
 
     " Receiving address
     fill_header_receiving_address(
+      CHANGING
+        cs_po_header = <ls_header> ).
+
+    fill_inbound_dlv_table(
+      EXPORTING
+        iv_ebeln      = CONV #( zcl_gtt_tools=>get_field_of_structure(
+                                  ir_struct_data = is_app_object-maintabref
+                                  iv_field_name  = 'EBELN'  ) )
       CHANGING
         cs_po_header = <ls_header> ).
 
@@ -597,4 +648,32 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
         msrid       = space
       ) ).
   endmethod.
+
+
+  METHOD fill_inbound_dlv_table.
+
+    DATA:
+      lt_vbeln TYPE vbeln_vl_t,
+      lv_count TYPE i.
+
+    zcl_gtt_tools=>get_delivery_by_ref_doc(
+      EXPORTING
+        iv_vgbel = iv_ebeln
+      IMPORTING
+        et_vbeln = lt_vbeln ).
+
+    LOOP AT lt_vbeln INTO DATA(ls_vbeln).
+      lv_count = lv_count + 1.
+      APPEND lv_count TO cs_po_header-in_dlv_line_no.
+
+      SHIFT ls_vbeln LEFT DELETING LEADING '0'.
+      APPEND ls_vbeln TO cs_po_header-in_dlv_no.
+    ENDLOOP.
+
+    IF lt_vbeln IS INITIAL.
+      APPEND '1' TO cs_po_header-in_dlv_line_no.
+      APPEND '' TO cs_po_header-in_dlv_no.
+    ENDIF.
+
+  ENDMETHOD.
 ENDCLASS.

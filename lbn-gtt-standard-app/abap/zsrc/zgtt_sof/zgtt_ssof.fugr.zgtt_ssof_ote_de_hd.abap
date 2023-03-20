@@ -48,7 +48,8 @@ FUNCTION zgtt_ssof_ote_de_hd.
     lv_dlv_datetime TYPE timestamp,
     lv_tmp_datetime TYPE char20,
     lo_gtt_toolkit  TYPE REF TO zcl_gtt_sof_toolkit,
-    lt_relation     TYPE STANDARD TABLE OF gtys_tor_data.
+    lt_relation     TYPE STANDARD TABLE OF gtys_tor_data,
+    lv_kunnr        TYPE likp-kunnr.
 
   FIELD-SYMBOLS:
     <ls_xlikp> TYPE likpvb,
@@ -145,6 +146,13 @@ FUNCTION zgtt_ssof_ote_de_hd.
 *Ship-To Party (LIKP-KUNNR)
     ls_control_data-paramname = gc_cp_yn_de_ship_to.
     ls_control_data-value     = <ls_xlikp>-kunnr.
+    zcl_gtt_tools=>convert_to_external_frmt(
+      EXPORTING
+        iv_input  = ls_control_data-value
+      IMPORTING
+        ev_output = lv_kunnr ).
+    ls_control_data-value = lv_kunnr.
+    CLEAR lv_kunnr.
     APPEND ls_control_data TO e_control_data.
 
 *Document date (LIKP-BLDAT)
@@ -162,15 +170,15 @@ FUNCTION zgtt_ssof_ote_de_hd.
       CLEAR:
         lv_dlv_datetime,
         lv_tmp_datetime.
-      lv_dlv_datetime = |{ <ls_xlikp>-lfdat }{ <ls_xlikp>-lfuhr }|.
+      lv_dlv_datetime = |0{ <ls_xlikp>-lfdat }{ <ls_xlikp>-lfuhr }|.
 
-      zcl_gtt_sof_toolkit=>convert_utc_timestamp(
+      zcl_gtt_tools=>convert_datetime_to_utc(
         EXPORTING
-          iv_timezone  = <ls_xlikp>-tzonrc        " Time Zone
-        CHANGING
-          cv_timestamp = lv_dlv_datetime ).       " Date stored in timestamp
+          iv_datetime     = lv_dlv_datetime
+          iv_timezone     = <ls_xlikp>-tzonrc
+        RECEIVING
+          rv_datetime_utc = lv_tmp_datetime ).
 
-      lv_tmp_datetime        = |0{ lv_dlv_datetime }|.
       ls_control_data-value  = lv_tmp_datetime.
       CONDENSE ls_control_data-value NO-GAPS.
     ELSE.
@@ -322,7 +330,13 @@ FUNCTION zgtt_ssof_ote_de_hd.
 
 *Destination (LIKP-KUNNR)
     ls_control_data-paramname =  gc_cp_yn_de_dest.
-    ls_control_data-value     = <ls_xlikp>-kunnr.
+    zcl_gtt_tools=>convert_to_external_frmt(
+      EXPORTING
+        iv_input  = <ls_xlikp>-kunnr
+      IMPORTING
+        ev_output = lv_kunnr ).
+    ls_control_data-value = lv_kunnr.
+    CLEAR lv_kunnr.
     APPEND ls_control_data TO e_control_data.
 
 *Location Type for Destination (LIKP-KUNNR)

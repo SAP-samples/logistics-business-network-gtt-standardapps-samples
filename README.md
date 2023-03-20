@@ -1,11 +1,13 @@
 # Fulfillment Tracking Apps for SAP Business Network Global Track and Trace 
 
 ## What's New
-### Dec 10th, 2022
-1. Add denominator and numerator fields for the sales order item / outbound delivery item.
-2. Add the configuration table for the outbound delivery type / sales order type.
-3. Support carrier reference document type T67 (Reference Number of Carrier) for the TM scenario.
-4. In the scenario "Maintain Tracked Objects on Freight Order/Freight Booking", if there is multi-layer data from the freight unit to the freight order (example: freight unit -> container unit -> freight order), the relationship between the freight unit and the freight order can still be retrieved.
+### Mar 18th, 2023
+1. SAP Business Network Global Track and Trace now supports the tracking of stock transport orders. 
+2. Add the configuration table for the inbound delivery type and purchase order type.    
+3. Add sales order and purchase order numbers in shipper reference documents of the LE-TRA shipment. 
+4. To keep the unit of measure consistent between the delivery and its freight unit, add the freight unit's base quantity and base unit of measure to inbound and outbound delivery items.
+5. Correct the unit of measure in the inbound delivery header / inbound delivery item / purchase order item / freight unit / freight order.
+6. Remove the leading zero in the ship-to party, sold-to party and material ID of the inbound delivery item / sales order / sales order item / sales order item / outbound delivery header / outbound delivery item. 
 
 For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
 
@@ -28,6 +30,8 @@ Click the link below to find the detailed installation guide. You can also find 
 
 
 ## Known Issues
+You cannot implement SAP Event Management (SAP EM) and sample codes for SAP Business Network Global Track and Trace at the same time, becuase some functions might be missing.
+
 If multiple IDOC payloads are generated at the same time or in a very short period of time in SAP ERP, these payloads might enter the GTT system in disorder. This might cause update errors in some situations.
 
 ## How to Obtain Support

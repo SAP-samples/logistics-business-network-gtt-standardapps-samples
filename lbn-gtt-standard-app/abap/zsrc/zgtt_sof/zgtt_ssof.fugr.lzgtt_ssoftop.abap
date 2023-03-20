@@ -173,6 +173,8 @@ CONSTANTS:
   gc_cp_yn_so_req_dlv_dt         TYPE /saptrx/paramname     VALUE 'YN_SO_REQ_DLV_DT',
   gc_cp_yn_so_denominator_div    TYPE /saptrx/paramname     VALUE 'YN_SO_DENOMINATOR_DIVISOR',
   gc_cp_yn_so_numerator_factor   TYPE /saptrx/paramname     VALUE 'YN_SO_NUMERATOR_FACTOR',
+  gc_cp_yn_odlv_line_no          TYPE /saptrx/paramname     VALUE 'YN_ODLV_LINE_NO',
+  gc_cp_yn_odlv_no               TYPE /saptrx/paramname     VALUE 'YN_ODLV_NO',
   gc_cp_yn_dl_denominator_div    TYPE /saptrx/paramname     VALUE 'YN_DL_DENOMINATOR_DIVISOR',
   gc_cp_yn_dl_numerator_factor   TYPE /saptrx/paramname     VALUE 'YN_DL_NUMERATOR_FACTOR',
   gc_cp_yn_material_no           TYPE /saptrx/paramname     VALUE 'YN_MATERIAL_NO',
@@ -312,7 +314,8 @@ CONSTANTS:
   gc_cp_yn_fu_product            TYPE /saptrx/paramname     VALUE 'YN_DL_FU_PRODUCT',
   gc_cp_yn_fu_product_descr      TYPE /saptrx/paramname     VALUE 'YN_DL_FU_PRODUCT_DESCR',
   gc_cp_yn_fu_no_logsys          TYPE /saptrx/paramname     VALUE 'YN_DL_FU_NO_LOGSYS',
-
+  gc_cp_yn_fu_base_uom_uni       TYPE /saptrx/paramname     VALUE 'YN_FU_BASE_UOM_UNI',
+  gc_cp_yn_fu_base_uom_val       TYPE /saptrx/paramname     VALUE 'YN_FU_BASE_UOM_VAL',
 * Sales Order
   gc_parvw_ag                    TYPE parvw                 VALUE 'AG', " Sold-to Party
   gc_parvw_we                    TYPE parvw                 VALUE 'WE', " Ship-to Party

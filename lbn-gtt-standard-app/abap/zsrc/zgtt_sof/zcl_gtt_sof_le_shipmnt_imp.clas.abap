@@ -82,11 +82,14 @@ METHOD if_ex_badi_le_shipment~before_update.
     lv_rst_id                 TYPE zgtt_rst_id VALUE 'SH_TO_ODLH',
     lv_objtype                TYPE /saptrx/trk_obj_type VALUE 'ESC_DELIV',
     lt_lips                   TYPE STANDARD TABLE OF lips,
+    ls_lips                   TYPE lips,
     lv_milestonenum           TYPE /saptrx/seq_num,
     lv_length                 TYPE i,
     lv_tmp_vbeln              TYPE vbeln_nach,
     lv_appobjid               TYPE /saptrx/aoid,
-    lt_dlv_type               TYPE rseloption.
+    lt_dlv_type               TYPE rseloption,
+    lv_timezone               TYPE timezone,
+    lv_plan_gr                TYPE boolean.
 
 * Check package dependent BADI disabling
   lv_structure_package = '/SAPTRX/SCEM_AI_R3'.
@@ -149,13 +152,15 @@ METHOD if_ex_badi_le_shipment~before_update.
    WHERE rst_id = @lv_rst_id.
 
 * Prepare AOT list
-  SELECT trk_obj_type  AS obj_type
-         aotype        AS aot_type
-    INTO TABLE lt_aotype
-    FROM /saptrx/aotypes
-   WHERE trk_obj_type  = lv_objtype
-     AND aotype       IN lrt_aotype_rst
-     AND torelevant    = abap_true.
+  IF lrt_aotype_rst IS NOT INITIAL.
+    SELECT trk_obj_type  AS obj_type
+           aotype        AS aot_type
+      INTO TABLE lt_aotype
+      FROM /saptrx/aotypes
+     WHERE trk_obj_type  = lv_objtype
+       AND aotype       IN lrt_aotype_rst
+       AND torelevant    = abap_true.
+  ENDIF.
 
   CLEAR lt_dlv_type.
   zcl_gtt_sof_toolkit=>get_delivery_type(
@@ -464,7 +469,9 @@ METHOD if_ex_badi_le_shipment~before_update.
         ls_expeventdata-appobjid      = |{ ls_likp_new-vbeln ALPHA = OUT }|.
         ls_expeventdata-evt_exp_tzone = lv_tzone.
         CONDENSE ls_expeventdata-appobjid NO-GAPS.
-        CLEAR ls_eerel.
+        CLEAR:
+         lv_plan_gr,
+         ls_eerel.
         SELECT SINGLE * INTO ls_eerel FROM zgtt_mia_ee_rel WHERE appobjid = ls_expeventdata-appobjid.
         IF ls_eerel-z_wbsta    = 'X'.
           ls_expeventdata-milestone     = zif_gtt_sof_constants=>cs_milestone-goods_issue.
@@ -479,12 +486,17 @@ METHOD if_ex_badi_le_shipment~before_update.
           ls_expeventdata-locid2 = ''.
           APPEND ls_expeventdata TO lt_exp_events.
           ADD 1 TO lv_milestonenum.
+
+          lv_plan_gr = abap_true.
+
         ENDIF.
 
         LOOP AT lt_dlv_watching_stops INTO ls_dlv_watching_stop WHERE vbeln = ls_likp_new-vbeln.
           READ TABLE lt_stops INTO ls_stop WITH KEY stopid = ls_dlv_watching_stop-stopid
                                                     loccat = ls_dlv_watching_stop-loccat.
-
+          IF ls_stop-loctype = zif_gtt_sof_constants=>cs_loctype-bp.
+            SHIFT ls_stop-locid LEFT DELETING LEADING '0'.
+          ENDIF.
           IF ls_dlv_watching_stop-loccat = zif_gtt_sof_constants=>cs_loccat-departure.
 *           DEPARTURE planned event
             ls_expeventdata-milestone    = zif_gtt_sof_constants=>cs_milestone-departure.
@@ -537,7 +549,7 @@ METHOD if_ex_badi_le_shipment~before_update.
           ls_expeventdata-locid2,
           ls_eerel,
           lv_appobjid.
-        LOOP AT lt_lips INTO DATA(ls_lips) WHERE vbeln = ls_likp_new-vbeln.
+        LOOP AT lt_lips INTO ls_lips WHERE vbeln = ls_likp_new-vbeln.
           CONCATENATE ls_lips-vbeln ls_lips-posnr INTO lv_appobjid.
           SHIFT lv_appobjid LEFT DELETING LEADING '0'.
           SELECT SINGLE * INTO ls_eerel FROM zgtt_mia_ee_rel WHERE appobjid = lv_appobjid.
@@ -563,8 +575,10 @@ METHOD if_ex_badi_le_shipment~before_update.
           ls_expeventdata-loctype,
           ls_expeventdata-locid1,
           ls_expeventdata-locid2.
+        ls_expeventdata-milestonenum  = lv_milestonenum.
         ls_expeventdata-milestone = zif_gtt_sof_constants=>cs_milestone-dlv_hd_completed.
         APPEND ls_expeventdata TO lt_exp_events.
+        ADD 1 TO lv_milestonenum.
 
 *       Add planned delivery event with planned timestamp
         CLEAR:
@@ -574,11 +588,67 @@ METHOD if_ex_badi_le_shipment~before_update.
           ls_expeventdata-loctype,
           ls_expeventdata-locid1,
           ls_expeventdata-locid2.
-
+        ls_expeventdata-milestonenum  = lv_milestonenum.
         ls_expeventdata-milestone        = zif_gtt_sof_constants=>cs_milestone-odlv_planned_dlv.
         ls_expeventdata-evt_exp_datetime = |{ ls_likp_new-lfdat }{ ls_likp_new-lfuhr }|.
         ls_expeventdata-evt_exp_tzone    = ls_likp_new-tzonrc.
         APPEND ls_expeventdata TO lt_exp_events.
+        ADD 1 TO lv_milestonenum.
+
+        IF lv_plan_gr = abap_true.
+*         Goods Receipt without event match key
+*         Trigger Condition: STO outbound delivery item & GM relevant & LE-TRA scenario
+          CLEAR:
+            ls_expeventdata-milestonenum,
+            ls_expeventdata-evt_exp_datetime,
+            ls_expeventdata-evt_exp_tzone,
+            ls_expeventdata-loctype,
+            ls_expeventdata-locid1,
+            ls_expeventdata-locid2.
+          READ TABLE lt_lips INTO ls_lips
+            WITH KEY vbeln = ls_likp_new-vbeln
+                     vgtyp = if_sd_doc_category=>purchase_order.
+          IF sy-subrc = 0.
+            lv_timezone = ls_likp_new-tzonrc.
+            IF lv_timezone IS INITIAL.
+              TRY.
+                  lv_timezone = zcl_gtt_tools=>get_system_time_zone( ).
+                CATCH cx_udm_message.
+              ENDTRY.
+            ENDIF.
+            ls_expeventdata-milestonenum  = lv_milestonenum.
+            ls_expeventdata-milestone = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt.
+            ls_expeventdata-evt_exp_tzone = lv_timezone.
+            ls_expeventdata-evt_exp_datetime = |0{ ls_likp_new-lfdat }{ ls_likp_new-lfuhr }|.
+            APPEND ls_expeventdata TO lt_exp_events.
+            ADD 1 TO lv_milestonenum.
+          ENDIF.
+
+*         Goods Receipt with event match key
+*         Trigger Condition: STO outbound delivery
+          LOOP AT lt_lips INTO ls_lips WHERE vbeln = ls_likp_new-vbeln
+                                         AND vgtyp = if_sd_doc_category=>purchase_order.
+
+            CLEAR:
+              ls_expeventdata-milestonenum,
+              ls_expeventdata-evt_exp_datetime,
+              ls_expeventdata-evt_exp_tzone,
+              ls_expeventdata-loctype,
+              ls_expeventdata-locid1,
+              ls_expeventdata-locid2.
+
+            ls_expeventdata-milestonenum  = lv_milestonenum.
+            ls_expeventdata-milestone = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt.
+            ls_expeventdata-evt_exp_tzone = lv_timezone.
+            ls_expeventdata-evt_exp_datetime = |0{ ls_likp_new-lfdat }{ ls_likp_new-lfuhr }|.
+            ls_expeventdata-locid1 = ls_lips-werks.
+            ls_expeventdata-locid2 = |{ ls_lips-vbeln ALPHA = OUT }{ ls_lips-posnr ALPHA = IN }|.
+            CONDENSE ls_expeventdata-locid2 NO-GAPS.
+            ls_expeventdata-loctype = zif_gtt_ef_constants=>cs_loc_types-plant.
+            APPEND ls_expeventdata TO lt_exp_events.
+            ADD 1 TO lv_milestonenum.
+          ENDLOOP.
+        ENDIF.
 
         READ TABLE lt_exp_events WITH KEY appobjid = |{ ls_likp_new-vbeln ALPHA = OUT }| TRANSPORTING NO FIELDS.
         IF sy-subrc NE 0.

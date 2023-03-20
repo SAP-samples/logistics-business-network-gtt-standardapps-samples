@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_MIA_CTP_DAT_TOR_TO_DLI</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Cross TP data from FU to delivery item</DESCRIPT>
+    <DESCRIPT>Cross TP data from FU to delivery item(obsolete)</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

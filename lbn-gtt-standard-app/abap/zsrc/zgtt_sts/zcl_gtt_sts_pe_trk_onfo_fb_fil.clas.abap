@@ -220,7 +220,7 @@ CLASS ZCL_GTT_STS_PE_TRK_ONFO_FB_FIL IMPLEMENTATION.
         lv_prefix = ls_expeventdata-locid2+0(lv_length).
         lv_suffix = ls_expeventdata-locid2+lv_length(*).
         lv_locid2 = |{ lv_prefix }{ ls_tracked_obj }{ lv_suffix }|.
-        CONDENSE lv_locid2.
+        CONDENSE lv_locid2 NO-GAPS.
 
         APPEND VALUE #(
           appsys           = ls_expeventdata-appsys

@@ -21,6 +21,7 @@ public section.
       CX_UDM_MESSAGE .
   class-methods IS_APPROPRIATE_PO_ITEM
     importing
+      !IR_EKKO type ref to DATA
       !IR_EKPO type ref to DATA
     returning
       value(RV_RESULT) type ABAP_BOOL
@@ -88,20 +89,6 @@ public section.
       !E_ARCHIVED type BOOLE_D
     raising
       CX_UDM_MESSAGE .
-  class-methods IS_APPROPRIATE_DL_ITEM
-    importing
-      !IR_STRUCT type ref to DATA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
-  class-methods IS_APPROPRIATE_DL_TYPE
-    importing
-      !IR_STRUCT type ref to DATA
-    returning
-      value(RV_RESULT) type ABAP_BOOL
-    raising
-      CX_UDM_MESSAGE .
   class-methods GET_TRACKING_ID_DL_ITEM
     importing
       !IR_LIPS type ref to DATA
@@ -123,6 +110,9 @@ public section.
       value(RV_EBELP) type EBELP
     raising
       CX_UDM_MESSAGE .
+  class-methods GET_PO_TYPE
+    returning
+      value(RT_TYPE) type RSELOPTION .
   PROTECTED SECTION.
 private section.
 ENDCLASS.
@@ -284,14 +274,27 @@ CLASS ZCL_GTT_SPOF_PO_TOOLS IMPLEMENTATION.
 
   METHOD is_appropriate_po.
 
-
     FIELD-SYMBOLS: <lt_ekpo>  TYPE ANY TABLE,
                    <ls_ekpo>  TYPE any,
                    <lv_ebeln> TYPE ekpo-ebeln.
 
-    DATA: lv_ebeln TYPE ekko-ebeln.
+    DATA:
+      lv_ebeln TYPE ekko-ebeln,
+      lv_bsart TYPE ekko-bsart.
 
     rv_result = abap_false.
+
+    zcl_gtt_spof_po_tools=>get_po_type(
+      RECEIVING
+        rt_type = DATA(lt_po_type) ).
+
+    CHECK lt_po_type IS NOT INITIAL.
+    lv_bsart = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_ekko
+      iv_field_name  = 'BSART' ).
+    IF lv_bsart NOT IN lt_po_type.
+      RETURN.
+    ENDIF.
 
     lv_ebeln = zcl_gtt_tools=>get_field_of_structure(
       ir_struct_data = ir_ekko
@@ -302,7 +305,7 @@ CLASS ZCL_GTT_SPOF_PO_TOOLS IMPLEMENTATION.
         ASSIGN COMPONENT 'EBELN' OF STRUCTURE <ls_ekpo> TO <lv_ebeln>.
         IF <lv_ebeln> IS ASSIGNED.
           IF <lv_ebeln>  = lv_ebeln AND
-             zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = REF #( <ls_ekpo> ) ) = abap_true.
+             zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = ir_ekko ir_ekpo = REF #( <ls_ekpo> ) ) = abap_true.
             rv_result = abap_true.
             RETURN.
           ENDIF.
@@ -313,15 +316,31 @@ CLASS ZCL_GTT_SPOF_PO_TOOLS IMPLEMENTATION.
       zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
-
   ENDMETHOD.
 
 
   METHOD is_appropriate_po_item.
 
-    DATA(lv_wepos)  = zcl_gtt_tools=>get_field_of_structure(
-                        ir_struct_data = ir_ekpo
-                        iv_field_name  = 'WEPOS' ).
+    DATA:
+      lv_bsart TYPE ekko-bsart.
+
+    rv_result = abap_false.
+
+    zcl_gtt_spof_po_tools=>get_po_type(
+      RECEIVING
+        rt_type = DATA(lt_po_type) ).
+
+    CHECK lt_po_type IS NOT INITIAL.
+    lv_bsart = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_ekko
+      iv_field_name  = 'BSART' ).
+    IF lv_bsart NOT IN lt_po_type.
+      RETURN.
+    ENDIF.
+
+    DATA(lv_wepos) = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = ir_ekpo
+      iv_field_name  = 'WEPOS' ).
 
     rv_result = boolc( lv_wepos = abap_true ).
 
@@ -471,47 +490,26 @@ ENDMETHOD.
   endmethod.
 
 
-  METHOD is_appropriate_dl_item.
-    DATA: it_tvlp  TYPE STANDARD TABLE OF tvlp.
+  METHOD get_po_type.
 
-    DATA(lv_pstyv)  = CONV pstyv_vl( zcl_gtt_tools=>get_field_of_structure(
-                                       ir_struct_data = ir_struct
-                                       iv_field_name  = 'PSTYV' ) ).
+    DATA:
+      lt_potype TYPE TABLE OF zgtt_potype_rst,
+      rs_type   TYPE rsdsselopt.
 
-    CALL FUNCTION 'MCV_TVLP_READ'
-      EXPORTING
-        i_pstyv   = lv_pstyv
-      TABLES
-        t_tvlp    = it_tvlp
-      EXCEPTIONS
-        not_found = 1
-        OTHERS    = 2.
+    CLEAR rt_type.
 
-    IF sy-subrc = 0.
-      rv_result = boolc( it_tvlp[ 1 ]-vbtyp = zif_gtt_spof_app_constants=>cs_vbtyp-delivery AND
-                         it_tvlp[ 1 ]-bwart IS NOT INITIAL ).
-    ELSE.
-      MESSAGE e057(00) WITH lv_pstyv '' '' 'TVLP'
-        INTO DATA(lv_dummy).
-      zcl_gtt_tools=>throw_exception( ).
-    ENDIF.
-  ENDMETHOD.
+    SELECT *
+      INTO TABLE lt_potype
+      FROM zgtt_potype_rst
+     WHERE active = abap_true.
 
-
-  METHOD is_appropriate_dl_type.
-    DATA: ls_tvlk   TYPE tvlk.
-
-    DATA(lv_lfart)  = CONV lfart( zcl_gtt_tools=>get_field_of_structure(
-                                    ir_struct_data = ir_struct
-                                    iv_field_name  = 'LFART' ) ).
-
-    CALL FUNCTION 'CSO_O_DLV_TYPE_GET'
-      EXPORTING
-        pi_dlv_type = lv_lfart
-      IMPORTING
-        pe_tvlk     = ls_tvlk.
-
-    rv_result = boolc( ls_tvlk-vbtyp = zif_gtt_spof_app_constants=>cs_vbtyp-delivery ).
+    LOOP AT lt_potype INTO DATA(ls_potype).
+      rs_type-sign = 'I'.
+      rs_type-option = 'EQ'.
+      rs_type-low = ls_potype-bsart.
+      APPEND rs_type TO rt_type.
+      CLEAR rs_type.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

@@ -128,7 +128,7 @@ CLASS ZCL_GTT_SPOF_AE_FILL_PO_ITM_CF IMPLEMENTATION.
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
     IF is_events-maintabdef = zif_gtt_spof_app_constants=>cs_tabledef-po_item_new AND
-       zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekpo = is_events-maintabref ) = abap_true.
+       zcl_gtt_spof_po_tools=>is_appropriate_po_item( ir_ekko = is_events-mastertabref ir_ekpo = is_events-maintabref ) = abap_true.
 
       CASE is_events-update_indicator.
         WHEN zif_gtt_ef_constants=>cs_change_mode-insert.

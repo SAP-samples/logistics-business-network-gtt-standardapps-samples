@@ -160,11 +160,16 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FO IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD GET_DATA_FROM_ROOT.
+  METHOD get_data_from_root.
 
     FIELD-SYMBOLS:
       <ls_root>     TYPE /scmtms/s_em_bo_tor_root,
       <lt_root_old> TYPE /scmtms/t_em_bo_tor_root.
+
+    DATA:
+      lv_gro_vol_uni TYPE /scmtms/s_em_bo_tor_root-gro_vol_uni,
+      lv_gro_wei_uni TYPE /scmtms/s_em_bo_tor_root-gro_wei_uni,
+      lv_qua_pcs_uni TYPE /scmtms/s_em_bo_tor_root-qua_pcs_uni.
 
     ASSIGN ir_root->* TO <ls_root>.
     IF sy-subrc <> 0.
@@ -187,15 +192,15 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FO IMPLEMENTATION.
 
     MOVE-CORRESPONDING <ls_root> TO cs_fo_header ##ENH_OK.
 
-   TEST-SEAM det_transient_root_fields.
-    /scmtms/cl_tor_helper_root=>det_transient_root_fields(
-      EXPORTING
-        it_key               = VALUE #( ( key = <ls_root>-node_id ) )
-        iv_get_stop_infos    = abap_true
-        iv_get_mainitem_info = abap_true
-        iv_before_image      = lv_before_image
-      IMPORTING
-        et_tor_add_info      = DATA(lt_tor_add_info) ).
+    TEST-SEAM det_transient_root_fields.
+      /scmtms/cl_tor_helper_root=>det_transient_root_fields(
+        EXPORTING
+          it_key               = VALUE #( ( key = <ls_root>-node_id ) )
+          iv_get_stop_infos    = abap_true
+          iv_get_mainitem_info = abap_true
+          iv_before_image      = lv_before_image
+        IMPORTING
+          et_tor_add_info      = DATA(lt_tor_add_info) ).
     END-TEST-SEAM.
     ASSIGN lt_tor_add_info[ 1 ] TO FIELD-SYMBOL(<ls_tor_additional_info>).
     IF sy-subrc = 0.
@@ -204,25 +209,47 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FO IMPLEMENTATION.
 
     cs_fo_header-shipment_type = zif_gtt_sts_constants=>cs_shipment_type-tor.
     TEST-SEAM get_carrier_name.
-    cs_fo_header-tspid = get_carrier_name( iv_tspid = cs_fo_header-tspid
-                                           iv_tsp_scac = <ls_root>-tsp_scac ).
+      cs_fo_header-tspid = get_carrier_name( iv_tspid    = cs_fo_header-tspid
+                                             iv_tsp_scac = <ls_root>-tsp_scac ).
     END-TEST-SEAM.
     IF cs_fo_header-total_distance_km IS NOT INITIAL.
       cs_fo_header-total_distance_km_uom = zif_gtt_sts_constants=>cs_uom-km.
     ENDIF.
 
-   TEST-SEAM motscode.
-    SELECT SINGLE motscode
-      FROM /sapapo/trtype
-      INTO cs_fo_header-mtr
-      WHERE ttype = cs_fo_header-mtr.
-   END-TEST-SEAM.
+    TEST-SEAM motscode.
+      SELECT SINGLE motscode
+        FROM /sapapo/trtype
+        INTO cs_fo_header-mtr
+        WHERE ttype = cs_fo_header-mtr.
+    END-TEST-SEAM.
 
     SHIFT cs_fo_header-mtr    LEFT DELETING LEADING '0'.
     SHIFT cs_fo_header-tor_id LEFT DELETING LEADING '0'.
     cs_fo_header-trmodcod = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = cs_fo_header-trmodcod ).
     cs_fo_header-shipping_type  = <ls_root>-shipping_type.
     cs_fo_header-traffic_direct = <ls_root>-traffic_direct.
+
+    zcl_gtt_tools=>convert_unit_output(
+      EXPORTING
+        iv_input  = cs_fo_header-gro_vol_uni
+      RECEIVING
+        rv_output = lv_gro_vol_uni ).
+
+    zcl_gtt_tools=>convert_unit_output(
+      EXPORTING
+        iv_input  = cs_fo_header-gro_wei_uni
+      RECEIVING
+        rv_output = lv_gro_wei_uni ).
+
+    zcl_gtt_tools=>convert_unit_output(
+      EXPORTING
+        iv_input  = cs_fo_header-qua_pcs_uni
+      RECEIVING
+        rv_output = lv_qua_pcs_uni ).
+
+    cs_fo_header-gro_vol_uni = lv_gro_vol_uni.
+    cs_fo_header-gro_wei_uni = lv_gro_wei_uni.
+    cs_fo_header-qua_pcs_uni = lv_qua_pcs_uni.
 
   ENDMETHOD.
 

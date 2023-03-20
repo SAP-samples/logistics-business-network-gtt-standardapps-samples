@@ -411,7 +411,8 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       lv_product_id           TYPE /scmtms/product_id,
       lv_base_btd_id_conv     TYPE char10,
       lv_base_btditem_id_conv TYPE char6,
-      lv_base_btd_alt_item_id TYPE char16.
+      lv_base_btd_alt_item_id TYPE char16,
+      lv_qua_pcs_uni          TYPE /scmtms/qua_pcs_uni.
 
     FIELD-SYMBOLS:
       <lt_tor_item> TYPE /scmtms/t_em_bo_tor_item,
@@ -485,7 +486,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       IF <ls_tor_item>-base_btd_tco     = cs_base_btd_tco_inb_dlv  AND
          <ls_tor_item>-base_btditem_tco = cs_base_btd_tco_delivery_item.
         APPEND lv_base_btd_alt_item_id TO cs_freight_unit-dlv_item_inb_alt_id.
-        APPEND <ls_tor_item>-base_btd_logsys to cs_freight_unit-dlv_item_inb_logsys.
+        APPEND <ls_tor_item>-base_btd_logsys TO cs_freight_unit-dlv_item_inb_logsys.
       ELSE.
         APPEND '' TO cs_freight_unit-dlv_item_inb_alt_id.
       ENDIF.
@@ -493,13 +494,18 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       IF <ls_tor_item>-base_btd_tco     = cs_base_btd_tco_outb_dlv AND
          <ls_tor_item>-base_btditem_tco = cs_base_btd_tco_delivery_item.
         APPEND lv_base_btd_alt_item_id TO cs_freight_unit-dlv_item_oub_alt_id.
-        APPEND <ls_tor_item>-base_btd_logsys to cs_freight_unit-dlv_item_oub_logsys.
+        APPEND <ls_tor_item>-base_btd_logsys TO cs_freight_unit-dlv_item_oub_logsys.
       ELSE.
         APPEND '' TO cs_freight_unit-dlv_item_oub_alt_id.
       ENDIF.
 
       APPEND <ls_tor_item>-qua_pcs_val TO cs_freight_unit-itm_qua_pcs_val.
-      APPEND <ls_tor_item>-qua_pcs_uni TO cs_freight_unit-itm_qua_pcs_uni.
+      zcl_gtt_tools=>convert_unit_output(
+        EXPORTING
+          iv_input  = <ls_tor_item>-qua_pcs_uni
+        RECEIVING
+          rv_output = lv_qua_pcs_uni ).
+      APPEND lv_qua_pcs_uni TO cs_freight_unit-itm_qua_pcs_uni.
       APPEND <ls_tor_item>-item_descr  TO cs_freight_unit-product_txt.
 
       CALL FUNCTION 'CONVERSION_EXIT_MATN1_OUTPUT'
@@ -508,7 +514,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
         IMPORTING
           output = lv_product_id.
       APPEND lv_product_id TO cs_freight_unit-product_id.
-
+      CLEAR lv_qua_pcs_uni.
     ENDLOOP.
 
   ENDMETHOD.

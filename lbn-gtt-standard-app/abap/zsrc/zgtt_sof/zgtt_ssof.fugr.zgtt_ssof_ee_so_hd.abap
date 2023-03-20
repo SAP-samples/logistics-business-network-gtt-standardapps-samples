@@ -1,4 +1,4 @@
-FUNCTION ZGTT_SSOF_EE_SO_HD.
+FUNCTION zgtt_ssof_ee_so_hd.
 *"----------------------------------------------------------------------
 *"*"Local Interface:
 *"  IMPORTING
@@ -76,15 +76,11 @@ FUNCTION ZGTT_SSOF_EE_SO_HD.
       lv_exp_datetime.
     ls_expeventdata-milestone = zif_gtt_sof_constants=>cs_milestone-so_planned_dlv.
     lv_exp_datetime = |0{ <ls_xvbak>-vdatu }{ lv_time }|.
-
-    zcl_gtt_sof_toolkit=>convert_utc_timestamp(
-      EXPORTING
-        iv_timezone  = sy-zonlo                 " Time Zone
-      CHANGING
-        cv_timestamp = lv_exp_datetime ).       " Date stored in timestamp
-
-    ls_expeventdata-evt_exp_datetime = |0{ lv_exp_datetime }|.
-    ls_expeventdata-evt_exp_tzone = sy-zonlo.
+    ls_expeventdata-evt_exp_datetime = lv_exp_datetime.
+    TRY.
+        ls_expeventdata-evt_exp_tzone = zcl_gtt_tools=>get_system_time_zone( ).
+      CATCH cx_udm_message.
+    ENDTRY.
     APPEND ls_expeventdata TO e_expeventdata.
 
     READ TABLE e_expeventdata WITH KEY appobjid = ls_app_objects-appobjid TRANSPORTING NO FIELDS.
