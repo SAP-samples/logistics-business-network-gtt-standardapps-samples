@@ -98,6 +98,13 @@ public section.
   class-methods GET_SO_TYPE
     returning
       value(RT_TYPE) type RSELOPTION .
+  class-methods CHECK_LOCATION_ADDRESS
+    importing
+      !IT_VBPA type VBPAVB_TAB
+      !IV_VBELN type VBELN_VA
+      !IV_HEADER_CHK type BOOLE_D default 'X'
+    exporting
+      !EV_RELEVANCE type BOOLE_D .
 protected section.
 
   class-data GO_ME type ref to ZCL_GTT_SOF_TOOLKIT .
@@ -419,6 +426,80 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
       rs_type-low = ls_sotype-auart.
       APPEND rs_type TO rt_type.
       CLEAR rs_type.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD check_location_address.
+
+    DATA:
+      ls_loc_addr_old  TYPE addr1_data,
+      lv_loc_email_old TYPE ad_smtpadr,
+      lv_loc_tel_old   TYPE char50,
+      ls_loc_addr_new  TYPE addr1_data,
+      lv_loc_email_new TYPE ad_smtpadr,
+      lv_loc_tel_new   TYPE char50,
+      ls_vbpa          TYPE vbpavb,
+      lt_vbpa          TYPE vbpavb_tab.
+
+    CLEAR ev_relevance.
+
+    IF iv_header_chk = abap_true.
+      LOOP AT it_vbpa INTO ls_vbpa
+        WHERE vbeln = iv_vbeln
+          AND posnr IS INITIAL
+          AND ( parvw = if_sd_partner=>co_partner_function_code-ship_to_party
+           OR  parvw = if_sd_partner=>co_partner_function_code-sold_to_party ).
+        APPEND ls_vbpa TO lt_vbpa.
+        CLEAR ls_vbpa.
+      ENDLOOP.
+    ELSE.
+      LOOP AT it_vbpa INTO ls_vbpa
+        WHERE vbeln = iv_vbeln
+          AND posnr IS INITIAL
+          AND parvw = if_sd_partner=>co_partner_function_code-ship_to_party.
+        APPEND ls_vbpa TO lt_vbpa.
+        CLEAR ls_vbpa.
+      ENDLOOP.
+    ENDIF.
+
+    LOOP AT lt_vbpa INTO ls_vbpa.
+
+      IF ls_vbpa-adrnr CN '0 ' AND ls_vbpa-adrda CA zif_gtt_ef_constants=>vbpa_addr_ind_man_all.
+
+        zcl_gtt_tools=>get_address_from_db(
+          EXPORTING
+            iv_addrnumber = ls_vbpa-adrnr
+          IMPORTING
+            es_addr       = ls_loc_addr_old
+            ev_email      = lv_loc_email_old
+            ev_telephone  = lv_loc_tel_old ).
+
+        zcl_gtt_tools=>get_address_from_memory(
+          EXPORTING
+            iv_addrnumber = ls_vbpa-adrnr
+          IMPORTING
+            es_addr       = ls_loc_addr_new
+            ev_email      = lv_loc_email_new
+            ev_telephone  = lv_loc_tel_new ).
+
+        IF ( ls_loc_addr_old <> ls_loc_addr_new )
+          OR ( lv_loc_email_old <> lv_loc_email_new )
+          OR ( lv_loc_tel_old <> lv_loc_tel_new ).
+          ev_relevance = abap_true.
+          EXIT.
+        ENDIF.
+      ENDIF.
+
+      CLEAR:
+        ls_loc_addr_old,
+        lv_loc_email_old,
+        lv_loc_tel_old,
+        ls_loc_addr_new,
+        lv_loc_email_new,
+        lv_loc_tel_new,
+        ls_vbpa.
     ENDLOOP.
 
   ENDMETHOD.

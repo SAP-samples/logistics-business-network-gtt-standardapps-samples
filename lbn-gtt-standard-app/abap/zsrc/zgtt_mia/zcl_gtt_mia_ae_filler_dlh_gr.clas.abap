@@ -712,7 +712,8 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
       lt_lips        TYPE tt_lips,
       lv_dlvittrxcod TYPE /saptrx/trxcod,
       lt_likp        TYPE tab_likp,
-      ls_likp        TYPE likp.
+      ls_likp        TYPE likp,
+      lv_locid       TYPE /saptrx/loc_id_1.
 
     DATA(lr_md_pos) = mo_ae_parameters->get_appl_table(
       iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-md_material_segment ).
@@ -795,16 +796,27 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
         param_value = zcl_gtt_tools=>get_pretty_value( iv_value = lv_quantity )
       ) ).
 
+      IF ls_likp-vbtyp = if_sd_doc_category=>delivery_shipping_notif. "Inbound delivery
+        lv_locid = <ls_lips>-werks.
+      ELSEIF ls_likp-vbtyp = if_sd_doc_category=>delivery.            "Outbound delivery
+        zcl_gtt_tools=>get_location_id(
+          EXPORTING
+            iv_vgbel  = <ls_lips>-vgbel
+            iv_vgpos  = <ls_lips>-vgpos
+          IMPORTING
+            ev_locid1 = lv_locid ).
+      ENDIF.
       ct_tracklocation  = VALUE #( BASE ct_tracklocation (
         evtcnt      = lv_evtcnt
+        loccod      = zif_gtt_ef_constants=>cs_loc_types-plant
         locid1  = zcl_gtt_tools=>get_pretty_location_id(
-                              iv_locid   = <ls_lips>-werks
+                              iv_locid   = lv_locid
                               iv_loctype = zif_gtt_ef_constants=>cs_loc_types-plant )
         locid2 = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
                         ir_lips = NEW lips( vbeln = <ls_lips>-vbeln posnr = <ls_lips>-posnr  ) )
       ) ).
 
-
+      CLEAR lv_locid.
     ENDLOOP.
 
 

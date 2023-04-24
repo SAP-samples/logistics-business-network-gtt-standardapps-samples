@@ -1,20 +1,41 @@
-CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh DEFINITION
-  PUBLIC
-  INHERITING FROM zcl_gtt_ctp_snd
-  CREATE PRIVATE .
+class ZCL_GTT_MIA_CTP_SND_SH_TO_DLH definition
+  public
+  inheriting from ZCL_GTT_CTP_SND
+  create private .
 
-  PUBLIC SECTION.
+public section.
 
-    CLASS-METHODS get_instance
-      RETURNING
-        VALUE(ro_sender) TYPE REF TO zcl_gtt_mia_ctp_snd_sh_to_dlh
-      RAISING
-        cx_udm_message .
-    METHODS prepare_idoc_data
-      IMPORTING
-        !io_ship_data TYPE REF TO zcl_gtt_mia_ctp_shipment_data
-      RAISING
-        cx_udm_message .
+  types TT_TKNUM TYPE TABLE OF vttk-tknum.
+  types:
+    BEGIN OF ts_loc_info,
+      loctype      TYPE char20,
+      locid        TYPE char10,
+      locaddrnum   TYPE adrnr,
+      locindicator TYPE char1,
+    END OF ts_loc_info .
+  types:
+    tt_loc_info type STANDARD TABLE OF ts_loc_info .
+  types:
+    BEGIN OF ts_address_info,
+      locid     type char20,
+      loctype   type char30,
+      addr1     TYPE addr1_data,
+      email     TYPE ad_smtpadr,
+      telephone TYPE char50,
+    END OF ts_address_info .
+  types:
+    tt_address_info type TABLE OF ts_address_info .
+
+  class-methods GET_INSTANCE
+    returning
+      value(RO_SENDER) type ref to ZCL_GTT_MIA_CTP_SND_SH_TO_DLH
+    raising
+      CX_UDM_MESSAGE .
+  methods PREPARE_IDOC_DATA
+    importing
+      !IO_SHIP_DATA type ref to ZCL_GTT_MIA_CTP_SHIPMENT_DATA
+    raising
+      CX_UDM_MESSAGE .
   PROTECTED SECTION.
 
     METHODS get_aotype_restriction_id
@@ -23,10 +44,10 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh DEFINITION
         REDEFINITION .
     METHODS get_evtype_restriction_id
         REDEFINITION .
-  PRIVATE SECTION.
+private section.
 
-    CONSTANTS:
-      BEGIN OF cs_mapping,
+  constants:
+    BEGIN OF cs_mapping,
         vbeln                 TYPE /saptrx/paramname VALUE 'YN_DLV_NO',
         shp_count             TYPE /saptrx/paramname VALUE 'YN_SHP_LINE_COUNT',
         shp_tknum             TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
@@ -35,74 +56,128 @@ CLASS zcl_gtt_mia_ctp_snd_sh_to_dlh DEFINITION
         shp_lstop_rec_loc     TYPE /saptrx/paramname VALUE 'YN_SHP_LAST_STOP_REC_LOC',
         shp_lstop_rec_loc_typ TYPE /saptrx/paramname VALUE 'YN_SHP_LAST_STOP_REC_LOC_TYP',
         pod_relevant          TYPE /saptrx/paramname VALUE 'YN_DL_POD_RELEVANT',
+        otl_locid             TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCID',
+        otl_loctype           TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCTYPE',
+        otl_timezone          TYPE /saptrx/paramname VALUE 'GTT_OTL_TIMEZONE',
+        otl_longitude         TYPE /saptrx/paramname VALUE 'GTT_OTL_LONGITUDE',
+        otl_latitude          TYPE /saptrx/paramname VALUE 'GTT_OTL_LATITUDE',
+        otl_unlocode          TYPE /saptrx/paramname VALUE 'GTT_OTL_UNLOCODE',
+        otl_iata_code         TYPE /saptrx/paramname VALUE 'GTT_OTL_IATA_CODE',
+        otl_description       TYPE /saptrx/paramname VALUE 'GTT_OTL_DESCRIPTION',
+        otl_country_code      TYPE /saptrx/paramname VALUE 'GTT_OTL_COUNTRY_CODE',
+        otl_city_name         TYPE /saptrx/paramname VALUE 'GTT_OTL_CITY_NAME',
+        otl_region_code       TYPE /saptrx/paramname VALUE 'GTT_OTL_REGION_CODE',
+        otl_house_number      TYPE /saptrx/paramname VALUE 'GTT_OTL_HOUSE_NUMBER',
+        otl_street_name       TYPE /saptrx/paramname VALUE 'GTT_OTL_STREET_NAME',
+        otl_postal_code       TYPE /saptrx/paramname VALUE 'GTT_OTL_POSTAL_CODE',
+        otl_email_address     TYPE /saptrx/paramname VALUE 'GTT_OTL_EMAIL_ADDRESS',
+        otl_phone_number      TYPE /saptrx/paramname VALUE 'GTT_OTL_PHONE_NUMBER',
       END OF cs_mapping .
 
-    METHODS fill_idoc_appobj_ctabs
-      IMPORTING
-        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
-        !is_likp      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
-      CHANGING
-        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
-      RAISING
-        cx_udm_message .
-    METHODS fill_idoc_control_data
-      IMPORTING
-        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
-        !is_ship      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
-        !is_likp      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
-        !is_stops     TYPE zcl_gtt_mia_ctp_shipment_data=>ts_stops
-      CHANGING
-        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
-      RAISING
-        cx_udm_message .
-    METHODS fill_idoc_exp_event
-      IMPORTING
-        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
-        !is_ship      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
-        !is_likp      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
-        !is_stops     TYPE zcl_gtt_mia_ctp_shipment_data=>ts_stops
-      CHANGING
-        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
-      RAISING
-        cx_udm_message .
-    METHODS fill_idoc_tracking_id
-      IMPORTING
-        !is_aotype    TYPE zif_gtt_ctp_types=>ts_aotype
-        !is_ship      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
-        !is_likp      TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
-      CHANGING
-        !cs_idoc_data TYPE zif_gtt_ctp_types=>ts_idoc_data
-      RAISING
-        cx_udm_message .
-    METHODS get_shipment_stop
-      IMPORTING
-        !is_stops            TYPE zcl_gtt_mia_ctp_shipment_data=>ts_stops
-        !is_vbfa             TYPE zcl_gtt_mia_ctp_shipment_data=>ts_vbfaex
-        !iv_arrival          TYPE abap_bool
-      EXPORTING
-        !es_stop             TYPE zif_gtt_mia_app_types=>ts_stops
-      RETURNING
-        VALUE(rv_stopid_txt) TYPE zif_gtt_mia_app_types=>tv_stopid
-      RAISING
-        cx_udm_message .
-    METHODS is_pod_relevant_delivery
-      IMPORTING
-        !is_ship         TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
-        !is_likp         TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
-        !it_stops        TYPE zif_gtt_mia_app_types=>tt_stops
-      RETURNING
-        VALUE(rv_result) TYPE zif_gtt_ef_types=>tv_condition
-      RAISING
-        cx_udm_message .
-    METHODS is_pod_relevant_stop
-      IMPORTING
-        !is_ship         TYPE zcl_gtt_mia_ctp_shipment_data=>ts_shipment_merge
-        !is_likp         TYPE zcl_gtt_mia_ctp_shipment_data=>ts_likpex
-        !is_stops        TYPE zif_gtt_mia_app_types=>ts_stops
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  methods FILL_IDOC_APPOBJ_CTABS
+    importing
+      !IS_AOTYPE type ZIF_GTT_CTP_TYPES=>TS_AOTYPE
+      !IS_LIKP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_LIKPEX
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_CTP_TYPES=>TS_IDOC_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_IDOC_CONTROL_DATA
+    importing
+      !IS_AOTYPE type ZIF_GTT_CTP_TYPES=>TS_AOTYPE
+      !IS_SHIP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_SHIPMENT_MERGE
+      !IS_LIKP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_LIKPEX
+      !IS_STOPS type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_STOPS
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_CTP_TYPES=>TS_IDOC_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_IDOC_EXP_EVENT
+    importing
+      !IS_AOTYPE type ZIF_GTT_CTP_TYPES=>TS_AOTYPE
+      !IS_SHIP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_SHIPMENT_MERGE
+      !IS_LIKP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_LIKPEX
+      !IS_STOPS type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_STOPS
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_CTP_TYPES=>TS_IDOC_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_IDOC_TRACKING_ID
+    importing
+      !IS_AOTYPE type ZIF_GTT_CTP_TYPES=>TS_AOTYPE
+      !IS_SHIP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_SHIPMENT_MERGE
+      !IS_LIKP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_LIKPEX
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_CTP_TYPES=>TS_IDOC_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_SHIPMENT_STOP
+    importing
+      !IS_STOPS type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_STOPS
+      !IS_VBFA type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_VBFAEX
+      !IV_ARRIVAL type ABAP_BOOL
+    exporting
+      !ES_STOP type ZIF_GTT_MIA_APP_TYPES=>TS_STOPS
+    returning
+      value(RV_STOPID_TXT) type ZIF_GTT_MIA_APP_TYPES=>TV_STOPID
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_POD_RELEVANT_DELIVERY
+    importing
+      !IS_SHIP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_SHIPMENT_MERGE
+      !IS_LIKP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_LIKPEX
+      !IT_STOPS type ZIF_GTT_MIA_APP_TYPES=>TT_STOPS
+    returning
+      value(RV_RESULT) type ZIF_GTT_EF_TYPES=>TV_CONDITION
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_POD_RELEVANT_STOP
+    importing
+      !IS_SHIP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_SHIPMENT_MERGE
+      !IS_LIKP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_LIKPEX
+      !IS_STOPS type ZIF_GTT_MIA_APP_TYPES=>TS_STOPS
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_ONE_TIME_LOCATION
+    importing
+      !IV_VBELN type VBELN_VL
+      !IT_TKNUM type TT_TKNUM
+      !IT_VTTK type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TT_VTTKVB_SRT
+      !IT_VTTS type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TT_VTTSVB_SRT
+    exporting
+      !ET_CONTROL_DATA type /SAPTRX/BAPI_TRK_CONTROL_TAB .
+  methods PREPARE_CURRENT_LOC_DATA
+    importing
+      !IT_TKNUM type TT_TKNUM
+      !IT_VTTKVB type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TT_VTTKVB_SRT
+      !IT_VTTSVB type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TT_VTTSVB_SRT
+    exporting
+      !ET_ADDRESS_INFO type TT_ADDRESS_INFO .
+  methods PREPARE_RELEVANT_LOC_DATA
+    importing
+      !IT_TKNUM type TT_TKNUM
+      !IT_VTTKVB type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TT_VTTKVB_SRT
+    exporting
+      !ET_ADDRESS_INFO type TT_ADDRESS_INFO .
+  methods PREPARE_DELIVERY_LOC_DATA
+    importing
+      !IV_VBELN type VBELN_VL
+    exporting
+      !ET_ADDRESS_INFO type TT_ADDRESS_INFO .
+  methods MERGE_LOCATION_DATA
+    importing
+      !IT_ADDR_INFO_CUR type TT_ADDRESS_INFO
+      !IT_ADDR_INFO_REL type TT_ADDRESS_INFO
+      !IT_ADDR_INFO_DLV type TT_ADDRESS_INFO
+    exporting
+      !ET_ADDR_INFO_ALL type TT_ADDRESS_INFO .
+  methods PREPARE_CONTROL_DATA
+    importing
+      !IT_ADDR_INFO type TT_ADDRESS_INFO
+    exporting
+      !ET_CONTROL_DATA type /SAPTRX/BAPI_TRK_CONTROL_TAB .
 ENDCLASS.
 
 
@@ -125,7 +200,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
   METHOD fill_idoc_control_data.
 
     DATA: lt_control TYPE /saptrx/bapi_trk_control_tab,
-          lv_count   TYPE i VALUE 0.
+          lv_count   TYPE i VALUE 0,
+          lt_tknum   TYPE tt_tknum.
 
     " DLV Head data (obligatory)
     lt_control  = VALUE #(
@@ -213,6 +289,8 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
           value      = ls_lstop-loctype
         )
       ).
+*     Note down the shipment number
+      APPEND <ls_vbfa>-vbeln TO lt_tknum.
     ENDLOOP.
 
     IF sy-subrc <> 0.
@@ -222,6 +300,18 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
           value      = ''
       ) ).
     ENDIF.
+
+*   Support one time location
+    fill_one_time_location(
+      EXPORTING
+        iv_vbeln        = is_likp-vbeln
+        it_tknum        = lt_tknum
+        it_vttk         = is_ship-vttk
+        it_vtts         = is_ship-vtts
+      IMPORTING
+        et_control_data = DATA(lt_location_data) ).
+    APPEND LINES OF lt_location_data TO lt_control.
+    CLEAR lt_location_data.
 
     " fill technical data into all control data records
     LOOP AT lt_control ASSIGNING FIELD-SYMBOL(<ls_control>).
@@ -636,6 +726,382 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
          ls_idoc_data-control[] IS NOT INITIAL AND
          ls_idoc_data-tracking_id[] IS NOT INITIAL.
         APPEND ls_idoc_data TO mt_idoc_data.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD fill_one_time_location.
+
+    DATA:
+      lt_addr_info_rel TYPE tt_address_info,
+      lt_addr_info_cur TYPE tt_address_info,
+      lt_addr_info_dlv TYPE tt_address_info,
+      lt_addr_info_all TYPE tt_address_info.
+
+    CLEAR et_control_data.
+
+*   Step 1. Get current procced shipment location information
+    prepare_current_loc_data(
+      EXPORTING
+        it_tknum        = it_tknum
+        it_vttkvb       = it_vttk
+        it_vttsvb       = it_vtts
+      IMPORTING
+        et_address_info = lt_addr_info_cur ).
+
+*   Step 2. Get relevant shipment location information
+    prepare_relevant_loc_data(
+      EXPORTING
+        it_tknum        = it_tknum
+        it_vttkvb       = it_vttk
+      IMPORTING
+        et_address_info = lt_addr_info_rel ).
+
+*   Step 3. Get delivery location information
+    prepare_delivery_loc_data(
+      EXPORTING
+        iv_vbeln        = iv_vbeln
+      IMPORTING
+        et_address_info = lt_addr_info_dlv ).
+
+*   Step 4. Merge the location information
+    merge_location_data(
+      EXPORTING
+        it_addr_info_cur = lt_addr_info_cur
+        it_addr_info_rel = lt_addr_info_rel
+        it_addr_info_dlv = lt_addr_info_dlv
+      IMPORTING
+        et_addr_info_all = lt_addr_info_all ).
+
+*   Step 5. Generate the location control data
+    prepare_control_data(
+      EXPORTING
+        it_addr_info    = lt_addr_info_all
+      IMPORTING
+        et_control_data = et_control_data ).
+
+  ENDMETHOD.
+
+
+  METHOD merge_location_data.
+
+    DATA:
+      lt_addr_info_cur TYPE tt_address_info,
+      lt_addr_info_rel TYPE tt_address_info,
+      lt_addr_info_dlv TYPE tt_address_info.
+
+    CLEAR et_addr_info_all.
+
+    lt_addr_info_cur = it_addr_info_cur.
+    lt_addr_info_rel = it_addr_info_rel.
+    lt_addr_info_dlv = it_addr_info_dlv.
+
+    LOOP AT lt_addr_info_cur INTO DATA(ls_loc_info_curr).
+      READ TABLE lt_addr_info_rel INTO DATA(ls_addr_info_rel)
+        WITH KEY locid   = ls_loc_info_curr-locid
+                 loctype = ls_loc_info_curr-loctype.
+      IF sy-subrc = 0.
+        DELETE lt_addr_info_rel WHERE locid   = ls_loc_info_curr-locid
+                                  AND loctype = ls_loc_info_curr-loctype.
+      ENDIF.
+
+      READ TABLE lt_addr_info_dlv INTO DATA(ls_addr_info_dlv)
+        WITH KEY locid   = ls_loc_info_curr-locid
+                 loctype = ls_loc_info_curr-loctype.
+      IF sy-subrc = 0.
+        DELETE lt_addr_info_dlv WHERE locid   = ls_loc_info_curr-locid
+                                  AND loctype = ls_loc_info_curr-loctype.
+      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_addr_info_rel INTO ls_addr_info_rel.
+      CLEAR ls_addr_info_dlv.
+      READ TABLE lt_addr_info_dlv INTO ls_addr_info_dlv
+        WITH KEY locid   = ls_addr_info_rel-locid
+                 loctype = ls_addr_info_rel-loctype.
+      IF sy-subrc = 0.
+        DELETE lt_addr_info_dlv WHERE locid   = ls_addr_info_rel-locid
+                                  AND loctype = ls_addr_info_rel-loctype.
+      ENDIF.
+    ENDLOOP.
+
+    APPEND LINES OF lt_addr_info_cur TO et_addr_info_all.
+    APPEND LINES OF lt_addr_info_rel TO et_addr_info_all.
+    APPEND LINES OF lt_addr_info_dlv TO et_addr_info_all.
+
+  ENDMETHOD.
+
+
+  METHOD prepare_control_data.
+
+    DATA:
+      lv_paramindex   TYPE /saptrx/indexcounter,
+      ls_control_data TYPE /saptrx/control_data.
+
+    CLEAR:et_control_data.
+
+    LOOP AT it_addr_info INTO DATA(ls_addr_info).
+
+      lv_paramindex = lv_paramindex + 1.
+
+*     Location ID
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_locid.
+      ls_control_data-value = ls_addr_info-locid.
+      IF ls_addr_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+        ls_control_data-value = |{ ls_addr_info-locid ALPHA = OUT }|.
+      ENDIF.
+      APPEND ls_control_data TO et_control_data.
+
+*     Location Type
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_loctype.
+      ls_control_data-value = ls_addr_info-loctype.
+      APPEND ls_control_data TO et_control_data.
+
+*     Time Zone
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_timezone.
+      ls_control_data-value = ls_addr_info-addr1-time_zone.
+      APPEND ls_control_data TO et_control_data.
+
+*     Description
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_description.
+      ls_control_data-value = ls_addr_info-addr1-name1.
+      APPEND ls_control_data TO et_control_data.
+
+*     Country Code
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_country_code.
+      ls_control_data-value = ls_addr_info-addr1-country.
+      APPEND ls_control_data TO et_control_data.
+
+*     City Name
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_city_name.
+      ls_control_data-value = ls_addr_info-addr1-city1.
+      APPEND ls_control_data TO et_control_data.
+
+*     Region Code
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_region_code.
+      ls_control_data-value = ls_addr_info-addr1-region.
+      APPEND ls_control_data TO et_control_data.
+
+*     House Number
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_house_number.
+      ls_control_data-value = ls_addr_info-addr1-house_num1.
+      APPEND ls_control_data TO et_control_data.
+
+*     Street Name
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_street_name.
+      ls_control_data-value = ls_addr_info-addr1-street.
+      APPEND ls_control_data TO et_control_data.
+
+*     Postal Code
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_postal_code.
+      ls_control_data-value = ls_addr_info-addr1-post_code1.
+      APPEND ls_control_data TO et_control_data.
+
+*     Email Address
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_email_address.
+      ls_control_data-value = ls_addr_info-email.
+      APPEND ls_control_data TO et_control_data.
+
+*     Phone Number
+      ls_control_data-paramindex = lv_paramindex.
+      ls_control_data-paramname = cs_mapping-otl_phone_number.
+      ls_control_data-value = ls_addr_info-telephone.
+      APPEND ls_control_data TO et_control_data.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD prepare_current_loc_data.
+
+    DATA:
+      lt_loc_info_tmp  TYPE tt_loc_info,
+      lt_loc_info_curr TYPE tt_loc_info,
+      ls_address_info  TYPE ts_address_info,
+      lt_addr_info_cur TYPE tt_address_info,
+      ls_loc_addr      TYPE addr1_data,
+      lv_loc_email     TYPE ad_smtpadr,
+      lv_loc_tel       TYPE char50,
+      lt_vttsvb        TYPE vttsvb_tab.
+
+    CLEAR et_address_info.
+
+    APPEND LINES OF it_vttsvb TO lt_vttsvb.
+
+    LOOP AT it_tknum INTO DATA(ls_tknum).
+      CLEAR:
+        lt_loc_info_tmp.
+      READ TABLE it_vttkvb TRANSPORTING NO FIELDS
+        WITH KEY tknum = ls_tknum.
+      IF sy-subrc = 0.
+*       Current procced shipment
+        zcl_gtt_tools=>get_location_info(
+          EXPORTING
+            iv_tknum    = ls_tknum
+            it_vttsvb   = lt_vttsvb
+          IMPORTING
+            et_loc_info = lt_loc_info_tmp ).
+        APPEND LINES OF lt_loc_info_tmp TO lt_loc_info_curr.
+      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_loc_info_curr INTO DATA(ls_loc_info_curr).
+      CLEAR:
+        ls_loc_addr,
+        lv_loc_email,
+        lv_loc_tel.
+
+      IF ls_loc_info_curr-locaddrnum CN '0 ' AND ls_loc_info_curr-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
+        zcl_gtt_tools=>get_address_from_memory(
+          EXPORTING
+            iv_addrnumber = ls_loc_info_curr-locaddrnum
+          IMPORTING
+            es_addr       = ls_loc_addr
+            ev_email      = lv_loc_email
+            ev_telephone  = lv_loc_tel ).
+
+        ls_address_info-locid = ls_loc_info_curr-locid.
+        ls_address_info-loctype = ls_loc_info_curr-loctype.
+        ls_address_info-addr1 = ls_loc_addr.
+        ls_address_info-email = lv_loc_email.
+        ls_address_info-telephone = lv_loc_tel.
+        APPEND ls_address_info TO et_address_info.
+        CLEAR:
+          ls_address_info.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD prepare_delivery_loc_data.
+
+    DATA:
+      lv_posnr        TYPE vbpa-posnr VALUE '000000',
+      ls_vbpa         TYPE vbpavb,
+      ls_address_info TYPE ts_address_info,
+      ls_loc_addr     TYPE addr1_data,
+      lv_loc_email    TYPE ad_smtpadr,
+      lv_loc_tel      TYPE char50.
+
+    CLEAR: et_address_info.
+
+    CALL FUNCTION 'SD_VBPA_SINGLE_READ'
+      EXPORTING
+        i_vbeln          = iv_vbeln
+        i_posnr          = lv_posnr
+        i_parvw          = zif_gtt_mia_app_constants=>cs_parvw-supplier
+      IMPORTING
+        e_vbpavb         = ls_vbpa
+      EXCEPTIONS
+        record_not_found = 1
+        OTHERS           = 2.
+
+    IF sy-subrc = 0.
+      IF ls_vbpa-adrnr CN '0 ' AND ls_vbpa-adrda CA zif_gtt_ef_constants=>vbpa_addr_ind_man_all.
+        zcl_gtt_tools=>get_address_from_db(
+          EXPORTING
+            iv_addrnumber = ls_vbpa-adrnr
+          IMPORTING
+            es_addr       = ls_loc_addr
+            ev_email      = lv_loc_email
+            ev_telephone  = lv_loc_tel ).
+
+        ls_address_info-locid = ls_vbpa-lifnr.
+        ls_address_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+        ls_address_info-addr1 = ls_loc_addr.
+        ls_address_info-email = lv_loc_email.
+        ls_address_info-telephone = lv_loc_tel.
+        APPEND ls_address_info TO et_address_info.
+        CLEAR:
+          ls_address_info.
+      ENDIF.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD prepare_relevant_loc_data.
+
+    DATA:
+      lt_relevant_shp TYPE tt_tknum,
+      lt_tknum_range  TYPE STANDARD TABLE OF range_c10,
+      lt_vttsvb       TYPE vttsvb_tab,
+      lt_loc_info     TYPE tt_loc_info,
+      ls_address_info TYPE ts_address_info,
+      ls_loc_addr     TYPE addr1_data,
+      lv_loc_email    TYPE ad_smtpadr,
+      lv_loc_tel      TYPE char50.
+
+    CLEAR et_address_info.
+
+    LOOP AT it_tknum INTO DATA(ls_tknum).
+      READ TABLE it_vttkvb TRANSPORTING NO FIELDS
+        WITH KEY tknum = ls_tknum.
+      IF sy-subrc <> 0.
+        APPEND ls_tknum TO lt_relevant_shp.
+      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_relevant_shp INTO ls_tknum.
+      lt_tknum_range = VALUE #( (
+        sign   = 'I'
+        option = 'EQ'
+        low    = ls_tknum ) ).
+    ENDLOOP.
+
+    CHECK lt_tknum_range IS NOT INITIAL.
+    CALL FUNCTION 'ST_STAGES_READ'
+      TABLES
+        i_tknum_range = lt_tknum_range
+        c_xvttsvb     = lt_vttsvb
+      EXCEPTIONS
+        no_shipments  = 1
+        OTHERS        = 2.
+
+    zcl_gtt_tools=>get_location_info(
+      EXPORTING
+        it_vttsvb   = lt_vttsvb
+      IMPORTING
+        et_loc_info = lt_loc_info ).
+
+    LOOP AT lt_loc_info INTO DATA(ls_loc_info).
+      CLEAR:
+        ls_loc_addr,
+        lv_loc_email,
+        lv_loc_tel.
+
+      IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
+        zcl_gtt_tools=>get_address_from_db(
+          EXPORTING
+            iv_addrnumber = ls_loc_info-locaddrnum
+          IMPORTING
+            es_addr       = ls_loc_addr
+            ev_email      = lv_loc_email
+            ev_telephone  = lv_loc_tel ).
+
+        ls_address_info-locid = ls_loc_info-locid.
+        ls_address_info-loctype = ls_loc_info-loctype.
+        ls_address_info-addr1 = ls_loc_addr.
+        ls_address_info-email = lv_loc_email.
+        ls_address_info-telephone = lv_loc_tel.
+        APPEND ls_address_info TO et_address_info.
+        CLEAR:
+          ls_address_info.
       ENDIF.
     ENDLOOP.
 

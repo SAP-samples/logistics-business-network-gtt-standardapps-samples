@@ -16,23 +16,47 @@ public section.
   methods CONSTRUCTOR
     importing
       !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
-  PROTECTED SECTION.
-  PRIVATE SECTION.
+protected section.
 
-    TYPES:
-      tt_trobj_res_id  TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_trobj_res_id WITH EMPTY KEY .
-    TYPES:
-      tt_trobj_res_val TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_trobj_res_val WITH EMPTY KEY .
-    TYPES:
-      tt_resrc_cnt     TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_resrc_cnt WITH EMPTY KEY .
-    TYPES:
-      tt_resrc_tp_id   TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_resrc_tp_id WITH EMPTY KEY .
-    TYPES:
-      tt_crdoc_ref_typ TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_crdoc_ref_typ WITH EMPTY KEY .
-    TYPES:
-      tt_crdoc_ref_val TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_crdoc_ref_val WITH EMPTY KEY .
-    TYPES:
-      BEGIN OF ts_sh_header,
+  types tt_otl_locid TYPE STANDARD TABLE OF vbpa-lifnr WITH EMPTY KEY .
+  types tt_otl_loctype TYPE STANDARD TABLE OF char30 WITH EMPTY KEY .
+  types tt_otl_timezone TYPE STANDARD TABLE OF addr1_data-time_zone WITH EMPTY KEY .
+  types tt_otl_description TYPE STANDARD TABLE OF addr1_data-name1 WITH EMPTY KEY .
+  types tt_otl_country_code TYPE STANDARD TABLE OF addr1_data-country WITH EMPTY KEY .
+  types tt_otl_city_name TYPE STANDARD TABLE OF addr1_data-city1 WITH EMPTY KEY .
+  types tt_otl_region_code TYPE STANDARD TABLE OF addr1_data-region WITH EMPTY KEY .
+  types tt_otl_house_number TYPE STANDARD TABLE OF addr1_data-house_num1 WITH EMPTY KEY .
+  types tt_otl_street_name TYPE STANDARD TABLE OF addr1_data-street WITH EMPTY KEY .
+  types tt_otl_postal_code TYPE STANDARD TABLE OF addr1_data-post_code1 WITH EMPTY KEY .
+  types tt_otl_email_address TYPE STANDARD TABLE OF ad_smtpadr WITH EMPTY KEY .
+  types tt_otl_phone_number TYPE STANDARD TABLE OF char50 WITH EMPTY KEY .
+
+  types:
+    BEGIN OF ts_address_info,
+      locid     type char20,
+      loctype   type char30,
+      addr1     TYPE addr1_data,
+      email     TYPE ad_smtpadr,
+      telephone TYPE char50,
+    END OF ts_address_info .
+  types:
+    tt_address_info type TABLE OF ts_address_info .
+private section.
+
+  types:
+    tt_trobj_res_id  TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_trobj_res_id WITH EMPTY KEY .
+  types:
+    tt_trobj_res_val TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_trobj_res_val WITH EMPTY KEY .
+  types:
+    tt_resrc_cnt     TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_resrc_cnt WITH EMPTY KEY .
+  types:
+    tt_resrc_tp_id   TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_resrc_tp_id WITH EMPTY KEY .
+  types:
+    tt_crdoc_ref_typ TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_crdoc_ref_typ WITH EMPTY KEY .
+  types:
+    tt_crdoc_ref_val TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_crdoc_ref_val WITH EMPTY KEY .
+  types:
+    BEGIN OF ts_sh_header,
         tknum             TYPE vttkvb-tknum,
         bu_id_num         TYPE /saptrx/paramval200,
         cont_dg           TYPE vttkvb-cont_dg,
@@ -63,11 +87,23 @@ public section.
         stpid_locid       TYPE STANDARD TABLE OF zif_gtt_mia_app_types=>tv_locid WITH EMPTY KEY,
         shpdoc_ref_typ    TYPE STANDARD TABLE OF /scmtms/btd_type_code WITH EMPTY KEY,
         shpdoc_ref_val    TYPE STANDARD TABLE OF vbeln WITH EMPTY KEY,
+        otl_locid         TYPE tt_otl_locid,
+        otl_loctype       TYPE tt_otl_loctype,
+        otl_timezone      TYPE tt_otl_timezone,
+        otl_description   TYPE tt_otl_description,
+        otl_country_code  TYPE tt_otl_country_code,
+        otl_city_name     TYPE tt_otl_city_name,
+        otl_region_code   TYPE tt_otl_region_code,
+        otl_house_number  TYPE tt_otl_house_number,
+        otl_street_name   TYPE tt_otl_street_name,
+        otl_postal_code   TYPE tt_otl_postal_code,
+        otl_email_address TYPE tt_otl_email_address,
+        otl_phone_number  TYPE tt_otl_phone_number,
       END OF ts_sh_header .
 
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_ef_parameters .
-    CONSTANTS:
-      BEGIN OF cs_mapping,
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
+  constants:
+    BEGIN OF cs_mapping,
         tknum             TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
         bu_id_num         TYPE /saptrx/paramname VALUE 'YN_SHP_SA_LBN_ID',
         cont_dg           TYPE /saptrx/paramname VALUE 'YN_SHP_CONTAIN_DGOODS',
@@ -98,95 +134,123 @@ public section.
         stpid_locid       TYPE /saptrx/paramname VALUE 'YN_SHP_VP_STOP_LOC_ID',
         shpdoc_ref_typ    TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPER_REF_TYPE',
         shpdoc_ref_val    TYPE /saptrx/paramname VALUE 'YN_SHP_SHIPPER_REF_VALUE',
+        otl_locid         TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCID',
+        otl_loctype       TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCTYPE',
+        otl_timezone      TYPE /saptrx/paramname VALUE 'GTT_OTL_TIMEZONE',
+        otl_description   TYPE /saptrx/paramname VALUE 'GTT_OTL_DESCRIPTION',
+        otl_country_code  TYPE /saptrx/paramname VALUE 'GTT_OTL_COUNTRY_CODE',
+        otl_city_name     TYPE /saptrx/paramname VALUE 'GTT_OTL_CITY_NAME',
+        otl_region_code   TYPE /saptrx/paramname VALUE 'GTT_OTL_REGION_CODE',
+        otl_house_number  TYPE /saptrx/paramname VALUE 'GTT_OTL_HOUSE_NUMBER',
+        otl_street_name   TYPE /saptrx/paramname VALUE 'GTT_OTL_STREET_NAME',
+        otl_postal_code   TYPE /saptrx/paramname VALUE 'GTT_OTL_POSTAL_CODE',
+        otl_email_address TYPE /saptrx/paramname VALUE 'GTT_OTL_EMAIL_ADDRESS',
+        otl_phone_number  TYPE /saptrx/paramname VALUE 'GTT_OTL_PHONE_NUMBER',
       END OF cs_mapping .
 
-    METHODS fill_header_from_vttk
-      IMPORTING
-        !ir_vttk     TYPE REF TO data
-        !iv_vttp_cnt TYPE i
-      CHANGING
-        !cs_header   TYPE ts_sh_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_from_vttp
-      IMPORTING
-        !ir_vttk   TYPE REF TO data
-        !ir_vttp   TYPE REF TO data
-      CHANGING
-        !cs_header TYPE ts_sh_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_header_from_vtts
-      IMPORTING
-        !ir_vttk   TYPE REF TO data
-        !ir_vttp   TYPE REF TO data
-        !ir_vtts   TYPE REF TO data
-        !ir_vtsp   TYPE REF TO data OPTIONAL
-      CHANGING
-        !cs_header TYPE ts_sh_header
-      RAISING
-        cx_udm_message .
-    METHODS fill_tracked_object_tables
-      IMPORTING
-        !is_vttk    TYPE vttkvb
-      EXPORTING
-        !et_res_id  TYPE tt_trobj_res_id
-        !et_res_val TYPE tt_trobj_res_val .
-    METHODS fill_resource_tables
-      IMPORTING
-        !is_vttk    TYPE vttkvb
-      EXPORTING
-        !et_ref_cnt TYPE tt_resrc_cnt
-        !et_tp_id   TYPE tt_resrc_tp_id .
-    METHODS fill_carrier_ref_doc_tables
-      IMPORTING
-        !is_vttk    TYPE vttkvb
-      EXPORTING
-        !et_ref_typ TYPE tt_crdoc_ref_typ
-        !et_ref_val TYPE tt_crdoc_ref_val .
-    METHODS get_forwarding_agent_id_number
-      IMPORTING
-        !iv_tdlnr        TYPE tdlnr
-      RETURNING
-        VALUE(rv_id_num) TYPE /saptrx/paramval200 .
-    METHODS get_resource_tracking_id
-      IMPORTING
-        !is_vttk              TYPE vttkvb
-      RETURNING
-        VALUE(rv_tracking_id) TYPE /saptrx/trxid .
-    METHODS get_shippment_header
-      IMPORTING
-        !is_app_object TYPE trxas_appobj_ctab_wa
-        !ir_vttk       TYPE REF TO data
-      RETURNING
-        VALUE(rr_vttk) TYPE REF TO data
-      RAISING
-        cx_udm_message .
-    METHODS get_shippment_item_count
-      IMPORTING
-        !ir_vttp        TYPE REF TO data
-      RETURNING
-        VALUE(rv_count) TYPE i
-      RAISING
-        cx_udm_message .
-    METHODS get_shippment_type
-      IMPORTING
-        !iv_vsart           TYPE clike
-        !iv_vttp_cnt        TYPE i
-      RETURNING
-        VALUE(rv_ship_type) TYPE zif_gtt_mia_app_types=>tv_ship_type .
-    METHODS get_transportation_mode
-      IMPORTING
-        !iv_vsart            TYPE clike
-      RETURNING
-        VALUE(rv_trans_mode) TYPE zif_gtt_mia_app_types=>tv_trans_mode .
-    METHODS is_object_changed
-      IMPORTING
-        !is_app_object   TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  methods FILL_HEADER_FROM_VTTK
+    importing
+      !IR_VTTK type ref to DATA
+      !IV_VTTP_CNT type I
+    changing
+      !CS_HEADER type TS_SH_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_FROM_VTTP
+    importing
+      !IR_VTTK type ref to DATA
+      !IR_VTTP type ref to DATA
+    changing
+      !CS_HEADER type TS_SH_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_HEADER_FROM_VTTS
+    importing
+      !IR_VTTK type ref to DATA
+      !IR_VTTP type ref to DATA
+      !IR_VTTS type ref to DATA
+      !IR_VTSP type ref to DATA optional
+    changing
+      !CS_HEADER type TS_SH_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_TRACKED_OBJECT_TABLES
+    importing
+      !IS_VTTK type VTTKVB
+    exporting
+      !ET_RES_ID type TT_TROBJ_RES_ID
+      !ET_RES_VAL type TT_TROBJ_RES_VAL .
+  methods FILL_RESOURCE_TABLES
+    importing
+      !IS_VTTK type VTTKVB
+    exporting
+      !ET_REF_CNT type TT_RESRC_CNT
+      !ET_TP_ID type TT_RESRC_TP_ID .
+  methods FILL_CARRIER_REF_DOC_TABLES
+    importing
+      !IS_VTTK type VTTKVB
+    exporting
+      !ET_REF_TYP type TT_CRDOC_REF_TYP
+      !ET_REF_VAL type TT_CRDOC_REF_VAL .
+  methods GET_FORWARDING_AGENT_ID_NUMBER
+    importing
+      !IV_TDLNR type TDLNR
+    returning
+      value(RV_ID_NUM) type /SAPTRX/PARAMVAL200 .
+  methods GET_RESOURCE_TRACKING_ID
+    importing
+      !IS_VTTK type VTTKVB
+    returning
+      value(RV_TRACKING_ID) type /SAPTRX/TRXID .
+  methods GET_SHIPPMENT_HEADER
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IR_VTTK type ref to DATA
+    returning
+      value(RR_VTTK) type ref to DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_SHIPPMENT_ITEM_COUNT
+    importing
+      !IR_VTTP type ref to DATA
+    returning
+      value(RV_COUNT) type I
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_SHIPPMENT_TYPE
+    importing
+      !IV_VSART type CLIKE
+      !IV_VTTP_CNT type I
+    returning
+      value(RV_SHIP_TYPE) type ZIF_GTT_MIA_APP_TYPES=>TV_SHIP_TYPE .
+  methods GET_TRANSPORTATION_MODE
+    importing
+      !IV_VSART type CLIKE
+    returning
+      value(RV_TRANS_MODE) type ZIF_GTT_MIA_APP_TYPES=>TV_TRANS_MODE .
+  methods IS_OBJECT_CHANGED
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_ONE_TIME_LOCATION
+    importing
+      !IV_TKNUM type TKNUM
+      !IR_VTTS type ref to DATA
+    changing
+      !CS_HEADER type TS_SH_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_ONE_TIME_LOCATION_OLD
+    importing
+      !IV_TKNUM type TKNUM
+      !IR_VTTS type ref to DATA
+    changing
+      !CS_HEADER type TS_SH_HEADER
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -460,6 +524,12 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
       et_res_id  = VALUE #( ( 'NA' ) ).
       et_res_val = VALUE #( ( is_vttk-exti1 ) ).
 
+    ELSEIF is_vttk-exti1 IS NOT INITIAL AND
+       is_vttk-vsart = '02'. "Mail
+
+      et_res_id  = VALUE #( ( 'PACKAGE_EXT_ID' ) ).
+      et_res_val = VALUE #( ( is_vttk-exti1 ) ).
+
     ELSEIF is_vttk-vsart = '04' AND
            is_vttk-signi IS NOT INITIAL.
 
@@ -696,10 +766,22 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
       CHANGING
         cs_header = <ls_header> ).
 
+    fill_one_time_location(
+      EXPORTING
+        iv_tknum  = |{ <ls_header>-tknum ALPHA = IN }|
+        ir_vtts   = mo_ef_parameters->get_appl_table(
+                      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_stage_new )
+      CHANGING
+        cs_header =  <ls_header> ).
+
+    IF <ls_header>-otl_locid IS INITIAL.
+      APPEND INITIAL LINE TO <ls_header>-otl_locid.
+    ENDIF.
+
   ENDMETHOD.
 
 
-  METHOD ZIF_GTT_TP_READER~GET_DATA_OLD.
+  METHOD zif_gtt_tp_reader~get_data_old.
 
     FIELD-SYMBOLS: <ls_header>  TYPE ts_sh_header.
 
@@ -741,6 +823,16 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
       CHANGING
         cs_header = <ls_header> ).
 
+    fill_one_time_location_old(
+      EXPORTING
+        iv_tknum  = |{ <ls_header>-tknum ALPHA = IN }|
+        ir_vtts   = lo_sh_data->get_vtts( )
+      CHANGING
+        cs_header = <ls_header> ).
+
+    IF <ls_header>-otl_locid IS INITIAL.
+      APPEND INITIAL LINE TO <ls_header>-otl_locid.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -811,6 +903,166 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
       MESSAGE e002(zgtt) WITH 'VTTK' INTO lv_dummy.
       zcl_gtt_tools=>throw_exception( ).
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD fill_one_time_location.
+
+    FIELD-SYMBOLS:
+      <lt_vtts>  TYPE vttsvb_tab.
+
+    DATA:
+      lt_vtts         TYPE vttsvb_tab,
+      ls_loc_addr     TYPE addr1_data,
+      lv_loc_email    TYPE ad_smtpadr,
+      lv_loc_tel      TYPE char50,
+      ls_address_info TYPE ts_address_info,
+      lt_address_info TYPE tt_address_info.
+
+    ASSIGN ir_vtts->* TO <lt_vtts>.
+    IF <lt_vtts> IS ASSIGNED.
+
+      lt_vtts = <lt_vtts>.
+      SORT lt_vtts BY tsrfo.
+
+      zcl_gtt_tools=>get_location_info(
+        EXPORTING
+          iv_tknum    = iv_tknum
+          it_vttsvb   = lt_vtts
+        IMPORTING
+          et_loc_info = DATA(lt_loc_info) ).
+
+      LOOP AT lt_loc_info INTO DATA(ls_loc_info).
+        CLEAR:
+          ls_loc_addr,
+          lv_loc_email,
+          lv_loc_tel.
+
+        IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
+          zcl_gtt_tools=>get_address_from_memory(
+            EXPORTING
+              iv_addrnumber = ls_loc_info-locaddrnum
+            IMPORTING
+              es_addr       = ls_loc_addr
+              ev_email      = lv_loc_email
+              ev_telephone  = lv_loc_tel ).
+
+          ls_address_info-locid = ls_loc_info-locid.
+          ls_address_info-loctype = ls_loc_info-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO lt_address_info.
+          CLEAR:
+            ls_address_info.
+
+        ENDIF.
+      ENDLOOP.
+
+    ELSE.
+      MESSAGE e002(zgtt) WITH 'VTTS' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+    LOOP AT lt_address_info INTO ls_address_info.
+      IF ls_address_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+        APPEND |{ ls_address_info-locid ALPHA = OUT }| TO cs_header-otl_locid.
+      ELSE.
+        APPEND ls_address_info-locid TO cs_header-otl_locid.
+      ENDIF.
+      APPEND ls_address_info-loctype TO cs_header-otl_loctype.
+      APPEND ls_address_info-addr1-time_zone TO cs_header-otl_timezone.
+      APPEND ls_address_info-addr1-name1 TO cs_header-otl_description.
+      APPEND ls_address_info-addr1-country TO cs_header-otl_country_code.
+      APPEND ls_address_info-addr1-city1 TO cs_header-otl_city_name.
+      APPEND ls_address_info-addr1-region TO cs_header-otl_region_code.
+      APPEND ls_address_info-addr1-house_num1 TO cs_header-otl_house_number.
+      APPEND ls_address_info-addr1-street TO cs_header-otl_street_name.
+      APPEND ls_address_info-addr1-post_code1 TO cs_header-otl_postal_code.
+      APPEND ls_address_info-email TO cs_header-otl_email_address.
+      APPEND ls_address_info-telephone TO cs_header-otl_phone_number.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD fill_one_time_location_old.
+
+    FIELD-SYMBOLS:
+      <lt_vtts>  TYPE vttsvb_tab.
+
+    DATA:
+      lt_vtts         TYPE vttsvb_tab,
+      ls_loc_addr     TYPE addr1_data,
+      lv_loc_email    TYPE ad_smtpadr,
+      lv_loc_tel      TYPE char50,
+      ls_address_info TYPE ts_address_info,
+      lt_address_info TYPE tt_address_info.
+
+    ASSIGN ir_vtts->* TO <lt_vtts>.
+    IF <lt_vtts> IS ASSIGNED.
+
+      lt_vtts = <lt_vtts>.
+      SORT lt_vtts BY tsrfo.
+
+      zcl_gtt_tools=>get_location_info(
+        EXPORTING
+          iv_tknum    = iv_tknum
+          it_vttsvb   = lt_vtts
+        IMPORTING
+          et_loc_info = DATA(lt_loc_info) ).
+
+      LOOP AT lt_loc_info INTO DATA(ls_loc_info).
+        CLEAR:
+          ls_loc_addr,
+          lv_loc_email,
+          lv_loc_tel.
+
+        IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
+          zcl_gtt_tools=>get_address_from_db(
+            EXPORTING
+              iv_addrnumber = ls_loc_info-locaddrnum
+            IMPORTING
+              es_addr       = ls_loc_addr
+              ev_email      = lv_loc_email
+              ev_telephone  = lv_loc_tel ).
+
+          ls_address_info-locid = ls_loc_info-locid.
+          ls_address_info-loctype = ls_loc_info-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO lt_address_info.
+          CLEAR:
+            ls_address_info.
+
+        ENDIF.
+      ENDLOOP.
+
+    ELSE.
+      MESSAGE e002(zgtt) WITH 'VTTS' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+    LOOP AT lt_address_info INTO ls_address_info.
+      IF ls_address_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+        APPEND |{ ls_address_info-locid ALPHA = OUT }| TO cs_header-otl_locid.
+      ELSE.
+        APPEND ls_address_info-locid TO cs_header-otl_locid.
+      ENDIF.
+      APPEND ls_address_info-loctype TO cs_header-otl_loctype.
+      APPEND ls_address_info-addr1-time_zone TO cs_header-otl_timezone.
+      APPEND ls_address_info-addr1-name1 TO cs_header-otl_description.
+      APPEND ls_address_info-addr1-country TO cs_header-otl_country_code.
+      APPEND ls_address_info-addr1-city1 TO cs_header-otl_city_name.
+      APPEND ls_address_info-addr1-region TO cs_header-otl_region_code.
+      APPEND ls_address_info-addr1-house_num1 TO cs_header-otl_house_number.
+      APPEND ls_address_info-addr1-street TO cs_header-otl_street_name.
+      APPEND ls_address_info-addr1-post_code1 TO cs_header-otl_postal_code.
+      APPEND ls_address_info-email TO cs_header-otl_email_address.
+      APPEND ls_address_info-telephone TO cs_header-otl_phone_number.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

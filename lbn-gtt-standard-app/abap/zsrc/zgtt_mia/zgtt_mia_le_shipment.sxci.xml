@@ -5,7 +5,7 @@
    <SXCI>
     <IMPLEMENTATION_DATA>
      <IMP_NAME>ZGTT_MIA_LE_SHIPMENT</IMP_NAME>
-     <TEXT>Shipment Cross TP Update for MIA</TEXT>
+     <TEXT>Cross TP Update from shipment to Inbound Delivery</TEXT>
      <IMP_CLASS>ZCL_GTT_MIA_LE_SHIPMENT</IMP_CLASS>
      <EXIT_NAME>BADI_LE_SHIPMENT</EXIT_NAME>
      <INTER_NAME>IF_EX_BADI_LE_SHIPMENT</INTER_NAME>

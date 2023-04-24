@@ -36,7 +36,8 @@ FUNCTION zgtt_ssof_get_stops_from_shp.
 *   Warehouse text
     lv_lnumt             TYPE t300t-lnumt,
 *   Warehouse text / door text
-    lv_lgtratxt          TYPE char60.
+    lv_lgtratxt          TYPE char60,
+    lv_loc_id_exsit      TYPE flag.
 
   RANGES:
       ls_tknum_range FOR vttk-tknum.
@@ -69,22 +70,37 @@ FUNCTION zgtt_ssof_get_stops_from_shp.
 
 * Fill source & destination
   LOOP AT lt_vttsvb INTO ls_vttsvb WHERE tknum = iv_tknum
-                                     AND updkz <> 'D'.    .
+                                     AND updkz <> 'D'.
+    CLEAR lv_loc_id_exsit.
     IF ls_vttsvb-kunna IS NOT INITIAL.
       lv_srcloctype = zif_gtt_sof_constants=>cs_loctype-bp."
       lv_srclocid   = ls_vttsvb-kunna.
+      lv_loc_id_exsit  = abap_true.
     ELSEIF ls_vttsvb-vstel IS NOT INITIAL.
       lv_srcloctype = zif_gtt_sof_constants=>cs_loctype-shippingpoint.
       lv_srclocid   = ls_vttsvb-vstel.
+      lv_loc_id_exsit  = abap_true.
     ELSEIF ls_vttsvb-lifna IS NOT INITIAL.
       lv_srcloctype = zif_gtt_sof_constants=>cs_loctype-bp.
       lv_srclocid   = ls_vttsvb-lifna.
+      lv_loc_id_exsit  = abap_true.
     ELSEIF ls_vttsvb-werka IS NOT INITIAL.
       lv_srcloctype = zif_gtt_sof_constants=>cs_loctype-plant.
       lv_srclocid   = ls_vttsvb-werka.
+      lv_loc_id_exsit  = abap_true.
     ELSEIF ls_vttsvb-knota IS NOT INITIAL.
       lv_srcloctype = zif_gtt_sof_constants=>cs_loctype-logisticlocation.
       lv_srclocid   = ls_vttsvb-knota.
+      lv_loc_id_exsit  = abap_true.
+    ENDIF.
+
+*   Support one time location address(Source location id)
+    IF lv_loc_id_exsit = abap_false
+      AND ls_vttsvb-adrknza CA zif_gtt_ef_constants=>shp_addr_ind_man_all
+      AND ls_vttsvb-adrna IS NOT INITIAL.
+      lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
+      lv_srclocid   = ls_vttsvb-adrna.
+      SHIFT lv_srclocid LEFT DELETING LEADING '0'.
     ENDIF.
 
 *   if current stage line's source = last stage line's destination, no change on stop id & stop count
@@ -92,21 +108,36 @@ FUNCTION zgtt_ssof_get_stops_from_shp.
       lv_stopcnt = lv_stopcnt + 1.
     ENDIF.
 
+    CLEAR lv_loc_id_exsit.
     IF ls_vttsvb-kunnz IS NOT INITIAL.
       lv_desloctype = zif_gtt_sof_constants=>cs_loctype-bp.
       lv_deslocid   = ls_vttsvb-kunnz.
+      lv_loc_id_exsit  = abap_true.
     ELSEIF ls_vttsvb-vstez IS NOT INITIAL.
       lv_desloctype = zif_gtt_sof_constants=>cs_loctype-shippingpoint.
       lv_deslocid   = ls_vttsvb-vstez.
+      lv_loc_id_exsit  = abap_true.
     ELSEIF ls_vttsvb-lifnz IS NOT INITIAL.
       lv_desloctype = zif_gtt_sof_constants=>cs_loctype-bp.
       lv_deslocid   = ls_vttsvb-lifnz.
+      lv_loc_id_exsit  = abap_true.
     ELSEIF ls_vttsvb-werkz IS NOT INITIAL.
       lv_desloctype = zif_gtt_sof_constants=>cs_loctype-plant.
       lv_deslocid   = ls_vttsvb-werkz.
+      lv_loc_id_exsit  = abap_true.
     ELSEIF ls_vttsvb-knotz IS NOT INITIAL.
       lv_desloctype = zif_gtt_sof_constants=>cs_loctype-logisticlocation.
       lv_deslocid   = ls_vttsvb-knotz.
+      lv_loc_id_exsit  = abap_true.
+    ENDIF.
+
+*   Support one time location address(Destination location id)
+    IF lv_loc_id_exsit = abap_false
+      AND ls_vttsvb-adrknzz CA zif_gtt_ef_constants=>shp_addr_ind_man_all
+      AND ls_vttsvb-adrnz IS NOT INITIAL.
+      lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
+      lv_deslocid   = ls_vttsvb-adrnz.
+      SHIFT lv_deslocid LEFT DELETING LEADING '0'.
     ENDIF.
 
     lv_cnt = lv_stopcnt.

@@ -39,7 +39,11 @@ FUNCTION zgtt_ssof_ote_so_item.
     lt_xvbup        TYPE STANDARD TABLE OF vbupvb,
     lt_xvbpa        TYPE STANDARD TABLE OF vbpavb,
     lv_kunnr        TYPE vbpavb-kunnr,
-    lv_matnr        TYPE vbap-matnr.
+    lv_matnr        TYPE vbap-matnr,
+    lt_loc_data     TYPE TABLE OF gtys_address_info,
+    lt_control_data TYPE TABLE OF /saptrx/control_data.
+
+  CLEAR:gt_loc_data.
 
 * Read Schedule Item New
   PERFORM read_appl_table
@@ -81,6 +85,9 @@ FUNCTION zgtt_ssof_ote_so_item.
 *     - Schedule line table
 
   LOOP AT i_app_objects INTO ls_app_objects.
+    CLEAR:
+      gt_loc_data,
+      lt_loc_data.
 
 *   Application Object ID
     ls_control_data-appobjid   = ls_app_objects-appobjid.
@@ -188,6 +195,7 @@ FUNCTION zgtt_ssof_ote_so_item.
 
 *   Business Partner Information
 *   Ship-to Party
+    CLEAR:ls_xvbpa.
     PERFORM read_business_partner
       USING    lt_xvbpa
                <ls_xvbap>-vbeln
@@ -210,6 +218,13 @@ FUNCTION zgtt_ssof_ote_so_item.
     ls_control_data-paramname = gc_cp_yn_so_ship_to_type.
     ls_control_data-value     = zif_gtt_sof_constants=>cs_loctype-bp.
     APPEND ls_control_data TO e_control_data.
+
+*   Support one time location for Ship-to Party
+    CLEAR lt_loc_data.
+    PERFORM fill_one_time_location TABLES lt_loc_data
+                                    USING ls_xvbpa
+                                          zif_gtt_sof_constants=>cs_loctype-bp.
+    APPEND LINES OF lt_loc_data TO gt_loc_data.
 
 *   Actual Business Time zone
     CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
@@ -275,9 +290,21 @@ FUNCTION zgtt_ssof_ote_so_item.
     SHIFT ls_control_data-value LEFT DELETING LEADING space.
     APPEND ls_control_data TO e_control_data.
 
+*   Append one time location data to the control parameter
+    IF gt_loc_data IS INITIAL.
+      ls_control_data-paramindex = 1.
+      ls_control_data-paramname = gc_cp_yn_gtt_otl_locid.
+      ls_control_data-value = ''.
+      APPEND ls_control_data TO e_control_data.
+    ELSE.
+      PERFORM fill_loc_data TABLES lt_control_data USING ls_control_data.
+      APPEND LINES OF lt_control_data TO e_control_data.
+    ENDIF.
+
     CLEAR:
       lv_bmeng,
-      lv_vsmng.
+      lv_vsmng,
+      lt_control_data.
 
   ENDLOOP.
 

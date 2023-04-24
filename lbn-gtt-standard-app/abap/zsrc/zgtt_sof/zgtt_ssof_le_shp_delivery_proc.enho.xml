@@ -11,10 +11,59 @@
      <IMPL_NAME>ZGTT_SSOF_IM_LE_SHIPPING</IMPL_NAME>
      <IMPL_CLASS>ZCL_GTT_SOF_IMP_LE_SHIPPING</IMPL_CLASS>
      <ACTIVE>X</ACTIVE>
-     <IMPL_SHORTTEXT>BADI implementation for update impacted sales order</IMPL_SHORTTEXT>
-     <IMPL_SHORTTEXT_ID>42010AEF4DF61EDDAEFE481042C90253</IMPL_SHORTTEXT_ID>
+     <IMPL_SHORTTEXT>Cross TP Update from Outbound Delivery to sales order</IMPL_SHORTTEXT>
+     <IMPL_SHORTTEXT_ID>42010AEF4CA01EEDB68335DD4E023BF4</IMPL_SHORTTEXT_ID>
+     <LOCKED_IN_CUSTOMIZING>X</LOCKED_IN_CUSTOMIZING>
     </ENH_BADI_IMPL_DATA>
    </IMPL>
+   <SOTR>
+    <item>
+     <HEADER>
+      <CONCEPT>42010AEF4CA01EEDB68335DD4E023BF4</CONCEPT>
+      <CREA_LAN>E</CREA_LAN>
+      <TRALA_TYPE>1</TRALA_TYPE>
+      <OBJID_VEC>AAI=</OBJID_VEC>
+     </HEADER>
+     <ENTRIES>
+      <SOTR_TEXT>
+       <CONCEPT>42010AEF4CA01EEDB68335DD4E023BF4</CONCEPT>
+       <LANGU>늑</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>SOTR *42010AEF4CA01EEDB68335DD4E023BF4</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>42010AEF4CA01EEDB68335DD4E023BF4</CONCEPT>
+       <LANGU>E</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>Cross TP Update from Outbound Delivery to sales order</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>42010AEF4CA01EEDB68335DD4E023BF4</CONCEPT>
+       <LANGU>닱</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>[Ĉŗŏşş∙ŢƤ∙Ůρƌąţē∙ƒŗŏɱ∙Ŏűţƃŏűŋƌ∙Ďēĺįʋēŗŷ∙ţŏ∙şąĺēş∙ŏŗƌēŗ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
+      </SOTR_TEXT>
+     </ENTRIES>
+    </item>
+   </SOTR>
+   <SOTR_USE>
+    <SOTR_USE>
+     <PGMID>R3TR</PGMID>
+     <OBJECT>ENHO</OBJECT>
+     <OBJ_NAME>ZGTT_SSOF_LE_SHP_DELIVERY_PROC</OBJ_NAME>
+     <CONCEPT>42010AEF4CA01EEDB68335DD4E023BF4</CONCEPT>
+     <LFD_NUM>0001</LFD_NUM>
+    </SOTR_USE>
+   </SOTR_USE>
   </asx:values>
  </asx:abap>
 </abapGit>

@@ -4,6 +4,16 @@ class ZCL_GTT_MIA_SH_TOOLS definition
 
 public section.
 
+  types:
+    BEGIN OF ts_loc_info,
+      loctype      TYPE zif_gtt_mia_app_types=>tv_loctype,
+      locid        TYPE zif_gtt_mia_app_types=>tv_locid,
+      locaddrnum   TYPE adrnr,
+      locindicator TYPE char1,
+    END OF ts_loc_info .
+  types:
+    tt_loc_info type STANDARD TABLE OF ts_loc_info .
+
   class-methods GET_CARRIER_REFERENCE_DOCUMENT
     importing
       !IS_VTTK type VTTKVB
@@ -66,10 +76,10 @@ public section.
       !IV_PARTNER type BU_PARTNER
     returning
       value(RV_NUM) type /SAPTRX/PARAMVAL200 .
-  PROTECTED SECTION.
-  PRIVATE SECTION.
+protected section.
+private section.
 
-    CLASS-DATA mv_evtcnt TYPE /saptrx/evtcnt VALUE zif_gtt_mia_app_constants=>cs_start_evtcnt-shipment ##NO_TEXT.
+  class-data MV_EVTCNT type /SAPTRX/EVTCNT value ZIF_GTT_MIA_APP_CONSTANTS=>CS_START_EVTCNT-SHIPMENT ##NO_TEXT.
 ENDCLASS.
 
 
@@ -156,7 +166,8 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
 *       Warehouse text
       lv_lnumt             TYPE t300t-lnumt,
 *       Warehouse text / door text
-      lv_lgtratxt          TYPE char60.
+      lv_lgtratxt          TYPE char60,
+      lv_loc_id_exsit      TYPE flag.
 
     DATA: lt_tknum_range TYPE STANDARD TABLE OF range_c10.
 
@@ -191,21 +202,36 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
 *   Fill source & destination
     LOOP AT lt_vttsvb INTO ls_vttsvb WHERE tknum = iv_tknum
                                        AND updkz <> 'D'.
+      CLEAR lv_loc_id_exsit.
       IF ls_vttsvb-kunna IS NOT INITIAL.
         lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
         lv_srclocid   = ls_vttsvb-kunna.
+        lv_loc_id_exsit  = abap_true.
       ELSEIF ls_vttsvb-vstel IS NOT INITIAL.
         lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
         lv_srclocid   = ls_vttsvb-vstel.
+        lv_loc_id_exsit  = abap_true.
       ELSEIF ls_vttsvb-lifna IS NOT INITIAL.
         lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
         lv_srclocid   = ls_vttsvb-lifna.
+        lv_loc_id_exsit  = abap_true.
       ELSEIF ls_vttsvb-werka IS NOT INITIAL.
         lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-plant.
         lv_srclocid   = ls_vttsvb-werka.
+        lv_loc_id_exsit  = abap_true.
       ELSEIF ls_vttsvb-knota IS NOT INITIAL.
         lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
         lv_srclocid   = ls_vttsvb-knota.
+        lv_loc_id_exsit  = abap_true.
+      ENDIF.
+
+*     Support one time location address(Source location id)
+      IF lv_loc_id_exsit = abap_false
+        AND ls_vttsvb-adrknza CA zif_gtt_ef_constants=>shp_addr_ind_man_all
+        AND ls_vttsvb-adrna IS NOT INITIAL.
+        lv_srcloctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
+        lv_srclocid   = ls_vttsvb-adrna.
+        SHIFT lv_srclocid LEFT DELETING LEADING '0'.
       ENDIF.
 
 *     if current stage line's source = last stage line's destination, no change on stop id & stop count
@@ -213,21 +239,36 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
         lv_stopcnt = lv_stopcnt + 1.
       ENDIF.
 
+      CLEAR lv_loc_id_exsit.
       IF ls_vttsvb-kunnz IS NOT INITIAL.
         lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
         lv_deslocid   = ls_vttsvb-kunnz.
+        lv_loc_id_exsit  = abap_true.
       ELSEIF ls_vttsvb-vstez IS NOT INITIAL.
         lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
         lv_deslocid   = ls_vttsvb-vstez.
+        lv_loc_id_exsit  = abap_true.
       ELSEIF ls_vttsvb-lifnz IS NOT INITIAL.
         lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
         lv_deslocid   = ls_vttsvb-lifnz.
+        lv_loc_id_exsit  = abap_true.
       ELSEIF ls_vttsvb-werkz IS NOT INITIAL.
         lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-plant.
         lv_deslocid   = ls_vttsvb-werkz.
+        lv_loc_id_exsit  = abap_true.
       ELSEIF ls_vttsvb-knotz IS NOT INITIAL.
         lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
         lv_deslocid   = ls_vttsvb-knotz.
+        lv_loc_id_exsit  = abap_true.
+      ENDIF.
+
+*     Support one time location address(Destination location id)
+      IF lv_loc_id_exsit = abap_false
+        AND ls_vttsvb-adrknzz CA zif_gtt_ef_constants=>shp_addr_ind_man_all
+        AND ls_vttsvb-adrnz IS NOT INITIAL.
+        lv_desloctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
+        lv_deslocid   = ls_vttsvb-adrnz.
+        SHIFT lv_deslocid LEFT DELETING LEADING '0'.
       ENDIF.
 
       lv_cnt = lv_stopcnt.

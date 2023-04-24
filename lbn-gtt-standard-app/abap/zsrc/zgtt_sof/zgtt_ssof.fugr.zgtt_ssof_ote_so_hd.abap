@@ -36,11 +36,15 @@ FUNCTION zgtt_ssof_ote_so_hd.
     lt_xvbap        TYPE STANDARD TABLE OF vbapvb,
     lt_vbeln        TYPE vbeln_vl_t,
     lv_count        TYPE i,
-    lv_kunnr        TYPE vbpavb-kunnr.
+    lv_kunnr        TYPE vbpavb-kunnr,
+    lt_loc_data     TYPE TABLE OF gtys_address_info,
+    lt_control_data TYPE TABLE OF /saptrx/control_data.
 
   FIELD-SYMBOLS:
     <ls_xvbap> TYPE vbapvb,
     <ls_xvbak> TYPE /saptrx/sd_sds_hdr.
+
+  CLEAR:gt_loc_data.
 
 * <1> Read necessary application tables from table reference
 * Read Business Data New
@@ -81,6 +85,9 @@ FUNCTION zgtt_ssof_ote_so_hd.
 * Sales Order Item table
 
   LOOP AT i_app_objects INTO ls_app_objects.
+    CLEAR:
+      gt_loc_data,
+      lt_loc_data.
 
 *   Application Object ID
     ls_control_data-appobjid   = ls_app_objects-appobjid.
@@ -166,6 +173,7 @@ FUNCTION zgtt_ssof_ote_so_hd.
 
 *   Business Partner Information
 *   Ship-to Party
+    CLEAR:ls_xvbpa.
     PERFORM read_business_partner
       USING    lt_xvbpa
                <ls_xvbak>-vbeln
@@ -184,12 +192,24 @@ FUNCTION zgtt_ssof_ote_so_hd.
     CLEAR lv_kunnr.
     APPEND ls_control_data TO e_control_data.
 
+*   Support one time location for Ship-to Party
+    CLEAR lt_loc_data.
+    PERFORM fill_one_time_location  TABLES lt_loc_data
+                                     USING ls_xvbpa
+                                           zif_gtt_sof_constants=>cs_loctype-shiptoparty.
+    APPEND LINES OF lt_loc_data TO gt_loc_data.
+
 *   Ship-to Party type
     ls_control_data-paramname = gc_cp_yn_so_ship_to_type.
-    ls_control_data-value     = zif_gtt_sof_constants=>cs_loctype-bp.
+    IF lt_loc_data IS INITIAL.
+      ls_control_data-value     = zif_gtt_sof_constants=>cs_loctype-bp.
+    ELSE.
+      ls_control_data-value     = zif_gtt_sof_constants=>cs_loctype-shiptoparty.
+    ENDIF.
     APPEND ls_control_data TO e_control_data.
 
 *   Sold-to Party
+    CLEAR:ls_xvbpa.
     PERFORM read_business_partner
       USING    lt_xvbpa
                <ls_xvbak>-vbeln
@@ -208,9 +228,20 @@ FUNCTION zgtt_ssof_ote_so_hd.
     CLEAR lv_kunnr.
     APPEND ls_control_data TO e_control_data.
 
+*   Support one time location for Sold-to Party
+    CLEAR lt_loc_data.
+    PERFORM fill_one_time_location TABLES lt_loc_data
+                                    USING ls_xvbpa
+                                          zif_gtt_sof_constants=>cs_loctype-soldtoparty.
+    APPEND LINES OF lt_loc_data TO gt_loc_data.
+
 *   Sold-to Party type
     ls_control_data-paramname = gc_cp_yn_so_sold_to_type.
-    ls_control_data-value     = zif_gtt_sof_constants=>cs_loctype-bp.
+    IF lt_loc_data IS INITIAL.
+      ls_control_data-value     = zif_gtt_sof_constants=>cs_loctype-bp.
+    ELSE.
+      ls_control_data-value     = zif_gtt_sof_constants=>cs_loctype-soldtoparty.
+    ENDIF.
     APPEND ls_control_data TO e_control_data.
 
 *   Outbound Delivery TPs table
@@ -226,6 +257,7 @@ FUNCTION zgtt_ssof_ote_so_hd.
       ls_control_data-paramname  = gc_cp_yn_odlv_line_no.
       ls_control_data-paramindex = lv_count.
       ls_control_data-value      = lv_count.
+      CONDENSE ls_control_data-value NO-GAPS.
       APPEND ls_control_data TO e_control_data.
 
       ls_control_data-paramname  = gc_cp_yn_odlv_no.
@@ -270,5 +302,16 @@ FUNCTION zgtt_ssof_ote_so_hd.
     CONDENSE ls_control_data-value NO-GAPS.
     APPEND ls_control_data TO e_control_data.
 
+*   Append one time location data to the control parameter
+    IF gt_loc_data IS INITIAL.
+      ls_control_data-paramindex = 1.
+      ls_control_data-paramname = gc_cp_yn_gtt_otl_locid.
+      ls_control_data-value = ''.
+      APPEND ls_control_data TO e_control_data.
+    ELSE.
+      PERFORM fill_loc_data TABLES lt_control_data USING ls_control_data.
+      APPEND LINES OF lt_control_data TO e_control_data.
+    ENDIF.
+    CLEAR:lt_control_data.
   ENDLOOP.
 ENDFUNCTION.

@@ -705,22 +705,7 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
                  BINARY SEARCH.
 
       rv_result = boolc(
-         sy-subrc = 0 AND
-         ( is_vtts-knota <> <ls_vtts_old>-knota OR
-           is_vtts-vstel <> <ls_vtts_old>-vstel OR
-           is_vtts-werka <> <ls_vtts_old>-werka OR
-           is_vtts-kunna <> <ls_vtts_old>-kunna OR
-           is_vtts-lifna <> <ls_vtts_old>-lifna OR
-           is_vtts-kunnz <> <ls_vtts_old>-kunnz OR
-           is_vtts-vstez <> <ls_vtts_old>-vstez OR
-           is_vtts-lifnz <> <ls_vtts_old>-lifnz OR
-           is_vtts-werkz <> <ls_vtts_old>-werkz OR
-           is_vtts-knotz <> <ls_vtts_old>-knotz OR
-           is_vtts-dptbg <> <ls_vtts_old>-dptbg OR
-           is_vtts-uptbg <> <ls_vtts_old>-uptbg OR
-           is_vtts-dpten <> <ls_vtts_old>-dpten OR
-           is_vtts-upten <> <ls_vtts_old>-upten )
-       ).
+         sy-subrc = 0 ).
     ELSE.
       rv_result   = abap_false.
     ENDIF.

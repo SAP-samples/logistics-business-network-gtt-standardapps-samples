@@ -60,7 +60,11 @@ FUNCTION zgtt_ssof_ote_de_item.
     lv_ebelp        TYPE ebelp,
     lv_posnr        TYPE posnr_va,
     lv_kunnr        TYPE vbpavb-kunnr,
-    lv_matnr        TYPE lips-matnr.
+    lv_matnr        TYPE lips-matnr,
+    lt_loc_data     TYPE TABLE OF gtys_address_info,
+    lt_control_data TYPE TABLE OF /saptrx/control_data.
+
+  CLEAR:gt_loc_data.
 
   lo_gtt_toolkit = zcl_gtt_sof_toolkit=>get_instance( ).
 
@@ -126,6 +130,9 @@ FUNCTION zgtt_ssof_ote_de_item.
 *     - Actual Technical Time zone
 
   LOOP AT i_app_objects INTO ls_app_objects.
+    CLEAR:
+      gt_loc_data,
+      lt_loc_data.
 
 *   Application Object ID
     ls_control_data-appobjid   = ls_app_objects-appobjid.
@@ -672,7 +679,29 @@ FUNCTION zgtt_ssof_ote_de_item.
 
     ENDLOOP.
 
-    CLEAR ls_control_data-paramindex.
+*   Support one-time location(ship-to-party)
+    IF <ls_xvbpa> IS ASSIGNED AND <ls_xvbpa> IS NOT INITIAL.
+      CLEAR lt_loc_data.
+      PERFORM fill_one_time_location TABLES lt_loc_data
+                                      USING <ls_xvbpa>
+                                            zif_gtt_sof_constants=>cs_loctype-bp.
+      APPEND LINES OF lt_loc_data TO gt_loc_data.
+    ENDIF.
+
+*   Append one time location data to the control parameter
+    IF gt_loc_data IS INITIAL.
+      ls_control_data-paramindex = 1.
+      ls_control_data-paramname = gc_cp_yn_gtt_otl_locid.
+      ls_control_data-value = ''.
+      APPEND ls_control_data TO e_control_data.
+    ELSE.
+      PERFORM fill_loc_data TABLES lt_control_data USING ls_control_data.
+      APPEND LINES OF lt_control_data TO e_control_data.
+    ENDIF.
+
+    CLEAR:
+      ls_control_data-paramindex,
+      lt_control_data.
 
   ENDLOOP.
 

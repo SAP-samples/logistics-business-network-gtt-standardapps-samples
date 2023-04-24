@@ -25,6 +25,15 @@ public section.
     END OF ts_likp .
   types:
     tt_likp TYPE STANDARD TABLE OF ts_likp .
+  types:
+    BEGIN OF ts_loc_info,
+      loctype      TYPE char20,
+      locid        TYPE char10,
+      locaddrnum   TYPE adrnr,
+      locindicator TYPE char1,
+    END OF ts_loc_info .
+  types:
+    tt_loc_info type STANDARD TABLE OF ts_loc_info .
 
   class-methods ARE_FIELDS_DIFFERENT
     importing
@@ -224,6 +233,47 @@ public section.
       !IV_MATERIAL type MATNR
     exporting
       !EV_RESULT type MATNR .
+  class-methods GET_ADDRESS_FROM_MEMORY
+    importing
+      !IV_ADDRNUMBER type AD_ADDRNUM
+    exporting
+      !ES_ADDR type ADDR1_DATA
+      !EV_EMAIL type AD_SMTPADR
+      !EV_TELEPHONE type CHAR50 .
+  class-methods GET_ADDRESS_FROM_DB
+    importing
+      !IV_ADDRNUMBER type AD_ADDRNUM
+    exporting
+      !ES_ADDR type ADDR1_DATA
+      !EV_EMAIL type AD_SMTPADR
+      !EV_TELEPHONE type CHAR50 .
+  class-methods GET_STAGE_BY_DELIVERY
+    importing
+      !IV_VBELN type VBELN_VL
+    exporting
+      !ET_VTTSVB type VTTSVB_TAB .
+  class-methods GET_LOCATION_INFO
+    importing
+      !IV_TKNUM type TKNUM optional
+      !IT_VTTSVB type VTTSVB_TAB
+    exporting
+      !ET_LOC_INFO type TT_LOC_INFO .
+  class-methods FILL_LOCATION_INFO
+    importing
+      !IS_VTTSVB type VTTSVB
+    exporting
+      !ET_LOC_INFO type TT_LOC_INFO .
+  class-methods GET_LOCATION_ID
+    importing
+      !IV_VGBEL type VGBEL
+      !IV_VGPOS type VGPOS
+    exporting
+      !EV_LOCID1 type /SAPTRX/LOC_ID_1 .
+  class-methods IS_ODD
+    importing
+      !IV_VALUE type NUMC04
+    returning
+      value(RV_IS_ODD) type ABAP_BOOL .
   PROTECTED SECTION.
   PRIVATE SECTION.
 
@@ -1142,6 +1192,353 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
         iv_msr_active = ls_t161-msr_active
       IMPORTING
         ev_btd_tco    = rv_base_btd_tco ).
+
+  ENDMETHOD.
+
+
+  METHOD fill_location_info.
+
+    DATA:
+      ls_loc_info TYPE ts_loc_info.
+
+    CLEAR:
+      et_loc_info.
+
+*   Source location
+    IF is_vttsvb-kunna IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+      ls_loc_info-locid   = is_vttsvb-kunna.
+    ELSEIF is_vttsvb-vstel IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
+      ls_loc_info-locid   = is_vttsvb-vstel.
+    ELSEIF is_vttsvb-lifna IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+      ls_loc_info-locid   = is_vttsvb-lifna.
+    ELSEIF is_vttsvb-werka IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-plant.
+      ls_loc_info-locid   = is_vttsvb-werka.
+    ELSEIF is_vttsvb-knota IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
+      ls_loc_info-locid   = is_vttsvb-knota.
+    ENDIF.
+
+*   Support one time location address(Source location id)
+    IF ls_loc_info-locid IS INITIAL AND ls_loc_info-loctype IS INITIAL
+      AND is_vttsvb-adrknza CA zif_gtt_ef_constants=>shp_addr_ind_man_all
+      AND is_vttsvb-adrna IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
+      ls_loc_info-locid   = is_vttsvb-adrna.
+      SHIFT ls_loc_info-locid LEFT DELETING LEADING '0'.
+    ENDIF.
+
+    ls_loc_info-locaddrnum = is_vttsvb-adrna.
+    ls_loc_info-locindicator = is_vttsvb-adrknza.
+    APPEND ls_loc_info TO et_loc_info.
+    CLEAR ls_loc_info.
+
+*   Destination location
+    IF is_vttsvb-kunnz IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+      ls_loc_info-locid   = is_vttsvb-kunnz.
+    ELSEIF is_vttsvb-vstez IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
+      ls_loc_info-locid   = is_vttsvb-vstez.
+    ELSEIF is_vttsvb-lifnz IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+      ls_loc_info-locid   = is_vttsvb-lifnz.
+    ELSEIF is_vttsvb-werkz IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-plant.
+      ls_loc_info-locid   = is_vttsvb-werkz.
+    ELSEIF is_vttsvb-knotz IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
+      ls_loc_info-locid   = is_vttsvb-knotz.
+    ENDIF.
+
+*   Support one time location address(Destination location id)
+    IF ls_loc_info-locid IS INITIAL AND ls_loc_info-loctype IS INITIAL
+      AND is_vttsvb-adrknzz CA zif_gtt_ef_constants=>shp_addr_ind_man_all
+      AND is_vttsvb-adrnz IS NOT INITIAL.
+      ls_loc_info-loctype = zif_gtt_ef_constants=>cs_loc_types-logisticlocation.
+      ls_loc_info-locid   = is_vttsvb-adrnz.
+      SHIFT ls_loc_info-locid LEFT DELETING LEADING '0'.
+    ENDIF.
+
+    ls_loc_info-locaddrnum = is_vttsvb-adrnz.
+    ls_loc_info-locindicator = is_vttsvb-adrknzz.
+    APPEND ls_loc_info TO et_loc_info.
+    CLEAR ls_loc_info.
+
+  ENDMETHOD.
+
+
+  METHOD get_address_from_db.
+
+    DATA:
+      lt_adrc TYPE TABLE OF adrc,
+      lt_adr2 TYPE TABLE OF adr2,
+      lt_adr6 TYPE TABLE OF adr6.
+
+    CLEAR:
+      es_addr,
+      ev_email,
+      ev_telephone.
+
+    CALL FUNCTION 'ADDR_SELECT_ADRC_SINGLE'
+      EXPORTING
+        addrnumber        = iv_addrnumber
+      TABLES
+        et_adrc           = lt_adrc
+      EXCEPTIONS
+        address_not_exist = 1
+        parameter_error   = 2
+        internal_error    = 3
+        address_blocked   = 4
+        OTHERS            = 5.
+    IF sy-subrc = 0.
+      READ TABLE lt_adrc INTO DATA(ls_adrc) WITH KEY nation = space.
+      IF sy-subrc = 0.
+        MOVE-CORRESPONDING ls_adrc TO es_addr.
+      ENDIF.
+    ENDIF.
+
+    CALL FUNCTION 'ADDR_SELECT_ADR6_SINGLE'
+      EXPORTING
+        addrnumber          = iv_addrnumber
+      TABLES
+        et_adr6             = lt_adr6
+      EXCEPTIONS
+        comm_data_not_exist = 1
+        parameter_error     = 2
+        internal_error      = 3
+        OTHERS              = 4.
+
+    IF sy-subrc = 0.
+*     Email address
+      READ TABLE lt_adr6 INTO DATA(ls_adr6)
+        WITH KEY flgdefault = abap_true.
+      IF sy-subrc <> 0.
+        READ TABLE lt_adr6 INTO ls_adr6
+          WITH KEY flgdefault = abap_false.
+      ENDIF.
+      ev_email = ls_adr6-smtp_addr.
+    ENDIF.
+
+    CALL FUNCTION 'ADDR_SELECT_ADR2_SINGLE'
+      EXPORTING
+        addrnumber          = iv_addrnumber
+      TABLES
+        et_adr2             = lt_adr2
+      EXCEPTIONS
+        comm_data_not_exist = 1
+        parameter_error     = 2
+        internal_error      = 3
+        OTHERS              = 4.
+    IF sy-subrc = 0.
+*     Telephone number
+      READ TABLE lt_adr2 INTO DATA(ls_adr2)
+        WITH KEY flgdefault = abap_true.
+      IF sy-subrc <> 0.
+        READ TABLE lt_adr2 INTO ls_adr2
+          WITH KEY flgdefault = abap_false.
+      ENDIF.
+
+      IF ls_adr2-tel_extens IS NOT INITIAL.
+        CONCATENATE ls_adr2-tel_number '-' ls_adr2-tel_extens INTO ev_telephone.
+        CONDENSE ev_telephone NO-GAPS.
+      ELSE.
+        ev_telephone = ls_adr2-tel_number.
+      ENDIF.
+
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD GET_ADDRESS_FROM_MEMORY.
+
+    DATA:
+      ls_addr1_complete TYPE szadr_addr1_complete,
+      ls_addr1_tab_line TYPE szadr_addr1_line.
+
+    CLEAR:
+      es_addr,
+      ev_email,
+      ev_telephone.
+
+    CALL FUNCTION 'ADDR_GET_COMPLETE'
+      EXPORTING
+        addrnumber        = iv_addrnumber
+      IMPORTING
+        addr1_complete    = ls_addr1_complete
+      EXCEPTIONS
+        parameter_error   = 1
+        address_not_exist = 2
+        internal_error    = 3
+        OTHERS            = 4.
+
+    READ TABLE ls_addr1_complete-addr1_tab INTO ls_addr1_tab_line
+      WITH KEY nation = space.
+    IF sy-subrc = 0.
+      es_addr = ls_addr1_tab_line-data.
+    ENDIF.
+
+*   Email address
+    READ TABLE ls_addr1_complete-adsmtp_tab INTO DATA(ls_adsmtp)
+      WITH KEY adsmtp-flgdefault = abap_true.
+    IF sy-subrc <> 0.
+      READ TABLE ls_addr1_complete-adsmtp_tab INTO ls_adsmtp
+        WITH KEY adsmtp-flgdefault = abap_false.
+    ENDIF.
+    ev_email = ls_adsmtp-adsmtp-smtp_addr.
+
+*   Telephone number
+    READ TABLE ls_addr1_complete-adtel_tab INTO DATA(ls_adtel)
+      WITH KEY adtel-flgdefault = abap_true.
+    IF sy-subrc <> 0.
+      READ TABLE ls_addr1_complete-adtel_tab INTO ls_adtel
+        WITH KEY adtel-flgdefault = abap_false.
+    ENDIF.
+
+    IF ls_adtel-adtel-tel_extens IS NOT INITIAL.
+      CONCATENATE ls_adtel-adtel-tel_number '-' ls_adtel-adtel-tel_extens INTO ev_telephone.
+      CONDENSE ev_telephone NO-GAPS.
+    ELSE.
+      ev_telephone = ls_adtel-adtel-tel_number.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_location_id.
+
+    DATA:
+      lv_ebeln TYPE ekpo-ebeln,
+      lv_ebelp TYPE ekpo-ebelp,
+      ls_ekpo  TYPE ekpo.
+
+    CLEAR:ev_locid1.
+
+    lv_ebeln = iv_vgbel.
+    lv_ebelp = iv_vgpos.
+
+    CALL FUNCTION 'ME_EKPO_SINGLE_READ'
+      EXPORTING
+        pi_ebeln         = lv_ebeln
+        pi_ebelp         = lv_ebelp
+      IMPORTING
+        po_ekpo          = ls_ekpo
+      EXCEPTIONS
+        no_records_found = 1
+        OTHERS           = 2.
+    IF sy-subrc = 0.
+      ev_locid1 = ls_ekpo-werks.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_location_info.
+
+    DATA:
+      ls_vttsvb   TYPE vttsvb,
+      ls_loc_info TYPE ts_loc_info,
+      lt_loc_info TYPE tt_loc_info.
+
+    CLEAR:
+      et_loc_info.
+
+    IF iv_tknum IS SUPPLIED.
+
+      LOOP AT it_vttsvb INTO ls_vttsvb WHERE tknum = iv_tknum
+                                         AND updkz <> zif_gtt_ef_constants=>cs_change_mode-delete.
+        fill_location_info(
+          EXPORTING
+            is_vttsvb   = ls_vttsvb
+          IMPORTING
+            et_loc_info = lt_loc_info ).
+
+        APPEND LINES OF lt_loc_info TO et_loc_info.
+        CLEAR:
+          ls_loc_info,
+          lt_loc_info.
+      ENDLOOP.
+
+    ELSE.
+      LOOP AT it_vttsvb INTO ls_vttsvb WHERE updkz <> zif_gtt_ef_constants=>cs_change_mode-delete.
+        fill_location_info(
+          EXPORTING
+            is_vttsvb   = ls_vttsvb
+          IMPORTING
+            et_loc_info = lt_loc_info ).
+
+        APPEND LINES OF lt_loc_info TO et_loc_info.
+        CLEAR:
+          ls_loc_info,
+          lt_loc_info.
+      ENDLOOP.
+
+    ENDIF.
+
+    SORT et_loc_info BY loctype locid.
+    DELETE ADJACENT DUPLICATES FROM et_loc_info COMPARING ALL FIELDS.
+
+  ENDMETHOD.
+
+
+  METHOD get_stage_by_delivery.
+
+    DATA:
+      lt_tknum_range TYPE STANDARD TABLE OF range_c10,
+      lt_vttp        TYPE TABLE OF vttp-tknum,
+      lt_vttsvb      TYPE vttsvb_tab.
+
+    CLEAR:
+      et_vttsvb.
+
+    SELECT tknum
+      FROM vttp
+      INTO TABLE lt_vttp
+     WHERE vbeln = iv_vbeln.
+
+    SORT lt_vttp BY table_line.
+    DELETE ADJACENT DUPLICATES FROM lt_vttp COMPARING ALL FIELDS.
+    CHECK lt_vttp IS NOT INITIAL.
+
+    LOOP AT lt_vttp INTO DATA(ls_vttp).
+      lt_tknum_range = VALUE #( (
+        sign   = 'I'
+        option = 'EQ'
+        low    = ls_vttp ) ).
+    ENDLOOP.
+
+    CALL FUNCTION 'ST_STAGES_READ'
+      TABLES
+        i_tknum_range = lt_tknum_range
+        c_xvttsvb     = lt_vttsvb
+      EXCEPTIONS
+        no_shipments  = 1
+        OTHERS        = 2.
+
+    IF sy-subrc = 0.
+      SORT lt_vttsvb BY tsrfo.
+      et_vttsvb = lt_vttsvb.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD is_odd.
+
+    DATA lv_reminder TYPE n.
+
+    rv_is_odd = abap_false.
+
+    lv_reminder = iv_value MOD 2.
+    IF lv_reminder <> 0.
+      rv_is_odd = abap_true.
+    ELSE.
+      rv_is_odd = abap_false.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

@@ -1,14 +1,14 @@
 # Fulfillment Tracking Apps for SAP Business Network Global Track and Trace
 ## What's New 
-### Mar 18th, 2023
-1. SAP Business Network Global Track and Trace now supports the tracking of stock transport orders. 
-2. Add the configuration table for the inbound delivery type and purchase order type.    
-3. Add sales order and purchase order numbers in shipper reference documents of the LE-TRA shipment. 
-4. To keep the unit of measure consistent between the delivery and its freight unit, add the freight unit's base quantity and base unit of measure to inbound and outbound delivery items.
-5. Correct the unit of measure in the inbound delivery header / inbound delivery item / purchase order item / freight unit / freight order.
-6. Remove the leading zero in the ship-to party, sold-to party and material ID of the inbound delivery item / sales order / sales order item / sales order item / outbound delivery header / outbound delivery item. 
+### April 22nd, 2023
+1. Support sending one-time locations from the ERP system to the GTT system.
+2. Send package ID of the LE-TRA Shipment to the GTT system as the tracked object.
+3. Fix the location ID (LOCID1) in planned "Goods Receipt" event of the outbound delivery for the stock transport order scenario.
+4. Fix the observation issue that occurs between inbound delivery header and its items when running the batch job.
+5. In the scenario "Maintain Tracked Objects on Container Unit", enhance the logic to retrieve the freight unit data from the freight order.
 
 For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/main/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
+
 ## Description
 You can find the sample code for SAP ERP extractors that are necessary to integrate SAP ERP with [SAP Business Network Global Track and Trace](https://help.sap.com/viewer/product/SAP_LBN_GTT_OPTION/LBN/en-US?task=discover_task) in this project. You can either implement the sample code or customize it to fit your needs. The delivered contents include: 
 
