@@ -33,11 +33,20 @@ TYPES:
     address_line TYPE adrs-line0,
   END OF gtys_address.
 
-DATA:
-  gv_evtcnt   TYPE /saptrx/evtcnt,                            "#EC NEEDED
-  gt_dlv_type TYPE rseloption,
-  gt_so_type  TYPE rseloption.
+TYPES:
+  BEGIN OF gtys_address_info,
+    locid     type char20,
+    loctype   type char30,
+    addr1     TYPE addr1_data,
+    email     TYPE ad_smtpadr,
+    telephone TYPE char50,
+  END OF gtys_address_info.
 
+DATA:
+  gv_evtcnt       TYPE /saptrx/evtcnt,                            "#EC NEEDED
+  gt_dlv_type     TYPE rseloption,
+  gt_so_type      TYPE rseloption,
+  gt_loc_data     TYPE TABLE OF gtys_address_info.
 
 CONSTANTS:
 * General
@@ -316,6 +325,23 @@ CONSTANTS:
   gc_cp_yn_fu_no_logsys          TYPE /saptrx/paramname     VALUE 'YN_DL_FU_NO_LOGSYS',
   gc_cp_yn_fu_base_uom_uni       TYPE /saptrx/paramname     VALUE 'YN_FU_BASE_UOM_UNI',
   gc_cp_yn_fu_base_uom_val       TYPE /saptrx/paramname     VALUE 'YN_FU_BASE_UOM_VAL',
+* One Time Location
+  gc_cp_yn_gtt_otl_locid         TYPE /saptrx/paramname     VALUE 'GTT_OTL_LOCID',
+  gc_cp_yn_gtt_otl_loctype       TYPE /saptrx/paramname     VALUE 'GTT_OTL_LOCTYPE',
+  gc_cp_yn_gtt_otl_timezone      TYPE /saptrx/paramname     VALUE 'GTT_OTL_TIMEZONE',
+  gc_cp_yn_gtt_otl_longitude     TYPE /saptrx/paramname     VALUE 'GTT_OTL_LONGITUDE',
+  gc_cp_yn_gtt_otl_latitude      TYPE /saptrx/paramname     VALUE 'GTT_OTL_LATITUDE',
+  gc_cp_yn_gtt_otl_unlocode      TYPE /saptrx/paramname     VALUE 'GTT_OTL_UNLOCODE',
+  gc_cp_yn_gtt_otl_iata_code     TYPE /saptrx/paramname     VALUE 'GTT_OTL_IATA_CODE',
+  gc_cp_yn_gtt_otl_description   TYPE /saptrx/paramname     VALUE 'GTT_OTL_DESCRIPTION',
+  gc_cp_yn_gtt_otl_country_code  TYPE /saptrx/paramname     VALUE 'GTT_OTL_COUNTRY_CODE',
+  gc_cp_yn_gtt_otl_city_name     TYPE /saptrx/paramname     VALUE 'GTT_OTL_CITY_NAME',
+  gc_cp_yn_gtt_otl_region_code   TYPE /saptrx/paramname     VALUE 'GTT_OTL_REGION_CODE',
+  gc_cp_yn_gtt_otl_house_number  TYPE /saptrx/paramname     VALUE 'GTT_OTL_HOUSE_NUMBER',
+  gc_cp_yn_gtt_otl_street_name   TYPE /saptrx/paramname     VALUE 'GTT_OTL_STREET_NAME',
+  gc_cp_yn_gtt_otl_postal_code   TYPE /saptrx/paramname     VALUE 'GTT_OTL_POSTAL_CODE',
+  gc_cp_yn_gtt_otl_email_address TYPE /saptrx/paramname     VALUE 'GTT_OTL_EMAIL_ADDRESS',
+  gc_cp_yn_gtt_otl_phone_number  TYPE /saptrx/paramname     VALUE 'GTT_OTL_PHONE_NUMBER',
 * Sales Order
   gc_parvw_ag                    TYPE parvw                 VALUE 'AG', " Sold-to Party
   gc_parvw_we                    TYPE parvw                 VALUE 'WE', " Ship-to Party

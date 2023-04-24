@@ -9,7 +9,20 @@ public section.
   methods CONSTRUCTOR
     importing
       !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
-  PROTECTED SECTION.
+protected section.
+
+  types tt_otl_locid TYPE STANDARD TABLE OF vbpa-lifnr WITH EMPTY KEY .
+  types tt_otl_loctype TYPE STANDARD TABLE OF char30 WITH EMPTY KEY .
+  types tt_otl_timezone TYPE STANDARD TABLE OF addr1_data-time_zone WITH EMPTY KEY .
+  types tt_otl_description TYPE STANDARD TABLE OF addr1_data-name1 WITH EMPTY KEY .
+  types tt_otl_country_code TYPE STANDARD TABLE OF addr1_data-country WITH EMPTY KEY .
+  types tt_otl_city_name TYPE STANDARD TABLE OF addr1_data-city1 WITH EMPTY KEY .
+  types tt_otl_region_code TYPE STANDARD TABLE OF addr1_data-region WITH EMPTY KEY .
+  types tt_otl_house_number TYPE STANDARD TABLE OF addr1_data-house_num1 WITH EMPTY KEY .
+  types tt_otl_street_name TYPE STANDARD TABLE OF addr1_data-street WITH EMPTY KEY .
+  types tt_otl_postal_code TYPE STANDARD TABLE OF addr1_data-post_code1 WITH EMPTY KEY .
+  types tt_otl_email_address TYPE STANDARD TABLE OF ad_smtpadr WITH EMPTY KEY .
+  types tt_otl_phone_number TYPE STANDARD TABLE OF char50 WITH EMPTY KEY .
 private section.
 
   types TV_POSNR_TXT type CHAR6 .
@@ -17,11 +30,11 @@ private section.
   types TV_LINE_NO type I .
   types TV_FREIGHTUNIT type /SCMTMS/TOR_ID .
   types TV_ITEMNUMBER type /SCMTMS/ITEM_ID .
-  types TV_QUANTITY type /SCMTMS/QUA_BASE_UOM_VAL.
+  types TV_QUANTITY type /SCMTMS/QUA_BASE_UOM_VAL .
   types TV_QUANTITYUOM type MEINS .
   types TV_PRODUCT_ID type /SCMTMS/PRODUCT_ID .
   types TV_PRODUCT_DESCR type /SCMTMS/ITEM_DESCRIPTION .
-  types tv_logsys TYPE  /SAPTRX/APPLSYSTEM.
+  types TV_LOGSYS type /SAPTRX/APPLSYSTEM .
   types:
     tt_line_no TYPE STANDARD TABLE OF tv_line_no
                           WITH EMPTY KEY .
@@ -41,206 +54,258 @@ private section.
                           WITH EMPTY KEY .
   types:
     tt_product_descr TYPE STANDARD TABLE OF tv_product_descr WITH EMPTY KEY .
-   types:
+  types:
     tt_logsys        TYPE STANDARD TABLE OF tv_logsys WITH EMPTY KEY .
-   types:
+  types:
     tt_appsys        TYPE STANDARD TABLE OF tv_logsys WITH EMPTY KEY .
-   types:
-    tt_trxcod        type STANDARD TABLE OF /SAPTRX/TRXCOD WITH EMPTY KEY .
-   types:
-    tt_trxid         type STANDARD TABLE OF /SAPTRX/TRXID WITH EMPTY KEY .
+  types:
+    tt_trxcod        TYPE STANDARD TABLE OF /saptrx/trxcod WITH EMPTY KEY .
+  types:
+    tt_trxid         TYPE STANDARD TABLE OF /saptrx/trxid WITH EMPTY KEY .
   types:
     BEGIN OF ts_dl_item,
       " Header section
-      vbeln     TYPE lips-vbeln,
-      posnr     TYPE tv_posnr_txt,
-      arktx     TYPE lips-arktx,
-      matnr     TYPE lips-matnr,
-      charg     TYPE lips-charg,         "MIA
-      lgobe     TYPE t001l-lgobe,        "MIA
-      lfimg     TYPE lips-lfimg,
-      vrkme     TYPE lips-vrkme,
+      vbeln             TYPE lips-vbeln,
+      posnr             TYPE tv_posnr_txt,
+      arktx             TYPE lips-arktx,
+      matnr             TYPE lips-matnr,
+      charg             TYPE lips-charg,         "MIA
+      lgobe             TYPE t001l-lgobe,        "MIA
+      lfimg             TYPE lips-lfimg,
+      vrkme             TYPE lips-vrkme,
       " Departure section
-      lifnr     TYPE likp-lifnr,
-      lifnr_lt  TYPE /saptrx/loc_id_type,
-      dep_addr  TYPE /saptrx/paramval200,
-      dep_email TYPE /saptrx/paramval200,
-      dep_tel   TYPE /saptrx/paramval200,
+      lifnr             TYPE likp-lifnr,
+      lifnr_lt          TYPE /saptrx/loc_id_type,
+      dep_addr          TYPE /saptrx/paramval200,
+      dep_email         TYPE /saptrx/paramval200,
+      dep_tel           TYPE /saptrx/paramval200,
       " Destination section
-      werks     TYPE lips-werks,
-      werks_lt  TYPE /saptrx/loc_id_type,
-      dest_addr TYPE /saptrx/paramval200,
-      lgnum     TYPE lips-lgnum,
-      lgtor     TYPE lips-lgtor,
-      lgnum_txt TYPE /saptrx/paramval200,
+      werks             TYPE lips-werks,
+      werks_lt          TYPE /saptrx/loc_id_type,
+      dest_addr         TYPE /saptrx/paramval200,
+      lgnum             TYPE lips-lgnum,
+      lgtor             TYPE lips-lgtor,
+      lgnum_txt         TYPE /saptrx/paramval200,
       " Others
-      bldat     TYPE likp-bldat,
-      lfdat     TYPE likp-lfdat,
-      brgew     TYPE lips-brgew,
-      ntgew     TYPE lips-ntgew,
-      gewei     TYPE likp-gewei,
-      volum     TYPE lips-volum,
-      voleh     TYPE lips-voleh,
-      bolnr     TYPE likp-bolnr,
-      profl     TYPE lips-profl,
-      incov     TYPE likp-incov,
-      inco1     TYPE likp-inco1,
-      inco2_l   TYPE likp-inco2_l,
-      po_item   TYPE tv_po_item,
-      umvkz     TYPE lips-umvkz,
-      umvkn     TYPE lips-umvkn,
+      bldat             TYPE likp-bldat,
+      lfdat             TYPE likp-lfdat,
+      brgew             TYPE lips-brgew,
+      ntgew             TYPE lips-ntgew,
+      gewei             TYPE likp-gewei,
+      volum             TYPE lips-volum,
+      voleh             TYPE lips-voleh,
+      bolnr             TYPE likp-bolnr,
+      profl             TYPE lips-profl,
+      incov             TYPE likp-incov,
+      inco1             TYPE likp-inco1,
+      inco2_l           TYPE likp-inco2_l,
+      po_item           TYPE tv_po_item,
+      umvkz             TYPE lips-umvkz,
+      umvkn             TYPE lips-umvkn,
+*     One time location
+      otl_locid         TYPE tt_otl_locid,
+      otl_loctype       TYPE tt_otl_loctype,
+      otl_timezone      TYPE tt_otl_timezone,
+      otl_description   TYPE tt_otl_description,
+      otl_country_code  TYPE tt_otl_country_code,
+      otl_city_name     TYPE tt_otl_city_name,
+      otl_region_code   TYPE tt_otl_region_code,
+      otl_house_number  TYPE tt_otl_house_number,
+      otl_street_name   TYPE tt_otl_street_name,
+      otl_postal_code   TYPE tt_otl_postal_code,
+      otl_email_address TYPE tt_otl_email_address,
+      otl_phone_number  TYPE tt_otl_phone_number,
     END OF ts_dl_item .
   types:
     BEGIN OF ts_dl_item_with_fu,
       " Header section
-      vbeln     TYPE lips-vbeln,
-      posnr     TYPE tv_posnr_txt,
-      arktx     TYPE lips-arktx,
-      matnr     TYPE lips-matnr,
-      charg     TYPE lips-charg,         "MIA
-      lgobe     TYPE t001l-lgobe,        "MIA
-      lfimg     TYPE lips-lfimg,
-      vrkme     TYPE lips-vrkme,
+      vbeln             TYPE lips-vbeln,
+      posnr             TYPE tv_posnr_txt,
+      arktx             TYPE lips-arktx,
+      matnr             TYPE lips-matnr,
+      charg             TYPE lips-charg,         "MIA
+      lgobe             TYPE t001l-lgobe,        "MIA
+      lfimg             TYPE lips-lfimg,
+      vrkme             TYPE lips-vrkme,
       " Departure section
-      lifnr     TYPE likp-lifnr,
-      lifnr_lt  TYPE /saptrx/loc_id_type,
-      dep_addr  TYPE /saptrx/paramval200,
-      dep_email TYPE /saptrx/paramval200,
-      dep_tel   TYPE /saptrx/paramval200,
+      lifnr             TYPE likp-lifnr,
+      lifnr_lt          TYPE /saptrx/loc_id_type,
+      dep_addr          TYPE /saptrx/paramval200,
+      dep_email         TYPE /saptrx/paramval200,
+      dep_tel           TYPE /saptrx/paramval200,
       " Destination section
-      werks     TYPE lips-werks,
-      werks_lt  TYPE /saptrx/loc_id_type,
-      dest_addr TYPE /saptrx/paramval200,
-      lgnum     TYPE lips-lgnum,
-      lgtor     TYPE lips-lgtor,
-      lgnum_txt TYPE /saptrx/paramval200,
+      werks             TYPE lips-werks,
+      werks_lt          TYPE /saptrx/loc_id_type,
+      dest_addr         TYPE /saptrx/paramval200,
+      lgnum             TYPE lips-lgnum,
+      lgtor             TYPE lips-lgtor,
+      lgnum_txt         TYPE /saptrx/paramval200,
       " Others
-      bldat     TYPE likp-bldat,
-      lfdat     TYPE likp-lfdat,
-      brgew     TYPE lips-brgew,
-      ntgew     TYPE lips-ntgew,
-      gewei     TYPE likp-gewei,
-      volum     TYPE lips-volum,
-      voleh     TYPE lips-voleh,
-      bolnr     TYPE likp-bolnr,
-      profl     TYPE lips-profl,
-      incov     TYPE likp-incov,
-      inco1     TYPE likp-inco1,
-      inco2_l   TYPE likp-inco2_l,
-      po_item   TYPE tv_po_item,
-      umvkz     TYPE lips-umvkz,
-      umvkn     TYPE lips-umvkn,
+      bldat             TYPE likp-bldat,
+      lfdat             TYPE likp-lfdat,
+      brgew             TYPE lips-brgew,
+      ntgew             TYPE lips-ntgew,
+      gewei             TYPE likp-gewei,
+      volum             TYPE lips-volum,
+      voleh             TYPE lips-voleh,
+      bolnr             TYPE likp-bolnr,
+      profl             TYPE lips-profl,
+      incov             TYPE likp-incov,
+      inco1             TYPE likp-inco1,
+      inco2_l           TYPE likp-inco2_l,
+      po_item           TYPE tv_po_item,
+      umvkz             TYPE lips-umvkz,
+      umvkn             TYPE lips-umvkn,
+*     One time location
+      otl_locid         TYPE tt_otl_locid,
+      otl_loctype       TYPE tt_otl_loctype,
+      otl_timezone      TYPE tt_otl_timezone,
+      otl_description   TYPE tt_otl_description,
+      otl_country_code  TYPE tt_otl_country_code,
+      otl_city_name     TYPE tt_otl_city_name,
+      otl_region_code   TYPE tt_otl_region_code,
+      otl_house_number  TYPE tt_otl_house_number,
+      otl_street_name   TYPE tt_otl_street_name,
+      otl_postal_code   TYPE tt_otl_postal_code,
+      otl_email_address TYPE tt_otl_email_address,
+      otl_phone_number  TYPE tt_otl_phone_number,
       " FU items
-      fu_lineno        TYPE tt_line_no,
-      fu_freightunit   TYPE tt_freightunit,
-      fu_itemnumber    TYPE tt_itemnumber,
-      fu_quantity      TYPE tt_quantity,
-      fu_quantityuom   TYPE tt_quantityuom,
-      fu_product_id    TYPE tt_product_id,
-      fu_product_descr TYPE tt_product_descr,
-      fu_base_uom_val  TYPE tt_quantity,
-      fu_base_uom_uni  TYPE tt_quantityuom,
-      fu_no_logsys     type tt_logsys,
-      appsys           TYPE tt_appsys,
-      trxcod           type tt_trxcod,
-      trxid            type tt_trxid,
-  END OF ts_dl_item_with_fu .
+      fu_lineno         TYPE tt_line_no,
+      fu_freightunit    TYPE tt_freightunit,
+      fu_itemnumber     TYPE tt_itemnumber,
+      fu_quantity       TYPE tt_quantity,
+      fu_quantityuom    TYPE tt_quantityuom,
+      fu_product_id     TYPE tt_product_id,
+      fu_product_descr  TYPE tt_product_descr,
+      fu_base_uom_val   TYPE tt_quantity,
+      fu_base_uom_uni   TYPE tt_quantityuom,
+      fu_no_logsys      TYPE tt_logsys,
+      appsys            TYPE tt_appsys,
+      trxcod            TYPE tt_trxcod,
+      trxid             TYPE tt_trxid,
+    END OF ts_dl_item_with_fu .
 
   constants:
     BEGIN OF cs_mapping,
       " Header section
-      vbeln     TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
-      posnr     TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY_ITEM',
-      arktx     TYPE /saptrx/paramname VALUE 'YN_DL_ITEM_DESCR',
-      matnr     TYPE /saptrx/paramname VALUE 'YN_DL_MATERIAL_ID',
-      charg     TYPE /saptrx/paramname VALUE 'YN_DL_MATERIAL_BATCH',       "MIA
-      lgobe     TYPE /saptrx/paramname VALUE 'YN_DL_STORAGE_LOCATION_TXT', "MIA
-      lfimg     TYPE /saptrx/paramname VALUE 'YN_DL_ORDER_QUANT',
-      vrkme     TYPE /saptrx/paramname VALUE 'YN_DL_ORDER_UNITS',
+      vbeln             TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
+      posnr             TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY_ITEM',
+      arktx             TYPE /saptrx/paramname VALUE 'YN_DL_ITEM_DESCR',
+      matnr             TYPE /saptrx/paramname VALUE 'YN_DL_MATERIAL_ID',
+      charg             TYPE /saptrx/paramname VALUE 'YN_DL_MATERIAL_BATCH',       "MIA
+      lgobe             TYPE /saptrx/paramname VALUE 'YN_DL_STORAGE_LOCATION_TXT', "MIA
+      lfimg             TYPE /saptrx/paramname VALUE 'YN_DL_ORDER_QUANT',
+      vrkme             TYPE /saptrx/paramname VALUE 'YN_DL_ORDER_UNITS',
       " Departure section
-      lifnr     TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_ID',
-      lifnr_lt  TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_LOC_TYPE',
-      dep_addr  TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_ADDRESS',
-      dep_email TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_EMAIL',
-      dep_tel   TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_TEL',
+      lifnr             TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_ID',
+      lifnr_lt          TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_LOC_TYPE',
+      dep_addr          TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_ADDRESS',
+      dep_email         TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_EMAIL',
+      dep_tel           TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_TEL',
       " Destination section
-      werks     TYPE /saptrx/paramname VALUE 'YN_DL_PLANT',
-      werks_lt  TYPE /saptrx/paramname VALUE 'YN_DL_PLANT_LOC_TYPE',
-      dest_addr TYPE /saptrx/paramname VALUE 'YN_DL_DESTIN_ADDRESS',
-      lgnum     TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE',
-      lgnum_txt TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE_DESC',
-      lgtor     TYPE /saptrx/paramname VALUE 'YN_DL_DOOR',
+      werks             TYPE /saptrx/paramname VALUE 'YN_DL_PLANT',
+      werks_lt          TYPE /saptrx/paramname VALUE 'YN_DL_PLANT_LOC_TYPE',
+      dest_addr         TYPE /saptrx/paramname VALUE 'YN_DL_DESTIN_ADDRESS',
+      lgnum             TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE',
+      lgnum_txt         TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE_DESC',
+      lgtor             TYPE /saptrx/paramname VALUE 'YN_DL_DOOR',
       " Others
-      bldat     TYPE /saptrx/paramname VALUE 'YN_DL_DOCUMENT_DATE',
-      lfdat     TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATE',
-      brgew     TYPE /saptrx/paramname VALUE 'YN_DL_GROSS_WEIGHT',
-      ntgew     TYPE /saptrx/paramname VALUE 'YN_DL_NET_WEIGHT',
-      gewei     TYPE /saptrx/paramname VALUE 'YN_DL_WEIGHT_UNITS',
-      volum     TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME',
-      voleh     TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME_UNITS',
-      bolnr     TYPE /saptrx/paramname VALUE 'YN_DL_BILL_OF_LADING',
-      profl     TYPE /saptrx/paramname VALUE 'YN_DL_DANGEROUS_GOODS',
-      incov     TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_VERSION',
-      inco1     TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS',
-      inco2_l   TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_LOCATION',
-      po_item   TYPE /saptrx/paramname VALUE 'YN_DL_ASSOC_POITEM_NO',
-      umvkz     TYPE /saptrx/paramname VALUE 'YN_DL_NUMERATOR_FACTOR',
-      umvkn     TYPE /saptrx/paramname VALUE 'YN_DL_DENOMINATOR_DIVISOR',
+      bldat             TYPE /saptrx/paramname VALUE 'YN_DL_DOCUMENT_DATE',
+      lfdat             TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATE',
+      brgew             TYPE /saptrx/paramname VALUE 'YN_DL_GROSS_WEIGHT',
+      ntgew             TYPE /saptrx/paramname VALUE 'YN_DL_NET_WEIGHT',
+      gewei             TYPE /saptrx/paramname VALUE 'YN_DL_WEIGHT_UNITS',
+      volum             TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME',
+      voleh             TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME_UNITS',
+      bolnr             TYPE /saptrx/paramname VALUE 'YN_DL_BILL_OF_LADING',
+      profl             TYPE /saptrx/paramname VALUE 'YN_DL_DANGEROUS_GOODS',
+      incov             TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_VERSION',
+      inco1             TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS',
+      inco2_l           TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_LOCATION',
+      po_item           TYPE /saptrx/paramname VALUE 'YN_DL_ASSOC_POITEM_NO',
+      umvkz             TYPE /saptrx/paramname VALUE 'YN_DL_NUMERATOR_FACTOR',
+      umvkn             TYPE /saptrx/paramname VALUE 'YN_DL_DENOMINATOR_DIVISOR',
+*     One time location
+      otl_locid         TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCID',
+      otl_loctype       TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCTYPE',
+      otl_timezone      TYPE /saptrx/paramname VALUE 'GTT_OTL_TIMEZONE',
+      otl_description   TYPE /saptrx/paramname VALUE 'GTT_OTL_DESCRIPTION',
+      otl_country_code  TYPE /saptrx/paramname VALUE 'GTT_OTL_COUNTRY_CODE',
+      otl_city_name     TYPE /saptrx/paramname VALUE 'GTT_OTL_CITY_NAME',
+      otl_region_code   TYPE /saptrx/paramname VALUE 'GTT_OTL_REGION_CODE',
+      otl_house_number  TYPE /saptrx/paramname VALUE 'GTT_OTL_HOUSE_NUMBER',
+      otl_street_name   TYPE /saptrx/paramname VALUE 'GTT_OTL_STREET_NAME',
+      otl_postal_code   TYPE /saptrx/paramname VALUE 'GTT_OTL_POSTAL_CODE',
+      otl_email_address TYPE /saptrx/paramname VALUE 'GTT_OTL_EMAIL_ADDRESS',
+      otl_phone_number  TYPE /saptrx/paramname VALUE 'GTT_OTL_PHONE_NUMBER',
     END OF cs_mapping .
   constants:
     BEGIN OF cs_mapping_with_fu,
       " Header section
-      vbeln            TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
-      posnr            TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY_ITEM',
-      arktx            TYPE /saptrx/paramname VALUE 'YN_DL_ITEM_DESCR',
-      matnr            TYPE /saptrx/paramname VALUE 'YN_DL_MATERIAL_ID',
-      charg            TYPE /saptrx/paramname VALUE 'YN_DL_MATERIAL_BATCH',       "MIA
-      lgobe            TYPE /saptrx/paramname VALUE 'YN_DL_STORAGE_LOCATION_TXT', "MIA
-      lfimg            TYPE /saptrx/paramname VALUE 'YN_DL_ORDER_QUANT',
-      vrkme            TYPE /saptrx/paramname VALUE 'YN_DL_ORDER_UNITS',
+      vbeln             TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
+      posnr             TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY_ITEM',
+      arktx             TYPE /saptrx/paramname VALUE 'YN_DL_ITEM_DESCR',
+      matnr             TYPE /saptrx/paramname VALUE 'YN_DL_MATERIAL_ID',
+      charg             TYPE /saptrx/paramname VALUE 'YN_DL_MATERIAL_BATCH',       "MIA
+      lgobe             TYPE /saptrx/paramname VALUE 'YN_DL_STORAGE_LOCATION_TXT', "MIA
+      lfimg             TYPE /saptrx/paramname VALUE 'YN_DL_ORDER_QUANT',
+      vrkme             TYPE /saptrx/paramname VALUE 'YN_DL_ORDER_UNITS',
       " Departure section
-      lifnr            TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_ID',
-      lifnr_lt         TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_LOC_TYPE',
-      dep_addr         TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_ADDRESS',
-      dep_email        TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_EMAIL',
-      dep_tel          TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_TEL',
+      lifnr             TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_ID',
+      lifnr_lt          TYPE /saptrx/paramname VALUE 'YN_DL_VENDOR_LOC_TYPE',
+      dep_addr          TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_ADDRESS',
+      dep_email         TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_EMAIL',
+      dep_tel           TYPE /saptrx/paramname VALUE 'YN_DL_DEPART_TEL',
       " Destination section
-      werks            TYPE /saptrx/paramname VALUE 'YN_DL_PLANT',
-      werks_lt         TYPE /saptrx/paramname VALUE 'YN_DL_PLANT_LOC_TYPE',
-      dest_addr        TYPE /saptrx/paramname VALUE 'YN_DL_DESTIN_ADDRESS',
-      lgnum            TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE',
-      lgnum_txt        TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE_DESC',
-      lgtor            TYPE /saptrx/paramname VALUE 'YN_DL_DOOR',
+      werks             TYPE /saptrx/paramname VALUE 'YN_DL_PLANT',
+      werks_lt          TYPE /saptrx/paramname VALUE 'YN_DL_PLANT_LOC_TYPE',
+      dest_addr         TYPE /saptrx/paramname VALUE 'YN_DL_DESTIN_ADDRESS',
+      lgnum             TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE',
+      lgnum_txt         TYPE /saptrx/paramname VALUE 'YN_DL_WAREHOUSE_DESC',
+      lgtor             TYPE /saptrx/paramname VALUE 'YN_DL_DOOR',
       " Others
-      bldat            TYPE /saptrx/paramname VALUE 'YN_DL_DOCUMENT_DATE',
-      lfdat            TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATE',
-      brgew            TYPE /saptrx/paramname VALUE 'YN_DL_GROSS_WEIGHT',
-      ntgew            TYPE /saptrx/paramname VALUE 'YN_DL_NET_WEIGHT',
-      gewei            TYPE /saptrx/paramname VALUE 'YN_DL_WEIGHT_UNITS',
-      volum            TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME',
-      voleh            TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME_UNITS',
-      bolnr            TYPE /saptrx/paramname VALUE 'YN_DL_BILL_OF_LADING',
-      profl            TYPE /saptrx/paramname VALUE 'YN_DL_DANGEROUS_GOODS',
-      incov            TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_VERSION',
-      inco1            TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS',
-      inco2_l          TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_LOCATION',
-      po_item          TYPE /saptrx/paramname VALUE 'YN_DL_ASSOC_POITEM_NO',
-      umvkz            TYPE /saptrx/paramname VALUE 'YN_DL_NUMERATOR_FACTOR',
-      umvkn            TYPE /saptrx/paramname VALUE 'YN_DL_DENOMINATOR_DIVISOR',
+      bldat             TYPE /saptrx/paramname VALUE 'YN_DL_DOCUMENT_DATE',
+      lfdat             TYPE /saptrx/paramname VALUE 'YN_DL_PLANNED_DLV_DATE',
+      brgew             TYPE /saptrx/paramname VALUE 'YN_DL_GROSS_WEIGHT',
+      ntgew             TYPE /saptrx/paramname VALUE 'YN_DL_NET_WEIGHT',
+      gewei             TYPE /saptrx/paramname VALUE 'YN_DL_WEIGHT_UNITS',
+      volum             TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME',
+      voleh             TYPE /saptrx/paramname VALUE 'YN_DL_VOLUME_UNITS',
+      bolnr             TYPE /saptrx/paramname VALUE 'YN_DL_BILL_OF_LADING',
+      profl             TYPE /saptrx/paramname VALUE 'YN_DL_DANGEROUS_GOODS',
+      incov             TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_VERSION',
+      inco1             TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS',
+      inco2_l           TYPE /saptrx/paramname VALUE 'YN_DL_INCOTERMS_LOCATION',
+      po_item           TYPE /saptrx/paramname VALUE 'YN_DL_ASSOC_POITEM_NO',
+      umvkz             TYPE /saptrx/paramname VALUE 'YN_DL_NUMERATOR_FACTOR',
+      umvkn             TYPE /saptrx/paramname VALUE 'YN_DL_DENOMINATOR_DIVISOR',
+*     One time location
+      otl_locid         TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCID',
+      otl_loctype       TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCTYPE',
+      otl_timezone      TYPE /saptrx/paramname VALUE 'GTT_OTL_TIMEZONE',
+      otl_description   TYPE /saptrx/paramname VALUE 'GTT_OTL_DESCRIPTION',
+      otl_country_code  TYPE /saptrx/paramname VALUE 'GTT_OTL_COUNTRY_CODE',
+      otl_city_name     TYPE /saptrx/paramname VALUE 'GTT_OTL_CITY_NAME',
+      otl_region_code   TYPE /saptrx/paramname VALUE 'GTT_OTL_REGION_CODE',
+      otl_house_number  TYPE /saptrx/paramname VALUE 'GTT_OTL_HOUSE_NUMBER',
+      otl_street_name   TYPE /saptrx/paramname VALUE 'GTT_OTL_STREET_NAME',
+      otl_postal_code   TYPE /saptrx/paramname VALUE 'GTT_OTL_POSTAL_CODE',
+      otl_email_address TYPE /saptrx/paramname VALUE 'GTT_OTL_EMAIL_ADDRESS',
+      otl_phone_number  TYPE /saptrx/paramname VALUE 'GTT_OTL_PHONE_NUMBER',
       " FU fields
-      fu_lineno        TYPE /saptrx/paramname VALUE 'YN_DL_FU_LINE_COUNT',
-      fu_freightunit   TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO',
-      fu_itemnumber    TYPE /saptrx/paramname VALUE 'YN_DL_FU_ITEM_NO',
-      fu_quantity      TYPE /saptrx/paramname VALUE 'YN_DL_FU_QUANTITY',
-      fu_quantityuom   TYPE /saptrx/paramname VALUE 'YN_DL_FU_UNITS',
-      fu_product_id    TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT',
-      fu_product_descr TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT_DESCR',
-      fu_base_uom_val  TYPE /saptrx/paramname VALUE 'YN_FU_BASE_UOM_VAL',
-      fu_base_uom_uni  TYPE /saptrx/paramname VALUE 'YN_FU_BASE_UOM_UNI',
-      fu_no_logsys     TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO_LOGSYS',
-      appsys           TYPE /saptrx/paramname VALUE 'E1EHPTID_APPSYS',
-      trxcod           TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXCOD',
-      trxid            TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXID',
+      fu_lineno         TYPE /saptrx/paramname VALUE 'YN_DL_FU_LINE_COUNT',
+      fu_freightunit    TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO',
+      fu_itemnumber     TYPE /saptrx/paramname VALUE 'YN_DL_FU_ITEM_NO',
+      fu_quantity       TYPE /saptrx/paramname VALUE 'YN_DL_FU_QUANTITY',
+      fu_quantityuom    TYPE /saptrx/paramname VALUE 'YN_DL_FU_UNITS',
+      fu_product_id     TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT',
+      fu_product_descr  TYPE /saptrx/paramname VALUE 'YN_DL_FU_PRODUCT_DESCR',
+      fu_base_uom_val   TYPE /saptrx/paramname VALUE 'YN_FU_BASE_UOM_VAL',
+      fu_base_uom_uni   TYPE /saptrx/paramname VALUE 'YN_FU_BASE_UOM_UNI',
+      fu_no_logsys      TYPE /saptrx/paramname VALUE 'YN_DL_FU_NO_LOGSYS',
+      appsys            TYPE /saptrx/paramname VALUE 'E1EHPTID_APPSYS',
+      trxcod            TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXCOD',
+      trxid             TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXID',
     END OF cs_mapping_with_fu .
   constants CV_POSNR_EMPTY type POSNR_VL value '000000' ##NO_TEXT.
   data MO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
@@ -314,6 +379,24 @@ private section.
     exporting
       !ET_TOR_ID type ZIF_GTT_MIA_CTP_TYPES=>TT_FU_ID
       !ET_TOR_ITEM type ZIF_GTT_MIA_CTP_TYPES=>TT_FU_LIST
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_ONE_TIME_LOCATION
+    importing
+      !IR_VBPA type ref to DATA
+      !IV_VBELN type VBELN_VL
+      !IV_POSNR type POSNR_VL
+    changing
+      !CS_DL_ITEM type TS_DL_ITEM
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_ONE_TIME_LOCATION_OLD
+    importing
+      !IR_VBPA type ref to DATA
+      !IV_VBELN type VBELN_VL
+      !IV_POSNR type POSNR_VL
+    changing
+      !CS_DL_ITEM type TS_DL_ITEM
     raising
       CX_UDM_MESSAGE .
 ENDCLASS.
@@ -677,6 +760,19 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
       CHANGING
         cs_dl_item = ls_item ).
 
+*   One time location
+    fill_one_time_location(
+      EXPORTING
+        ir_vbpa    = mo_ef_parameters->get_appl_table(
+                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_partners_new )
+        iv_vbeln   = |{ ls_item-vbeln ALPHA = IN }|
+        iv_posnr   = cv_posnr_empty
+      CHANGING
+        cs_dl_item = ls_item ).
+    IF ls_item-otl_locid IS INITIAL.
+      APPEND INITIAL LINE TO ls_item-otl_locid.
+    ENDIF.
+
     fill_item_location_types(
       CHANGING
         cs_dl_item = ls_item ).
@@ -770,6 +866,21 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
         iv_posnr   = cv_posnr_empty
       CHANGING
         cs_dl_item = ls_item ).
+
+*   One time location
+    fill_one_time_location_old(
+      EXPORTING
+        ir_vbpa    = get_vbpa_table_old(
+                       is_app_object = is_app_object
+                       iv_vbeln      = lv_vbeln
+                       iv_posnr      = cv_posnr_empty )
+        iv_vbeln   = lv_vbeln
+        iv_posnr   = cv_posnr_empty
+      CHANGING
+        cs_dl_item = ls_item ).
+    IF ls_item-otl_locid IS INITIAL.
+      APPEND INITIAL LINE TO ls_item-otl_locid.
+    ENDIF.
 
     fill_item_location_types(
       CHANGING
@@ -951,5 +1062,105 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
     SORT et_tor_item BY tor_id item_id.
     DELETE ADJACENT DUPLICATES FROM et_tor_item COMPARING tor_id item_id.
+  ENDMETHOD.
+
+
+  METHOD fill_one_time_location.
+
+    FIELD-SYMBOLS:
+      <lt_vbpa> TYPE vbpavb_tab,
+      <ls_vbpa> TYPE vbpavb.
+
+    DATA:
+      ls_loc_addr  TYPE addr1_data,
+      lv_loc_email TYPE ad_smtpadr,
+      lv_loc_tel   TYPE char50.
+
+    ASSIGN ir_vbpa->* TO <lt_vbpa>.
+
+    IF <lt_vbpa> IS ASSIGNED.
+      READ TABLE <lt_vbpa> ASSIGNING <ls_vbpa>
+        WITH KEY vbeln = iv_vbeln
+                 posnr = iv_posnr
+                 parvw = zif_gtt_mia_app_constants=>cs_parvw-supplier.
+
+      IF sy-subrc = 0 AND <ls_vbpa> IS ASSIGNED AND <ls_vbpa> IS NOT INITIAL
+        AND <ls_vbpa>-adrnr CN '0 ' AND <ls_vbpa>-adrda CA zif_gtt_ef_constants=>vbpa_addr_ind_man_all.
+        zcl_gtt_tools=>get_address_from_memory(
+          EXPORTING
+            iv_addrnumber = <ls_vbpa>-adrnr
+          IMPORTING
+            es_addr       = ls_loc_addr
+            ev_email      = lv_loc_email
+            ev_telephone  = lv_loc_tel ).
+
+        APPEND |{ <ls_vbpa>-lifnr ALPHA = OUT }| TO cs_dl_item-otl_locid.
+        APPEND zif_gtt_ef_constants=>cs_loc_types-businesspartner TO cs_dl_item-otl_loctype.
+        APPEND ls_loc_addr-time_zone TO cs_dl_item-otl_timezone.
+        APPEND ls_loc_addr-name1 TO cs_dl_item-otl_description.
+        APPEND ls_loc_addr-country TO cs_dl_item-otl_country_code.
+        APPEND ls_loc_addr-city1 TO cs_dl_item-otl_city_name.
+        APPEND ls_loc_addr-region TO cs_dl_item-otl_region_code.
+        APPEND ls_loc_addr-house_num1 TO cs_dl_item-otl_house_number.
+        APPEND ls_loc_addr-street TO cs_dl_item-otl_street_name.
+        APPEND ls_loc_addr-post_code1 TO cs_dl_item-otl_postal_code.
+        APPEND lv_loc_email TO cs_dl_item-otl_email_address.
+        APPEND lv_loc_tel TO cs_dl_item-otl_phone_number.
+      ENDIF.
+    ELSE.
+      MESSAGE e002(zgtt) WITH 'VBPA' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD FILL_ONE_TIME_LOCATION_OLD.
+
+    FIELD-SYMBOLS:
+      <lt_vbpa> TYPE vbpavb_tab,
+      <ls_vbpa> TYPE vbpavb.
+
+    DATA:
+      ls_loc_addr  TYPE addr1_data,
+      lv_loc_email TYPE ad_smtpadr,
+      lv_loc_tel   TYPE char50.
+
+    ASSIGN ir_vbpa->* TO <lt_vbpa>.
+
+    IF <lt_vbpa> IS ASSIGNED.
+      READ TABLE <lt_vbpa> ASSIGNING <ls_vbpa>
+        WITH KEY vbeln = iv_vbeln
+                 posnr = iv_posnr
+                 parvw = zif_gtt_mia_app_constants=>cs_parvw-supplier.
+
+      IF sy-subrc = 0 AND <ls_vbpa> IS ASSIGNED AND <ls_vbpa> IS NOT INITIAL
+        AND <ls_vbpa>-adrnr CN '0 ' AND <ls_vbpa>-adrda CA zif_gtt_ef_constants=>vbpa_addr_ind_man_all.
+        zcl_gtt_tools=>get_address_from_db(
+          EXPORTING
+            iv_addrnumber = <ls_vbpa>-adrnr
+          IMPORTING
+            es_addr       = ls_loc_addr
+            ev_email      = lv_loc_email
+            ev_telephone  = lv_loc_tel ).
+
+        APPEND |{ <ls_vbpa>-lifnr ALPHA = OUT }| TO cs_dl_item-otl_locid.
+        APPEND zif_gtt_ef_constants=>cs_loc_types-businesspartner TO cs_dl_item-otl_loctype.
+        APPEND ls_loc_addr-time_zone TO cs_dl_item-otl_timezone.
+        APPEND ls_loc_addr-name1 TO cs_dl_item-otl_description.
+        APPEND ls_loc_addr-country TO cs_dl_item-otl_country_code.
+        APPEND ls_loc_addr-city1 TO cs_dl_item-otl_city_name.
+        APPEND ls_loc_addr-region TO cs_dl_item-otl_region_code.
+        APPEND ls_loc_addr-house_num1 TO cs_dl_item-otl_house_number.
+        APPEND ls_loc_addr-street TO cs_dl_item-otl_street_name.
+        APPEND ls_loc_addr-post_code1 TO cs_dl_item-otl_postal_code.
+        APPEND lv_loc_email TO cs_dl_item-otl_email_address.
+        APPEND lv_loc_tel TO cs_dl_item-otl_phone_number.
+      ENDIF.
+    ELSE.
+      MESSAGE e002(zgtt) WITH 'VBPA' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
   ENDMETHOD.
 ENDCLASS.

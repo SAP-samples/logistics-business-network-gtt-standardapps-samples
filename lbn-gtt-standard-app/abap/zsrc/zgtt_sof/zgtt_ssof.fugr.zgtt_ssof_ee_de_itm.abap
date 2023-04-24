@@ -314,7 +314,13 @@ FUNCTION zgtt_ssof_ee_de_itm.
         CATCH cx_udm_message.
       ENDTRY.
       ls_expeventdata-evt_exp_datetime = |0{ <ls_xlikp>-lfdat }{ <ls_xlikp>-lfuhr }|.
-      ls_expeventdata-locid1 = <ls_xlips>-werks.
+      zcl_gtt_tools=>get_location_id(
+        EXPORTING
+          iv_vgbel  = <ls_xlips>-vgbel
+          iv_vgpos  = <ls_xlips>-vgpos
+        IMPORTING
+          ev_locid1 = DATA(lv_locid1) ).
+      ls_expeventdata-locid1 = lv_locid1.
       ls_expeventdata-locid2 = |{ <ls_xlips>-vbeln ALPHA = OUT }{ <ls_xlips>-posnr ALPHA = IN }|.
       CONDENSE ls_expeventdata-locid2 NO-GAPS.
       ls_expeventdata-loctype = zif_gtt_ef_constants=>cs_loc_types-plant.

@@ -735,7 +735,13 @@ FORM check_for_changes
     lt_yvbup    TYPE STANDARD TABLE OF vbupvb,
     ls_yvbup    TYPE vbupvb,
     ls_vbup_new TYPE vbup,
-    ls_vbup_old TYPE vbup.
+    ls_vbup_old TYPE vbup,
+    lt_xvbpa    TYPE STANDARD TABLE OF vbpavb,
+    ls_xvbpa    TYPE vbpavb,
+    lt_yvbpa    TYPE STANDARD TABLE OF vbpavb,
+    ls_yvbpa    TYPE vbpavb,
+    ls_vbpa_new TYPE vbpa,
+    ls_vbpa_old TYPE vbpa.
 
   FIELD-SYMBOLS:
     <upd_tmstmp>    TYPE any.
@@ -864,6 +870,47 @@ FORM check_for_changes
       ENDIF.
     ENDIF.
   ENDLOOP.
+
+  CHECK cv_aot_relevance IS INITIAL.
+
+* Read application objects for geting Sales Order Partner Data New / Old
+  PERFORM read_appl_table
+    USING    i_all_appl_tables
+             gc_bpt_partners_new
+    CHANGING lt_xvbpa.
+  PERFORM read_appl_table
+    USING    i_all_appl_tables
+             gc_bpt_partners_old
+    CHANGING lt_yvbpa.
+
+  LOOP AT lt_xvbpa INTO ls_xvbpa
+    WHERE vbeln = is_xvbak-vbeln
+    AND   posnr IS INITIAL.
+
+    READ TABLE lt_yvbpa INTO ls_yvbpa
+      WITH KEY vbeln = ls_xvbpa-vbeln
+               posnr = ls_xvbpa-posnr
+               parvw = ls_xvbpa-parvw.
+    IF sy-subrc IS INITIAL.
+      MOVE-CORRESPONDING ls_xvbpa TO ls_vbpa_new.
+      MOVE-CORRESPONDING ls_yvbpa TO ls_vbpa_old.
+      IF ls_vbpa_new <> ls_vbpa_old.
+        cv_aot_relevance = gc_true.
+        EXIT.
+      ENDIF.
+    ENDIF.
+  ENDLOOP.
+
+  CHECK cv_aot_relevance IS INITIAL.
+
+* Check location address is changed or not
+  zcl_gtt_sof_toolkit=>check_location_address(
+    EXPORTING
+      it_vbpa       = lt_xvbpa
+      iv_vbeln      = is_xvbak-vbeln
+      iv_header_chk = abap_false
+    IMPORTING
+      ev_relevance  = cv_aot_relevance ).
 
 ENDFORM.                    " CHECK_FOR_CHANGES
 *&---------------------------------------------------------------------*
@@ -1100,6 +1147,17 @@ FORM check_for_header_changes
       ENDIF.
     ENDIF.
   ENDLOOP.
+
+  CHECK cv_aot_relevance IS INITIAL.
+
+* Check location address is changed or not
+  zcl_gtt_sof_toolkit=>check_location_address(
+    EXPORTING
+      it_vbpa       = lt_xvbpa
+      iv_vbeln      = is_xvbak-vbeln
+      iv_header_chk = abap_true
+    IMPORTING
+      ev_relevance  = cv_aot_relevance ).
 
   CHECK cv_aot_relevance IS INITIAL.
 

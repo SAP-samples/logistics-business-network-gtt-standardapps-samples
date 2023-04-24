@@ -741,16 +741,7 @@ CLASS ZCL_GTT_STS_BO_TRK_ONCU_FO IMPLEMENTATION.
       EXPORTING
         iv_node_key     = /scmtms/if_tor_c=>sc_node-root
         it_key          = VALUE #( ( key = <ls_tor_root>-node_id ) )
-        iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
-        iv_before_image = iv_old_data
-      IMPORTING
-        et_key_link     = DATA(lt_capa2req_link) ).
-
-    lo_tor_srv_mgr->retrieve_by_association(
-      EXPORTING
-        iv_node_key     = /scmtms/if_tor_c=>sc_node-root
-        it_key          = CORRESPONDING #( lt_capa2req_link MAPPING key = target_key )
-        iv_association  = /scmtms/if_tor_c=>sc_association-root-req_tor
+        iv_association  = /scmtms/if_tor_c=>sc_association-root-assigned_fus
         iv_before_image = iv_old_data
         iv_fill_data    = abap_true
       IMPORTING

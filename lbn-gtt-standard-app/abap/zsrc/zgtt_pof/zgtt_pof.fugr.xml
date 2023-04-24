@@ -166,7 +166,7 @@
     </item>
     <item>
      <FUNCNAME>ZGTT_SPOF_CTP_DL_TO_PO</FUNCNAME>
-     <SHORT_TEXT>Cross TP Update from Shipment to Delivery</SHORT_TEXT>
+     <SHORT_TEXT>Cross TP Update from Inbound Delivery to purchase order</SHORT_TEXT>
      <IMPORT>
       <RSIMP>
        <PARAMETER>IT_XLIKP</PARAMETER>

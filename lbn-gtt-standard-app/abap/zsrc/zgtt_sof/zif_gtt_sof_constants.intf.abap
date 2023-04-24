@@ -8,6 +8,8 @@ interface ZIF_GTT_SOF_CONSTANTS
       shippingpoint    TYPE zgtt_ssof_stop_info-loctype VALUE 'ShippingPoint',
       plant            TYPE zgtt_ssof_stop_info-loctype VALUE 'Plant',
       logisticlocation TYPE zgtt_ssof_stop_info-loctype VALUE 'LogisticLocation',
+      shiptoparty      TYPE zgtt_ssof_stop_info-loctype VALUE 'OTLShipToParty',
+      soldtoparty      TYPE zgtt_ssof_stop_info-loctype VALUE 'OTLSoldToParty',
     END OF cs_loctype .
   constants:
     BEGIN OF cs_trxcod,

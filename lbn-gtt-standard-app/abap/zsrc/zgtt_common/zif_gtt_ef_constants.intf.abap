@@ -116,4 +116,8 @@ interface ZIF_GTT_EF_CONSTANTS
         tor_ctp      TYPE balsubobj VALUE 'APPSYS',
       END OF subobject,
     END OF cs_logs .
+* combinations of address indicator
+  CONSTANTS:
+    vbpa_addr_ind_man_all TYPE char04 VALUE 'BCEF',
+    shp_addr_ind_man_all  TYPE char03 VALUE 'BCD'.
 endinterface.

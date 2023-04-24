@@ -299,3 +299,224 @@ USING  i_all_appl_tables TYPE trxas_tabcontainer.
   ENDIF.
 
 ENDFORM.                    " read_appl_tables_status
+*&---------------------------------------------------------------------*
+*& Form fill_one_time_location
+*&---------------------------------------------------------------------*
+*& Support one time location
+*&---------------------------------------------------------------------*
+*&      --> ET_LOC_DATA      Location data
+*&      --> is_xvbpa         Partner information
+*&      --> iv_loctype       Location type
+*&---------------------------------------------------------------------*
+FORM fill_one_time_location  TABLES   et_loc_data     TYPE STANDARD TABLE
+                             USING    is_xvbpa        TYPE vbpavb
+                                      iv_loctype      TYPE zgtt_ssof_loctype.
+
+  DATA:
+    ls_loc_addr     TYPE addr1_data,
+    lv_loc_email    TYPE ad_smtpadr,
+    lv_loc_tel      TYPE char50,
+    ls_address_info TYPE gtys_address_info,
+    lt_address_info TYPE TABLE OF gtys_address_info.
+
+  CLEAR et_loc_data[].
+
+  IF is_xvbpa-adrnr CN '0 ' AND is_xvbpa-adrda CA zif_gtt_ef_constants=>vbpa_addr_ind_man_all.
+    zcl_gtt_tools=>get_address_from_memory(
+      EXPORTING
+        iv_addrnumber = is_xvbpa-adrnr
+      IMPORTING
+        es_addr       = ls_loc_addr
+        ev_email      = lv_loc_email
+        ev_telephone  = lv_loc_tel ).
+
+    ls_address_info-locid = |{ is_xvbpa-kunnr ALPHA = OUT }|.
+    ls_address_info-loctype = iv_loctype.
+    ls_address_info-addr1 = ls_loc_addr.
+    ls_address_info-email = lv_loc_email.
+    ls_address_info-telephone = lv_loc_tel.
+    APPEND ls_address_info TO lt_address_info.
+    CLEAR:
+      ls_address_info.
+
+  ENDIF.
+
+  et_loc_data[] = lt_address_info.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form fill_loc_data
+*&---------------------------------------------------------------------*
+*& Fill location data
+*&---------------------------------------------------------------------*
+*&      --> CT_CONTROL_DATA  Control data
+*&      --> is_ctrl          Control data
+*&---------------------------------------------------------------------*
+FORM fill_loc_data  TABLES  ct_control_data  TYPE /saptrx/bapi_trk_control_tab
+                     USING  is_ctrl          TYPE /saptrx/control_data.
+
+  DATA:
+    ls_loc_data     TYPE gtys_address_info,
+    lv_paramindex   TYPE /saptrx/indexcounter,
+    ls_control_data TYPE /saptrx/control_data,
+    lt_control_data TYPE TABLE OF /saptrx/control_data.
+
+  CLEAR ct_control_data[].
+
+  LOOP AT gt_loc_data INTO ls_loc_data.
+
+    lv_paramindex = lv_paramindex + 1.
+
+*   Location ID
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_locid.
+    ls_control_data-value = ls_loc_data-locid.
+    IF ls_loc_data-loctype = zif_gtt_sof_constants=>cs_loctype-bp.
+      ls_control_data-value = |{ ls_loc_data-locid ALPHA = OUT }|.
+    ENDIF.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Location Type
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_loctype.
+    ls_control_data-value = ls_loc_data-loctype.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Time Zone
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_timezone.
+    ls_control_data-value = ls_loc_data-addr1-time_zone.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Description
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_description.
+    ls_control_data-value = ls_loc_data-addr1-name1.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Country Code
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_country_code.
+    ls_control_data-value = ls_loc_data-addr1-country.
+    APPEND ls_control_data TO lt_control_data.
+
+*   City Name
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_city_name.
+    ls_control_data-value = ls_loc_data-addr1-city1.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Region Code
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_region_code.
+    ls_control_data-value = ls_loc_data-addr1-region.
+    APPEND ls_control_data TO lt_control_data.
+
+*   House Number
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_house_number.
+    ls_control_data-value = ls_loc_data-addr1-house_num1.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Street Name
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_street_name.
+    ls_control_data-value = ls_loc_data-addr1-street.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Postal Code
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_postal_code.
+    ls_control_data-value = ls_loc_data-addr1-post_code1.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Email Address
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_email_address.
+    ls_control_data-value = ls_loc_data-email.
+    APPEND ls_control_data TO lt_control_data.
+
+*   Phone Number
+    ls_control_data-paramindex = lv_paramindex.
+    ls_control_data-paramname = gc_cp_yn_gtt_otl_phone_number.
+    ls_control_data-value = ls_loc_data-telephone.
+    APPEND ls_control_data TO lt_control_data.
+
+  ENDLOOP.
+
+  LOOP AT lt_control_data ASSIGNING FIELD-SYMBOL(<fs_control_data>).
+    <fs_control_data>-appsys = is_ctrl-appsys.
+    <fs_control_data>-appobjtype = is_ctrl-appobjtype.
+    <fs_control_data>-appobjid = is_ctrl-appobjid.
+    <fs_control_data>-language = is_ctrl-language.
+  ENDLOOP.
+
+  ct_control_data[] = lt_control_data.
+
+ENDFORM.
+*&---------------------------------------------------------------------*
+*& Form get_one_time_location_from_shp
+*&---------------------------------------------------------------------*
+*& Get one-time location from shipment
+*&---------------------------------------------------------------------*
+*&      --> CT_LOC_DATA      Location data
+*&      --> IV_VBELN         Delivery number
+*&---------------------------------------------------------------------*
+FORM get_one_time_location_from_shp  TABLES   ct_loc_data   TYPE STANDARD TABLE
+                                     USING    iv_vbeln      TYPE likp-vbeln.
+
+  DATA:
+    lt_control_data     TYPE TABLE OF /saptrx/control_data,
+    lt_control_data_tmp TYPE TABLE OF /saptrx/control_data,
+    lt_vttsvb           TYPE vttsvb_tab,
+    ls_loc_addr         TYPE addr1_data,
+    lv_loc_email        TYPE ad_smtpadr,
+    lv_loc_tel          TYPE char50,
+    ls_address_info     TYPE gtys_address_info,
+    lt_address_info     TYPE TABLE OF gtys_address_info.
+
+  CLEAR ct_loc_data[].
+
+  zcl_gtt_tools=>get_stage_by_delivery(
+    EXPORTING
+      iv_vbeln  = iv_vbeln
+    IMPORTING
+      et_vttsvb = lt_vttsvb ).
+
+  zcl_gtt_tools=>get_location_info(
+    EXPORTING
+      it_vttsvb   = lt_vttsvb
+    IMPORTING
+      et_loc_info = DATA(lt_loc_info) ).
+
+  LOOP AT lt_loc_info INTO DATA(ls_loc_info).
+    CLEAR:
+     ls_loc_addr,
+     lv_loc_email,
+     lv_loc_tel.
+
+    IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
+
+      zcl_gtt_tools=>get_address_from_db(
+        EXPORTING
+          iv_addrnumber = ls_loc_info-locaddrnum
+        IMPORTING
+          es_addr       = ls_loc_addr
+          ev_email      = lv_loc_email
+          ev_telephone  = lv_loc_tel ).
+
+      ls_address_info-locid = ls_loc_info-locid.
+      ls_address_info-loctype = ls_loc_info-loctype.
+      ls_address_info-addr1 = ls_loc_addr.
+      ls_address_info-email = lv_loc_email.
+      ls_address_info-telephone = lv_loc_tel.
+      APPEND ls_address_info TO lt_address_info.
+      CLEAR:
+        ls_address_info.
+    ENDIF.
+
+  ENDLOOP.
+
+  ct_loc_data[] = lt_address_info.
+
+ENDFORM.
