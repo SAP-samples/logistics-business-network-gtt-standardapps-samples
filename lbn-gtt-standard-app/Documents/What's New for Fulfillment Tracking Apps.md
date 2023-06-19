@@ -1,10 +1,15 @@
 # What's New for Fulfillment Tracking Apps
+## June 17th, 2023
+1. Correct the unit of measure in the freight booking.
+2. Stop sending out the freight unit IDOC if this freight unit is not GTT relevant.
+
 ## April 22nd, 2023
 1. Support sending one-time locations from the ERP system to the GTT system.
 2. Send package ID of the LE-TRA Shipment to the GTT system as the tracked object.
 3. Fix the location ID (LOCID1) in planned "Goods Receipt" event of the outbound delivery for the stock transport order scenario.
 4. Fix the observation issue that occurs between inbound delivery header and its items when running the batch job.
 5. In the scenario "Maintain Tracked Objects on Container Unit", enhance the logic to retrieve the freight unit data from the freight order.
+
 ## March 18th, 2023
 1. SAP Business Network Global Track and Trace now supports the tracking of stock transport orders. 
 2. Add the configuration table for the inbound delivery type and purchase order type.    

@@ -433,13 +433,17 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
       zcl_gtt_sts_tools=>throw_exception( ).
     ENDIF.
 
-    " POC
     DATA(lv_item_cat) = SWITCH /scmtms/item_category( <ls_tor_root>-tor_cat
                           WHEN 'FU' THEN /scmtms/if_tor_const=>sc_tor_item_category-fu_root
                           WHEN 'TU' THEN /scmtms/if_tor_const=>sc_tor_item_category-tu_resource ).
 
     ASSIGN <lt_tor_item>[ item_cat       = lv_item_cat
                           parent_node_id = <ls_tor_root>-node_id ] TO FIELD-SYMBOL(<ls_fu_item>).
+    IF sy-subrc <> 0 AND <ls_tor_root>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
+      ASSIGN <lt_tor_item>[ item_cat       = /scmtms/if_tor_const=>sc_tor_item_category-tu_resource
+                            parent_node_id = <ls_tor_root>-node_id ] TO <ls_fu_item>.
+
+    ENDIF.
     IF sy-subrc <> 0.
       MESSAGE e010(zgtt_sts) INTO lv_dummy.
       zcl_gtt_sts_tools=>throw_exception( ).
@@ -687,6 +691,15 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
     ENDIF.
 
     IF get_customizing_aot( <ls_root>-tor_type ) <> is_app_object-appobjtype.
+      RETURN.
+    ENDIF.
+
+    zcl_gtt_sts_tools=>get_gtt_relev_flag_by_aot_type(
+      EXPORTING
+        iv_aotype     = <ls_root>-aotype
+      RECEIVING
+        rv_torelevant = DATA(lv_torelevant) ).
+    IF lv_torelevant = abap_false.
       RETURN.
     ENDIF.
 

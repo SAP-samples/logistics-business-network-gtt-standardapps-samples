@@ -343,6 +343,12 @@ public section.
       !IV_PARTNER type BU_PARTNER
     returning
       value(RV_NUM) type /SAPTRX/PARAMVAL200 .
+  class-methods GET_GTT_RELEV_FLAG_BY_AOT_TYPE
+    importing
+      !IV_TRK_OBJ_TYPE type /SAPTRX/TRK_OBJ_TYPE default 'TMS_TOR'
+      !IV_AOTYPE type /SAPTRX/AOTYPE
+    returning
+      value(RV_TORELEVANT) type /SAPTRX/TRKRELINDICATOR .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -2083,6 +2089,23 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
     IF sy-subrc = 0.
       rv_num = zif_gtt_sts_constants=>cv_scac_prefix && ls_bpsc-scac.
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_gtt_relev_flag_by_aot_type.
+
+    CLEAR:rv_torelevant.
+
+    IF iv_aotype IS INITIAL.
+      RETURN.
+    ENDIF.
+
+    SELECT SINGLE torelevant
+      INTO rv_torelevant
+      FROM /saptrx/aotypes
+     WHERE trk_obj_type = iv_trk_obj_type
+       AND aotype = iv_aotype.
 
   ENDMETHOD.
 ENDCLASS.

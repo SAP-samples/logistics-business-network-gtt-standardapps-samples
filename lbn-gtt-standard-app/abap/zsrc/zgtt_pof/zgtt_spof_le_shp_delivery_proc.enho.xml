@@ -27,12 +27,30 @@
      <ENTRIES>
       <SOTR_TEXT>
        <CONCEPT>42010AEF4CA01EEDB6832FC89BFC1ADC</CONCEPT>
+       <LANGU>늑</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>SOTR *42010AEF4CA01EEDB6832FC89BFC1ADC</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>42010AEF4CA01EEDB6832FC89BFC1ADC</CONCEPT>
        <LANGU>E</LANGU>
        <LFD_NUM>0001</LFD_NUM>
        <FLAG_CNTXT>X</FLAG_CNTXT>
        <STATUS>R</STATUS>
        <LENGTH>255</LENGTH>
        <TEXT>Cross TP Update from Inbound Delivery to purchase order</TEXT>
+      </SOTR_TEXT>
+      <SOTR_TEXT>
+       <CONCEPT>42010AEF4CA01EEDB6832FC89BFC1ADC</CONCEPT>
+       <LANGU>닱</LANGU>
+       <LFD_NUM>0001</LFD_NUM>
+       <FLAG_CNTXT>X</FLAG_CNTXT>
+       <STATUS>R</STATUS>
+       <LENGTH>255</LENGTH>
+       <TEXT>[Ĉŗŏşş∙ŢƤ∙Ůρƌąţē∙ƒŗŏɱ∙Ĭŋƃŏűŋƌ∙Ďēĺįʋēŗŷ∙ţŏ∙ρűŗċĥąşē∙ŏŗƌēŗ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</TEXT>
       </SOTR_TEXT>
      </ENTRIES>
     </item>

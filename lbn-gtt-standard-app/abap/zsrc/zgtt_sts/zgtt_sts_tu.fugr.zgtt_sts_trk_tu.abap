@@ -63,6 +63,14 @@ FUNCTION zgtt_sts_trk_tu.
       IF sy-subrc = 0.
         lv_aotype = ls_tor_root_sstring-aotype.
         REPLACE ALL OCCURRENCES OF 'FU' IN lv_aotype WITH 'TU'.
+      ELSE.
+        LOOP AT it_tor_root_sstring INTO ls_tor_root_sstring
+          WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-active
+             OR tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking.
+          lv_aotype = ls_tor_root_sstring-aotype.
+          REPLACE ALL OCCURRENCES OF 'SHP_HD' IN lv_aotype WITH 'TU'.
+          EXIT.
+        ENDLOOP.
       ENDIF.
 
       CHECK lo_tu_info IS BOUND AND lv_aotype IS NOT INITIAL.
