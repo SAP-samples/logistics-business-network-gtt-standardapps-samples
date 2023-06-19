@@ -21,7 +21,7 @@ ENDCLASS.
 CLASS ZCL_GTT_STS_TRK_ONFO_FU_ACTEVT IMPLEMENTATION.
 
 
-  METHOD CHECK_TOR_SENT_TO_GTT.
+  METHOD check_tor_sent_to_gtt.
 
     FIELD-SYMBOLS: <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
 
@@ -36,6 +36,15 @@ CLASS ZCL_GTT_STS_TRK_ONFO_FU_ACTEVT IMPLEMENTATION.
        <ls_tor_root>-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-completed.
       ev_is_sent = abap_true.
     ELSE.
+      ev_is_sent = abap_false.
+    ENDIF.
+
+    zcl_gtt_sts_tools=>get_gtt_relev_flag_by_aot_type(
+      EXPORTING
+        iv_aotype     = <ls_tor_root>-aotype
+      RECEIVING
+        rv_torelevant = DATA(lv_torelevant) ).
+    IF lv_torelevant = abap_false.
       ev_is_sent = abap_false.
     ENDIF.
 

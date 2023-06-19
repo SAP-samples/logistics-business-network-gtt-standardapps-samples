@@ -886,6 +886,29 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
         TO FIELD-SYMBOL(<ls_tor_root_before_sstring>).
       CHECK sy-subrc = 0.
 
+      zcl_gtt_sts_tools=>get_gtt_relev_flag_by_aot_type(
+        EXPORTING
+          iv_aotype     = <ls_tor_root_sstring>-aotype
+        RECEIVING
+          rv_torelevant = DATA(lv_torelevant) ).
+      IF lv_torelevant = abap_false.
+        CONTINUE.
+      ENDIF.
+
+*     For below case,do not send out the IDOC(Because FO/FB has not been send to GTT,no need to send the deletion IDOC)
+*     1)FO/FB generated AND
+*     2)without assign carrier AND
+*     3)execution status = not start AND
+*     4)life cycle status = cancel
+      IF ( <ls_tor_root_sstring>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-active OR
+          <ls_tor_root_sstring>-tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking )
+         AND ( <ls_tor_root_sstring>-tsp = <ls_tor_root_before_sstring>-tsp )
+         AND ( <ls_tor_root_sstring>-tsp IS INITIAL )
+         AND ( <ls_tor_root_sstring>-execution = /scmtms/if_tor_status_c=>sc_root-execution-v_not_started )
+         AND ( <ls_tor_root_sstring>-lifecycle = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_canceled ).
+        CONTINUE.
+      ENDIF.
+
       DATA(lv_carrier_removed) = xsdbool(
         <ls_tor_root_sstring>-tsp IS INITIAL AND <ls_tor_root_before_sstring>-tsp IS NOT INITIAL ).
 

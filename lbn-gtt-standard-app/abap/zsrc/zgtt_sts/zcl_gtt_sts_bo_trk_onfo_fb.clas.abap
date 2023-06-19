@@ -215,11 +215,16 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FB IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD GET_DATA_FROM_ITEM.
+  METHOD get_data_from_item.
 
     FIELD-SYMBOLS:
       <lt_tor_item> TYPE /scmtms/t_em_bo_tor_item,
       <ls_tor_root> TYPE /scmtms/s_em_bo_tor_root.
+
+    DATA:
+      lv_gro_vol_uni TYPE /scmtms/s_em_bo_tor_root-gro_vol_uni,
+      lv_gro_wei_uni TYPE /scmtms/s_em_bo_tor_root-gro_wei_uni,
+      lv_qua_pcs_uni TYPE /scmtms/s_em_bo_tor_root-qua_pcs_uni.
 
     ASSIGN ir_data->* TO <ls_tor_root>.
     IF sy-subrc <> 0.
@@ -256,6 +261,28 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFO_FB IMPLEMENTATION.
       cs_freight_booking-qua_pcs_val = <ls_booking_item>-qua_pcs_val.
       cs_freight_booking-qua_pcs_uni = <ls_booking_item>-qua_pcs_uni.
     ENDIF.
+
+    zcl_gtt_tools=>convert_unit_output(
+      EXPORTING
+        iv_input  = cs_freight_booking-gro_vol_uni
+      RECEIVING
+        rv_output = lv_gro_vol_uni ).
+
+    zcl_gtt_tools=>convert_unit_output(
+      EXPORTING
+        iv_input  = cs_freight_booking-gro_wei_uni
+      RECEIVING
+        rv_output = lv_gro_wei_uni ).
+
+    zcl_gtt_tools=>convert_unit_output(
+      EXPORTING
+        iv_input  = cs_freight_booking-qua_pcs_uni
+      RECEIVING
+        rv_output = lv_qua_pcs_uni ).
+
+    cs_freight_booking-gro_vol_uni = lv_gro_vol_uni.
+    cs_freight_booking-gro_wei_uni = lv_gro_wei_uni.
+    cs_freight_booking-qua_pcs_uni = lv_qua_pcs_uni.
 
   ENDMETHOD.
 

@@ -1,4 +1,8 @@
 # What's New for Fulfillment Tracking Apps 
+## June 17th, 2023
+1. Correct the unit of measure in the freight booking.
+2. Stop sending out the freight unit IDOC if this freight unit is not GTT relevant.
+
 ## April 22nd, 2023
 1. Support sending one-time locations from the ERP system to the GTT system.
 2. Send package ID of the LE-TRA Shipment to the GTT system as the tracked object.

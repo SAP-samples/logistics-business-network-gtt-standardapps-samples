@@ -926,6 +926,15 @@ CLASS ZCL_GTT_STS_BO_TOR_READER IMPLEMENTATION.
       RETURN.
     ENDIF.
 
+    zcl_gtt_sts_tools=>get_gtt_relev_flag_by_aot_type(
+      EXPORTING
+        iv_aotype     = <ls_root>-aotype
+      RECEIVING
+        rv_torelevant = DATA(lv_torelevant) ).
+    IF lv_torelevant = abap_false.
+      RETURN.
+    ENDIF.
+
     IF is_app_object-maintabdef = zif_gtt_sts_constants=>cs_tabledef-fo_header_new AND
       ( <ls_root>-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-execution OR
         <ls_root>-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-exec_with_extern_event_mngr ) AND

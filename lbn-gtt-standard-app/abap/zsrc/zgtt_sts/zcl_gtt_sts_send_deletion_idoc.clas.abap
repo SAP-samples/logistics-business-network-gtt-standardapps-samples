@@ -251,6 +251,9 @@ CLASS ZCL_GTT_STS_SEND_DELETION_IDOC IMPLEMENTATION.
       ls_idoc_data-appsys = mv_appsys.
 
       ASSIGN mt_aotype[ tor_type = <ls_tor_root>-tor_type ] TO FIELD-SYMBOL(<ls_aotype>).
+      IF <ls_aotype> IS NOT ASSIGNED.
+        CONTINUE.
+      ENDIF.
 
       fill_idoc_trxserv(
         EXPORTING

@@ -1,12 +1,9 @@
 # Fulfillment Tracking Apps for SAP Business Network Global Track and Trace 
 
 ## What's New
-### April 22nd, 2023
-1. Support sending one-time locations from the ERP system to the GTT system.
-2. Send package ID of the LE-TRA Shipment to the GTT system as the tracked object.
-3. Fix the location ID (LOCID1) in planned "Goods Receipt" event of the outbound delivery for the stock transport order scenario.
-4. Fix the observation issue that occurs between inbound delivery header and its items when running the batch job.
-5. In the scenario "Maintain Tracked Objects on Container Unit", enhance the logic to retrieve the freight unit data from the freight order.
+### June 17th, 2023
+1. Correct the unit of measure in the freight booking.
+2. Stop sending out the freight unit IDOC if this freight unit is not GTT relevant.
 
 For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
 
@@ -34,7 +31,7 @@ If multiple IDOC payloads are generated at the same time or in a very short peri
 
 ## How to Obtain Support
 The project is provided "as-is", with no expected support. </br>
-If your issue is concerned with SAP Business Network Global Track and Trace, log your incident in SAP support system with component “SBN-LBN-GTT-TSH” for Track Shipments app, “SBN-LBN-GTT-MIA” for Monitor Inbound ASNs app, "SBN-LBN-GTT-TSF" for Track SO Fulfillment app and "SBN-LBN-GTT-TPF" for Track PO Fulfillment app. 
+If your issue is concerned with SAP Business Network Global Track and Trace, log your incident in SAP support system with component “SBN-LBN-GTT-TSH” for Track Shipments app, “SBN-LBN-GTT-MIA” for Monitor Inbound ASNs app, "SBN-LBN-GTT-TSF" for Track SO Fulfillment app, "SBN-LBN-GTT-TPF" for Track PO Fulfillment app and "SBN-LBN-GTT-MOD" for Monitor Outbound Deliveries app. 
 
 For additional support, [ask a question in SAP Community](https://answers.sap.com/questions/ask.html?additionalTagId=73555000100800000602).
 

@@ -165,6 +165,15 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
       ev_is_sent = abap_false.
     ENDIF.
 
+    zcl_gtt_sts_tools=>get_gtt_relev_flag_by_aot_type(
+      EXPORTING
+        iv_aotype     = <ls_tor_root>-aotype
+      RECEIVING
+        rv_torelevant = DATA(lv_torelevant) ).
+    IF lv_torelevant = abap_false.
+      ev_is_sent = abap_false.
+    ENDIF.
+
   ENDMETHOD.
 
 
