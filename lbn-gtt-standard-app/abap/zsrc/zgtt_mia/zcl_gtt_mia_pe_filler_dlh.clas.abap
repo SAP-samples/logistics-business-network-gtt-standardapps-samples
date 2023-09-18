@@ -11,67 +11,68 @@ CLASS zcl_gtt_mia_pe_filler_dlh DEFINITION
         !io_ef_parameters TYPE REF TO zif_gtt_ef_parameters
         !io_bo_reader     TYPE REF TO zif_gtt_tp_reader .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    DATA mo_ef_parameters TYPE REF TO zif_gtt_ef_parameters .
-    DATA mo_bo_reader TYPE REF TO zif_gtt_tp_reader .
+  data MO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS .
+  data MO_BO_READER type ref to ZIF_GTT_TP_READER .
 
-    METHODS add_gr_event_with_matck_key
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !ir_lips_data    TYPE REF TO data
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS add_goods_receipt_event
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
-        !iv_milestonenum TYPE /saptrx/seq_num
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS add_shipment_events
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS add_item_completed_by_fu_event
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !ir_lips_data    TYPE REF TO data
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS add_planned_delivery_event
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !io_relevance    TYPE REF TO zcl_gtt_mia_event_rel_dl_main
-        !iv_milestonenum TYPE /saptrx/seq_num
-      CHANGING
-        !ct_expeventdata TYPE zif_gtt_ef_types=>tt_expeventdata
-      RAISING
-        cx_udm_message .
-    METHODS is_time_of_delivery_changed
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
-    METHODS is_fu_relevant
-      IMPORTING
-        !is_app_objects  TYPE trxas_appobj_ctab_wa
-        !ir_lips_data    TYPE REF TO data
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  methods ADD_GR_EVENT_WITH_MATCK_KEY
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IR_LIPS_DATA type ref to DATA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_GOODS_RECEIPT_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+      !IV_MILESTONENUM type /SAPTRX/SEQ_NUM
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_SHIPMENT_EVENTS
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_ITEM_COMPLETED_BY_FU_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IR_LIPS_DATA type ref to DATA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods ADD_PLANNED_DELIVERY_EVENT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IO_RELEVANCE type ref to ZCL_GTT_MIA_EVENT_REL_DL_MAIN
+      !IV_MILESTONENUM type /SAPTRX/SEQ_NUM
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_TIME_OF_DELIVERY_CHANGED
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_FU_RELEVANT
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+      !IR_LIPS_DATA type ref to DATA
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -116,7 +117,9 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
     lv_vbeln = zcl_gtt_tools=>get_field_of_structure(
       ir_struct_data = is_app_objects-maintabref
       iv_field_name  = 'VBELN' ).
-    IF <lt_lips_fs> IS ASSIGNED.
+    IF <lt_lips_fs> IS ASSIGNED
+      AND io_relevance->is_enabled(
+         iv_milestone   = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt ) = abap_true.
       LOOP AT <lt_lips_fs> ASSIGNING <ls_lips>
         WHERE vbeln = lv_vbeln AND updkz <> zif_gtt_ef_constants=>cs_change_mode-delete.
         IF zcl_gtt_tools=>is_appropriate_dl_item(
@@ -388,6 +391,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
       EXPORTING
         is_app_objects  = is_app_objects
         ir_lips_data    = lr_lips_data
+        io_relevance    = lo_relevance
       CHANGING
         ct_expeventdata = ct_expeventdata
     ).

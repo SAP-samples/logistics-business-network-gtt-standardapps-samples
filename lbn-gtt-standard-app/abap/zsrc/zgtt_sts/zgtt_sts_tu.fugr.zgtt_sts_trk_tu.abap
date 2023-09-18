@@ -58,19 +58,22 @@ FUNCTION zgtt_sts_trk_tu.
         ENDIF.
       ENDLOOP.
 
-      READ TABLE it_tor_root_sstring INTO ls_tor_root_sstring
-        WITH KEY tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
-      IF sy-subrc = 0.
+*     Determine the tracking unit AOT type
+      LOOP AT it_tor_root_sstring INTO ls_tor_root_sstring
+        WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-active
+           OR tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking.
         lv_aotype = ls_tor_root_sstring-aotype.
-        REPLACE ALL OCCURRENCES OF 'FU' IN lv_aotype WITH 'TU'.
-      ELSE.
-        LOOP AT it_tor_root_sstring INTO ls_tor_root_sstring
-          WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-active
-             OR tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking.
+        REPLACE ALL OCCURRENCES OF 'SHP_HD' IN lv_aotype WITH 'TU'.
+        EXIT.
+      ENDLOOP.
+
+      IF lv_aotype IS INITIAL.
+        READ TABLE it_tor_root_sstring INTO ls_tor_root_sstring
+          WITH KEY tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
+        IF sy-subrc = 0.
           lv_aotype = ls_tor_root_sstring-aotype.
-          REPLACE ALL OCCURRENCES OF 'SHP_HD' IN lv_aotype WITH 'TU'.
-          EXIT.
-        ENDLOOP.
+          REPLACE ALL OCCURRENCES OF 'FU' IN lv_aotype WITH 'TU'.
+        ENDIF.
       ENDIF.
 
       CHECK lo_tu_info IS BOUND AND lv_aotype IS NOT INITIAL.

@@ -787,29 +787,32 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
       EXPORTING
         ir_lips     = is_app_object-maintabref
       IMPORTING
-        et_tor_item = DATA(lt_tor_item)
-    ).
-    IF lt_tor_item IS NOT INITIAL.
-      LOOP AT lt_tor_item ASSIGNING FIELD-SYMBOL(<ls_tor_item>).
-        ADD 1 TO lv_count.
-        APPEND lv_count TO ls_item_with_fu-fu_lineno.
-        APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
-                 ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_freightunit.
-        APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_item(
-                 ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_itemnumber.
-        APPEND <ls_tor_item>-quantity TO ls_item_with_fu-fu_quantity.
-        APPEND <ls_tor_item>-quantityuom TO ls_item_with_fu-fu_quantityuom.
-        APPEND <ls_tor_item>-product_id TO ls_item_with_fu-fu_product_id.
-        APPEND <ls_tor_item>-product_descr TO ls_item_with_fu-fu_product_descr.
-        APPEND <ls_tor_item>-base_uom_uni TO ls_item_with_fu-fu_base_uom_uni.
-        APPEND <ls_tor_item>-base_uom_val TO ls_item_with_fu-fu_base_uom_val.
-        APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-fu_no_logsys.
-        APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-appsys.
-        APPEND zif_gtt_ef_constants=>cs_trxcod-fu_number TO ls_item_with_fu-trxcod.
-        APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
-                 ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-trxid.
-      ENDLOOP.
-    ENDIF.
+        et_tor_id   = DATA(lt_tor_id)
+        et_tor_item = DATA(lt_tor_item) ).
+
+    LOOP AT lt_tor_item ASSIGNING FIELD-SYMBOL(<ls_tor_item>).
+      ADD 1 TO lv_count.
+      APPEND lv_count TO ls_item_with_fu-fu_lineno.
+      APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
+               ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_freightunit.
+      APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_item(
+               ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_itemnumber.
+      APPEND <ls_tor_item>-quantity TO ls_item_with_fu-fu_quantity.
+      APPEND <ls_tor_item>-quantityuom TO ls_item_with_fu-fu_quantityuom.
+      APPEND <ls_tor_item>-product_id TO ls_item_with_fu-fu_product_id.
+      APPEND <ls_tor_item>-product_descr TO ls_item_with_fu-fu_product_descr.
+      APPEND <ls_tor_item>-base_uom_uni TO ls_item_with_fu-fu_base_uom_uni.
+      APPEND <ls_tor_item>-base_uom_val TO ls_item_with_fu-fu_base_uom_val.
+      APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-fu_no_logsys.
+    ENDLOOP.
+
+    LOOP AT lt_tor_id INTO DATA(ls_tor_id).
+      APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-appsys.
+      APPEND zif_gtt_ef_constants=>cs_trxcod-fu_number TO ls_item_with_fu-trxcod.
+      APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
+               ir_data = REF #( ls_tor_id ) ) TO ls_item_with_fu-trxid.
+    ENDLOOP.
+
     rr_data   = NEW ts_dl_item_with_fu( ).
     ASSIGN rr_data->* TO FIELD-SYMBOL(<ls_item_with_fu>).
     <ls_item_with_fu> = ls_item_with_fu.
@@ -823,6 +826,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
     DATA: ls_item         TYPE ts_dl_item,
           ls_item_with_fu TYPE ts_dl_item_with_fu.
     DATA: lr_data TYPE REF TO data.
+    DATA: lv_count TYPE i VALUE 0.
     DATA(lv_vbeln)  = CONV vbeln_vl( zcl_gtt_tools=>get_field_of_structure(
                                        ir_struct_data = is_app_object-maintabref
                                        iv_field_name  = 'VBELN' ) ).
@@ -891,6 +895,37 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
         cs_dl_item = ls_item ).
 
     ls_item_with_fu = CORRESPONDING #( ls_item ).
+    " Give FU number in the tracking id
+    get_tor_items_for_dlv_item(
+      EXPORTING
+        ir_lips     = lr_data
+      IMPORTING
+        et_tor_id   = DATA(lt_tor_id)
+        et_tor_item = DATA(lt_tor_item) ).
+
+    LOOP AT lt_tor_item ASSIGNING FIELD-SYMBOL(<ls_tor_item>).
+      ADD 1 TO lv_count.
+      APPEND lv_count TO ls_item_with_fu-fu_lineno.
+      APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
+               ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_freightunit.
+      APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_item(
+               ir_data = REF #( <ls_tor_item> ) ) TO ls_item_with_fu-fu_itemnumber.
+      APPEND <ls_tor_item>-quantity TO ls_item_with_fu-fu_quantity.
+      APPEND <ls_tor_item>-quantityuom TO ls_item_with_fu-fu_quantityuom.
+      APPEND <ls_tor_item>-product_id TO ls_item_with_fu-fu_product_id.
+      APPEND <ls_tor_item>-product_descr TO ls_item_with_fu-fu_product_descr.
+      APPEND <ls_tor_item>-base_uom_uni TO ls_item_with_fu-fu_base_uom_uni.
+      APPEND <ls_tor_item>-base_uom_val TO ls_item_with_fu-fu_base_uom_val.
+      APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-fu_no_logsys.
+    ENDLOOP.
+
+    LOOP AT lt_tor_id INTO DATA(ls_tor_id).
+      APPEND mo_ef_parameters->get_appsys( ) TO ls_item_with_fu-appsys.
+      APPEND zif_gtt_ef_constants=>cs_trxcod-fu_number TO ls_item_with_fu-trxcod.
+      APPEND zcl_gtt_mia_tm_tools=>get_formated_tor_id(
+               ir_data = REF #( ls_tor_id ) ) TO ls_item_with_fu-trxid.
+    ENDLOOP.
+
     rr_data   = NEW ts_dl_item_with_fu( ).
     ASSIGN rr_data->* TO FIELD-SYMBOL(<ls_item_with_fu>).
     <ls_item_with_fu> = ls_item_with_fu.

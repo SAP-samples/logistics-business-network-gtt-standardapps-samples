@@ -105,6 +105,11 @@ public section.
       !IV_HEADER_CHK type BOOLE_D default 'X'
     exporting
       !EV_RELEVANCE type BOOLE_D .
+  class-methods GET_FU_FROM_DB
+    importing
+      !IT_TOR_ID type /SCMTMS/T_TOR_ID
+    exporting
+      !ET_FU type /SCMTMS/T_TOR_ROOT_K .
 protected section.
 
   class-data GO_ME type ref to ZCL_GTT_SOF_TOOLKIT .
@@ -501,6 +506,45 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
         lv_loc_tel_new,
         ls_vbpa.
     ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_fu_from_db.
+
+    DATA:
+      lo_srvmgr_tor           TYPE REF TO /bobf/if_tra_service_manager,
+      lt_selection_parameters TYPE /bobf/t_frw_query_selparam,
+      ls_selection_parameters TYPE /bobf/s_frw_query_selparam,
+      ls_query_options        TYPE /bobf/s_frw_query_options.
+
+    CLEAR et_fu.
+
+    lo_srvmgr_tor = /bobf/cl_tra_serv_mgr_factory=>get_service_manager( iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
+
+    LOOP AT it_tor_id INTO DATA(ls_tor_id).
+      ls_selection_parameters-attribute_name =  /scmtms/if_tor_c=>sc_query_attribute-root-root_elements-tor_id.
+      ls_selection_parameters-sign = /bobf/if_conf_c=>sc_sign_option_including.
+      ls_selection_parameters-option = /bobf/if_conf_c=>sc_sign_equal.
+      ls_selection_parameters-low = ls_tor_id.
+      APPEND ls_selection_parameters TO lt_selection_parameters.
+      CLEAR ls_selection_parameters.
+    ENDLOOP.
+
+    ls_query_options-maximum_rows = 1000.
+
+    TRY.
+        lo_srvmgr_tor->query(
+          EXPORTING
+            iv_query_key            = /scmtms/if_tor_c=>sc_query-root-root_elements
+            it_selection_parameters = lt_selection_parameters
+            is_query_options        = ls_query_options
+            iv_fill_data            = abap_true
+          IMPORTING
+            et_data                 = et_fu ).
+
+      CATCH /bobf/cx_frw_contrct_violation. " Caller violates a BOPF contract
+    ENDTRY.
 
   ENDMETHOD.
 ENDCLASS.
