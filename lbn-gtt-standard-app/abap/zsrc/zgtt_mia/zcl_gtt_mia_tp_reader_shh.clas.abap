@@ -333,7 +333,8 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
           lt_ref_doc      TYPE tt_ref_doc,
           lv_base_btd_tco TYPE /scmtms/base_btd_tco,
           lv_vgbel        TYPE lips-vgbel,
-          ls_ekko         TYPE ekko.
+          ls_ekko         TYPE ekko,
+          lt_vttp         TYPE tt_vttp.
 
     FIELD-SYMBOLS: <ls_vttk> TYPE vttkvb,
                    <lt_vttp> TYPE tt_vttp.
@@ -342,14 +343,20 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
     ASSIGN ir_vttp->* TO <lt_vttp>.
 
     IF sy-subrc = 0.
-      CLEAR lt_ref_doc.
-      IF <lt_vttp> IS NOT INITIAL.
+      CLEAR:
+       lt_ref_doc,
+       lt_vttp.
+      LOOP AT <lt_vttp> ASSIGNING FIELD-SYMBOL(<ls_vttp>)
+        WHERE tknum = <ls_vttk>-tknum.
+        APPEND <ls_vttp> TO lt_vttp.
+      ENDLOOP.
+      IF lt_vttp IS NOT INITIAL.
         SELECT vgbel
                vgtyp
           INTO TABLE lt_ref_doc
           FROM lips
-           FOR ALL ENTRIES IN <lt_vttp>
-         WHERE vbeln = <lt_vttp>-vbeln.
+           FOR ALL ENTRIES IN lt_vttp
+         WHERE vbeln = lt_vttp-vbeln.
       ENDIF.
 
       LOOP AT lt_ref_doc INTO DATA(ls_ref_doc).
@@ -379,8 +386,7 @@ CLASS ZCL_GTT_MIA_TP_READER_SHH IMPLEMENTATION.
         ENDIF.
       ENDLOOP.
 
-      LOOP AT <lt_vttp> ASSIGNING FIELD-SYMBOL(<ls_vttp>)
-        WHERE tknum = <ls_vttk>-tknum.
+      LOOP AT lt_vttp ASSIGNING <ls_vttp>.
 
         lv_vbeln = zcl_gtt_mia_dl_tools=>get_formated_dlv_number(
           ir_likp = REF #( <ls_vttp> ) ).

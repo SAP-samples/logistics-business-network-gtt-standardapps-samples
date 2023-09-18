@@ -4,13 +4,17 @@ interface ZIF_GTT_EF_CONSTANTS
 
   constants:
     BEGIN OF cs_trxcod, " tracking id type
-      po_number   TYPE /saptrx/trxcod VALUE 'FT1_PO',
-      po_position TYPE /saptrx/trxcod VALUE 'FT1_PO_ITEM',
-      dl_number   TYPE /saptrx/trxcod VALUE 'FT1_IN_DELIVERY',
-      dl_position TYPE /saptrx/trxcod VALUE 'FT1_IN_DELIVERY_ITEM',
-      sh_number   TYPE /saptrx/trxcod VALUE 'FT1_SHIPMENT',
-      sh_resource TYPE /saptrx/trxcod VALUE 'FT1_RESOURCE',
-      fu_number   TYPE /saptrx/trxcod VALUE 'FT1_FREIGHT_UNIT',
+      po_number         TYPE /saptrx/trxcod VALUE 'FT1_PO',
+      po_position       TYPE /saptrx/trxcod VALUE 'FT1_PO_ITEM',
+      dl_number         TYPE /saptrx/trxcod VALUE 'FT1_IN_DELIVERY',
+      dl_position       TYPE /saptrx/trxcod VALUE 'FT1_IN_DELIVERY_ITEM',
+      sh_number         TYPE /saptrx/trxcod VALUE 'FT1_SHIPMENT',
+      sh_resource       TYPE /saptrx/trxcod VALUE 'FT1_RESOURCE',
+      fu_number         TYPE /saptrx/trxcod VALUE 'FT1_FREIGHT_UNIT',
+      sales_order       TYPE /saptrx/trxcod VALUE 'FT1_SALES_ORDER',
+      sales_order_item  TYPE /saptrx/trxcod VALUE 'FT1_SALES_ORDER_ITEM',
+      out_delivery      TYPE /saptrx/trxcod VALUE 'FT1_OUT_DELIVERY',
+      out_delivery_item TYPE /saptrx/trxcod VALUE 'FT1_ODLV_ITEM',
     END OF cs_trxcod .
   constants:
     BEGIN OF cs_milestone,
@@ -38,6 +42,18 @@ interface ZIF_GTT_EF_CONSTANTS
       sh_arrival          TYPE /saptrx/appl_event_tag VALUE 'ARRIV_DEST',
       sh_pod              TYPE /saptrx/appl_event_tag VALUE 'POD',
 
+      so_item_completed   TYPE /saptrx/appl_event_tag VALUE 'SO_ITEM_COMPLETED',
+      so_planned_dlv      TYPE /saptrx/appl_event_tag VALUE 'SO_PLANNED_DLV',
+      dlv_hd_completed    TYPE /saptrx/appl_event_tag VALUE 'ODLV_HD_COMPLETED',
+      dlv_item_completed  TYPE /saptrx/appl_event_tag VALUE 'ODLV_IT_COMPLETED',
+      dlv_item_pod        TYPE /saptrx/appl_event_tag VALUE 'ODLV_ITEM_POD',
+      goods_issue         TYPE /saptrx/appl_event_tag VALUE 'GOODS_ISSUE',
+      departure           TYPE /saptrx/appl_event_tag VALUE 'DEPARTURE',
+      arriv_dest          TYPE /saptrx/appl_event_tag VALUE 'ARRIV_DEST',
+      pod                 TYPE /saptrx/appl_event_tag VALUE 'POD',
+      picking             TYPE /saptrx/appl_event_tag VALUE 'PICKING',
+      packing             TYPE /saptrx/appl_event_tag VALUE 'PACKING',
+      odlv_planned_dlv    TYPE /saptrx/appl_event_tag VALUE 'ODLV_PLANNED_DLV',
     END OF cs_milestone .
   constants:
     BEGIN OF cs_event_param,

@@ -65,5 +65,6 @@ CLASS ZCL_GTT_TP_FACTORY IMPLEMENTATION.
 
 
   METHOD zif_gtt_tp_factory~get_tp_reader.
+
   ENDMETHOD.
 ENDCLASS.

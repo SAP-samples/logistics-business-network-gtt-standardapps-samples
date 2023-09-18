@@ -35,12 +35,33 @@ private section.
         mseg  TYPE mseg,
       END OF ts_dl_item_id .
   types:
+    BEGIN OF ts_dlv_item,
+      vbeln TYPE vbeln_vl,
+      posnr TYPE posnr_vl,
+      menge TYPE menge_d,
+      meins TYPE meins,
+    END OF ts_dlv_item .
+  types:
+    BEGIN OF ts_mseg,
+      mblnr    TYPE mseg-mblnr,
+      mjahr    TYPE mseg-mjahr,
+      zeile    TYPE mseg-zeile,
+      shkzg    TYPE mseg-shkzg,
+      menge    TYPE mseg-menge,
+      meins    TYPE mseg-meins,
+      vbeln_im TYPE mseg-vbeln_im,
+      vbelp_im TYPE mseg-vbelp_im,
+    END OF ts_mseg.
+  types:
     tt_vbeln    TYPE STANDARD TABLE OF vbeln_vl .
   types:
     tt_pos     TYPE STANDARD TABLE OF ts_dl_item_id .
   types:
     tt_lips  TYPE STANDARD TABLE OF lips .
-
+  types:
+    tt_dlv_item TYPE STANDARD TABLE OF ts_dlv_item .
+  types:
+    tt_mseg TYPE STANDARD TABLE OF ts_mseg.
   data MO_AE_PARAMETERS type ref to ZIF_GTT_AE_PARAMETERS .
   data MV_ARCHIVED type BOOLE_D .
 
@@ -138,6 +159,19 @@ private section.
       !IT_VBELN type TT_VBELN
     exporting
       !ET_LIKP type TAB_LIKP .
+  methods HEADER_GR_FOR_BATCH_SPLIT
+    importing
+      !IS_EVENTS type TRXAS_EVT_CTAB_WA
+      !IT_LIKP type TAB_LIKP
+      !IT_LIPS type TT_LIPS
+      !IT_POS type TT_POS
+    changing
+      !CT_EVENTID_MAP type TRXAS_EVTID_EVTCNT_MAP
+      !CT_TRACKINGHEADER type ZIF_GTT_AE_TYPES=>TT_TRACKINGHEADER
+      !CT_TRACKLOCATION type ZIF_GTT_AE_TYPES=>TT_TRACKLOCATION
+      !CT_TRACKPARAMETERS type ZIF_GTT_AE_TYPES=>TT_TRACKPARAMETERS
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -198,22 +232,14 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
 
     DATA: lt_vbeln TYPE STANDARD TABLE OF mblnr.
 
-    CALL FUNCTION 'READ_VBFA'
-      EXPORTING
-        i_vbelv         = is_lips-vbeln
-        i_posnv         = is_lips-posnr
-        i_vbtyp_v       = is_likp-vbtyp
-        i_vbtyp_n       = 'R'
-*       I_FKTYP         =
-      TABLES
-        e_vbfa          = lt_vbfa
-      EXCEPTIONS
-        no_record_found = 1
-        OTHERS          = 2.
-    IF sy-subrc <> 0.
-      CLEAR lt_vbfa.
-    ENDIF.
-
+    SELECT *
+      INTO TABLE lt_vbfa
+      FROM vbfa
+     WHERE vbelv     = is_lips-vbeln
+       AND posnv     = is_lips-posnr
+       AND vbtyp_v   = is_likp-vbtyp
+       AND ( vbtyp_n = if_sd_doc_category=>goods_movement          "Goods Movement
+        OR   vbtyp_n = if_sd_doc_category=>cancel_goods_movement )."Cancel Goods Movement
 
     LOOP AT lt_vbfa INTO DATA(ls_vbfa).
       APPEND ls_vbfa-vbeln TO lt_vbeln.
@@ -259,6 +285,11 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
         ELSEIF is_likp-vbtyp = if_sd_doc_category=>delivery.            "Outbound delivery
           IF ls_ekbe-vbeln_st <> is_mseg-vbeln_im.
             CONTINUE.
+          ENDIF.
+          IF is_lips-uecha IS NOT INITIAL. "This item is batch split Item
+            IF ls_ekbe-vbelp_st <> is_mseg-vbelp_im.
+              CONTINUE.
+            ENDIF.
           ENDIF.
         ENDIF.
         IF ls_ekbe-shkzg EQ 'H'.
@@ -819,6 +850,17 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
       CLEAR lv_locid.
     ENDLOOP.
 
+    header_gr_for_batch_split(
+      EXPORTING
+        is_events          = is_events
+        it_likp            = lt_likp
+        it_lips            = lt_lips
+        it_pos             = lt_pos
+      CHANGING
+        ct_eventid_map     = ct_eventid_map
+        ct_trackingheader  = ct_trackingheader
+        ct_tracklocation   = ct_tracklocation
+        ct_trackparameters = ct_trackparameters ).
 
   ENDMETHOD.
 
@@ -835,6 +877,169 @@ CLASS ZCL_GTT_MIA_AE_FILLER_DLH_GR IMPLEMENTATION.
        WHERE vbeln = it_vbeln-table_line.
 
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD header_gr_for_batch_split.
+
+    DATA:
+      lt_mseg                TYPE tt_mseg,
+      ls_mseg                TYPE ts_mseg,
+      ls_dlv_item            TYPE ts_dlv_item,
+      lt_dlv_item            TYPE tt_dlv_item,
+      ls_dlv_item_db         TYPE ts_dlv_item,
+      lt_dlv_item_db         TYPE tt_dlv_item,
+      ls_dlv_item_curr       TYPE ts_dlv_item,
+      lt_dlv_item_curr       TYPE tt_dlv_item,
+      lt_dlv_item_calculated TYPE tt_dlv_item,
+      ls_dlv_item_calculated TYPE ts_dlv_item,
+      lv_dlvittrxcod         TYPE /saptrx/trxcod,
+      lv_locid               TYPE /saptrx/loc_id_1.
+
+*   Calculate the quantity for higher-level item of batch split item
+    LOOP AT it_lips INTO DATA(ls_lips) WHERE uecha IS NOT INITIAL.
+      ls_dlv_item-vbeln = ls_lips-vbeln.
+      ls_dlv_item-posnr = ls_lips-uecha.
+      ls_dlv_item-menge = ls_lips-lfimg * ls_lips-umvkz / ls_lips-umvkn.
+      ls_dlv_item-meins = ls_lips-meins.
+      COLLECT ls_dlv_item INTO lt_dlv_item.
+      CLEAR ls_dlv_item.
+    ENDLOOP.
+
+    CHECK lt_dlv_item IS NOT INITIAL.
+
+    IF it_lips IS NOT INITIAL.
+      SELECT mblnr
+             mjahr
+             zeile
+             shkzg
+             menge
+             meins
+             vbeln_im
+             vbelp_im
+        INTO TABLE lt_mseg
+        FROM mseg
+         FOR ALL ENTRIES IN it_lips
+       WHERE ( bwart = '101'
+          OR bwart = '102' )
+         AND vbeln_im = it_lips-vbeln
+         AND vbelp_im = it_lips-posnr.
+    ENDIF.
+
+*   Get the reported GR quantity for higher-level item
+    LOOP AT lt_mseg INTO ls_mseg.
+      CLEAR ls_lips.
+      READ TABLE it_lips INTO ls_lips
+        WITH KEY vbeln = ls_mseg-vbeln_im
+                 posnr = ls_mseg-vbelp_im.
+      IF sy-subrc = 0.
+        ls_dlv_item_db-vbeln = ls_mseg-vbeln_im.
+        ls_dlv_item_db-posnr = ls_lips-uecha.
+        IF ls_mseg-shkzg EQ 'H'.
+          ls_mseg-menge = ls_mseg-menge * ( -1 ).
+        ENDIF.
+        ls_dlv_item_db-menge = ls_mseg-menge.
+        ls_dlv_item_db-meins = ls_mseg-meins.
+        COLLECT ls_dlv_item_db INTO lt_dlv_item_db.
+      ENDIF.
+      CLEAR ls_dlv_item_db.
+    ENDLOOP.
+
+*   Get current processing GR quantity for higher-level item
+    LOOP AT it_pos INTO DATA(ls_pos).
+      CLEAR ls_lips.
+      READ TABLE it_lips INTO ls_lips
+        WITH KEY vbeln = ls_pos-vbeln
+                 posnr = ls_pos-posnr.
+      IF sy-subrc = 0.
+        ls_dlv_item_curr-vbeln = ls_pos-vbeln.
+        ls_dlv_item_curr-posnr = ls_lips-uecha.
+      ENDIF.
+      IF ls_pos-mseg-shkzg EQ 'H'.
+        ls_pos-mseg-menge = ls_pos-mseg-menge * ( -1 ).
+      ENDIF.
+      ls_dlv_item_curr-menge = ls_pos-mseg-menge.
+      ls_dlv_item_curr-meins = ls_pos-mseg-meins.
+      COLLECT ls_dlv_item_curr INTO lt_dlv_item_curr.
+      CLEAR ls_dlv_item_curr.
+    ENDLOOP.
+
+*   Merge the reported GR quantity for higher-level item
+    APPEND LINES OF lt_dlv_item_db TO lt_dlv_item_curr.
+    LOOP AT lt_dlv_item_curr INTO ls_dlv_item_curr.
+      COLLECT ls_dlv_item_curr INTO lt_dlv_item_calculated.
+    ENDLOOP.
+
+*   Prepare the header GR event
+    LOOP AT lt_dlv_item INTO ls_dlv_item.
+      CLEAR ls_dlv_item_calculated.
+      READ TABLE lt_dlv_item_calculated INTO ls_dlv_item_calculated
+        WITH KEY vbeln = ls_dlv_item-vbeln
+                 posnr = ls_dlv_item-posnr.
+      IF sy-subrc = 0.
+        IF ls_dlv_item-menge = ls_dlv_item_calculated-menge.
+
+          READ TABLE it_likp INTO DATA(ls_likp)
+            WITH KEY vbeln = ls_dlv_item-vbeln.
+          IF sy-subrc = 0.
+            IF ls_likp-vbtyp = if_sd_doc_category=>delivery_shipping_notif. "Inbound delivery
+              lv_dlvittrxcod = zif_gtt_ef_constants=>cs_trxcod-dl_position.
+            ELSEIF ls_likp-vbtyp = if_sd_doc_category=>delivery.            "Outbound delivery
+              lv_dlvittrxcod = zif_gtt_sof_constants=>cs_trxcod-out_delivery_item.
+            ENDIF.
+          ENDIF.
+
+          CLEAR ls_lips.
+          READ TABLE it_lips INTO ls_lips
+            WITH KEY vbeln = ls_dlv_item-vbeln
+                     posnr = ls_dlv_item-posnr.
+
+          DATA(lv_evtcnt) = zcl_gtt_mia_sh_tools=>get_next_event_counter( ).
+
+          ct_trackingheader = VALUE #( BASE ct_trackingheader (
+            language    = sy-langu
+            trxid       = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                            ir_lips = NEW lips( vbeln = ls_dlv_item-vbeln posnr = ls_dlv_item-posnr  ) )
+            trxcod      = lv_dlvittrxcod
+            evtcnt      = lv_evtcnt
+            evtid       = zif_gtt_ef_constants=>cs_milestone-dl_goods_receipt
+            evtdat      = sy-datum
+            evttim      = sy-uzeit
+            evtzon      = zcl_gtt_tools=>get_system_time_zone( )  ) ).
+
+          ct_eventid_map  = VALUE #( BASE ct_eventid_map (
+            eventid     = is_events-eventid
+            evtcnt      = lv_evtcnt  ) ).
+
+          ct_trackparameters  = VALUE #( BASE ct_trackparameters (
+            evtcnt      = lv_evtcnt
+            param_name  = zif_gtt_ef_constants=>cs_event_param-quantity
+            param_value = zcl_gtt_tools=>get_pretty_value( iv_value = 0 ) ) ).
+
+          IF ls_likp-vbtyp = if_sd_doc_category=>delivery_shipping_notif. "Inbound delivery
+            lv_locid = ls_lips-werks.
+          ELSEIF ls_likp-vbtyp = if_sd_doc_category=>delivery.            "Outbound delivery
+            zcl_gtt_tools=>get_location_id(
+              EXPORTING
+                iv_vgbel  = ls_lips-vgbel
+                iv_vgpos  = ls_lips-vgpos
+              IMPORTING
+                ev_locid1 = lv_locid ).
+          ENDIF.
+          ct_tracklocation  = VALUE #( BASE ct_tracklocation (
+            evtcnt      = lv_evtcnt
+            loccod      = zif_gtt_ef_constants=>cs_loc_types-plant
+            locid1      = zcl_gtt_tools=>get_pretty_location_id(
+                                  iv_locid   = lv_locid
+                                  iv_loctype = zif_gtt_ef_constants=>cs_loc_types-plant )
+            locid2      = zcl_gtt_mia_dl_tools=>get_tracking_id_dl_item(
+                            ir_lips = NEW lips( vbeln = ls_dlv_item-vbeln posnr = ls_dlv_item-posnr  ) )  ) ).
+
+        ENDIF.
+      ENDIF.
+
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

@@ -1,4 +1,12 @@
 # What's New for Fulfillment Tracking Apps
+## September 16th, 2023 
+1. Support batch split for the inbound and outbound delivery.
+2. Correct shipper reference documents information after removing a delivery from a shipment.
+3. Fix the update issue of the inbound delivery item when canceling one of its freight units.  
+4. If the Goods Movement status is empty, the item Goods Receipt events (with event match key) are not planned for the inbound delivery header.
+5. Enhance the trigger condition of freight unit's cross updating delivery and delivery items.
+6. Fix the duplicate alternative keys issue when several handling units are assigned to one freight unit of an inbound delivery.
+
 ## June 17th, 2023
 1. Correct the unit of measure in the freight booking.
 2. Stop sending out the freight unit IDOC if this freight unit is not GTT relevant.
@@ -16,7 +24,7 @@
 3. Add sales order and purchase order numbers in shipper reference documents of the LE-TRA shipment. 
 4. To keep the unit of measure consistent between the delivery and its freight unit, add the freight unit's base quantity and base unit of measure to inbound and outbound delivery items.
 5. Correct the unit of measure in the inbound delivery header / inbound delivery item / purchase order item / freight unit / freight order.
-6. Remove the leading zero in the ship-to party, sold-to party and material ID of the inbound delivery item / sales order / sales order item / sales order item / outbound delivery header / outbound delivery item. 
+6. Remove the leading zero in the ship-to party, sold-to party and material ID of the inbound delivery item / sales order / sales order item / outbound delivery header / outbound delivery item. 
 
 ## December 10th, 2022
 1. Add denominator and numerator fields for the sales order item / outbound delivery item.

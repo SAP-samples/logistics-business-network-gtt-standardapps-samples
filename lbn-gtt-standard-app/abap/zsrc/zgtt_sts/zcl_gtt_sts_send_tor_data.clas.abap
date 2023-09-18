@@ -207,18 +207,6 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
     send_deletion_idoc( lt_tor_root_for_deletion ).
 
-*   Freight Unit to Inbound/Outbound DLV CrossTP update
-    TRY.
-        CALL FUNCTION 'ZGTT_CTP_TOR_TO_DL'
-          EXPORTING
-            it_tor_root_sstring        = it_tor_root_sstring
-            it_tor_root_before_sstring = it_tor_root_before_sstring
-            it_tor_item_sstring        = it_item_sstring
-            it_tor_item_before_sstring = it_item_before_sstring
-            it_tor_stop_sstring        = it_stop_sstring.
-      CATCH cx_sy_dyn_call_illegal_func.
-    ENDTRY.
-
     add_required_freight_unit(
       CHANGING
         ct_execinfo_sstring         = it_execinfo_sstring
@@ -309,6 +297,18 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
         it_req_stop_sstring        = it_req_stop_sstring
         it_req_tu_stop_sstring     = it_req_tu_stop_sstring ).
 
+*   Freight Unit to Inbound/Outbound DLV CrossTP update
+    TRY.
+        CALL FUNCTION 'ZGTT_CTP_TOR_TO_DL'
+          EXPORTING
+            it_tor_root_sstring        = it_tor_root_sstring
+            it_tor_root_before_sstring = it_tor_root_before_sstring
+            it_tor_item_sstring        = it_item_sstring
+            it_tor_item_before_sstring = it_item_before_sstring
+            it_tor_stop_sstring        = it_stop_sstring.
+      CATCH cx_sy_dyn_call_illegal_func.
+    ENDTRY.
+
     TRY.
 *       Send Tracking Unit to GTT
         CALL FUNCTION 'ZGTT_STS_TRK_TU'
@@ -343,7 +343,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
                                    WHERE ( tor_cat = /scmtms/if_tor_const=>sc_tor_category-active OR
                                            tor_cat = /scmtms/if_tor_const=>sc_tor_category-booking )
                                  ( key = <ls_tor_root_sstring>-node_id ) ).
-
+    CHECK lt_freight_order_key IS NOT INITIAL.
     zcl_gtt_sts_tools=>get_capa2req_link_mul(
       EXPORTING
         it_root_key = lt_freight_order_key
@@ -352,6 +352,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
     LOOP AT lt_capa2req_link ASSIGNING FIELD-SYMBOL(<ls_capa2req_link>).
       CHECK NOT line_exists( ct_tor_root_sstring[ node_id = <ls_capa2req_link>-target_key ] ).
+      CHECK NOT line_exists( lt_fu_root_key[ key key_sort key = <ls_capa2req_link>-target_key ] ).
       INSERT VALUE #( key = <ls_capa2req_link>-target_key ) INTO TABLE lt_fu_root_key.
     ENDLOOP.
 
@@ -982,7 +983,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
     DATA(lt_freight_unit_key) = VALUE /bobf/t_frw_key( FOR <ls_tor_root_sstring> IN ct_tor_root_sstring
                                    WHERE ( tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit  )
                                          ( key = <ls_tor_root_sstring>-node_id ) ).
-
+    CHECK lt_freight_unit_key IS NOT INITIAL.
     DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
       iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
     lo_tor_srv_mgr->retrieve_by_association(
@@ -995,6 +996,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
     LOOP AT lt_capa2req_link ASSIGNING FIELD-SYMBOL(<ls_capa2req_link>).
       CHECK NOT line_exists( ct_tor_root_sstring[ node_id = <ls_capa2req_link>-target_key ] ).
+      CHECK NOT line_exists( lt_fo_root_key[ key key_sort key = <ls_capa2req_link>-target_key ] ).
       INSERT VALUE #( key = <ls_capa2req_link>-target_key ) INTO TABLE lt_fo_root_key.
     ENDLOOP.
 
@@ -1497,7 +1499,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
     DATA(lt_container_unit_key) = VALUE /bobf/t_frw_key( FOR <ls_tor_root_sstring> IN ct_tor_root_sstring
                                    WHERE ( tor_cat = /scmtms/if_tor_const=>sc_tor_category-transp_unit )
                                          ( key = <ls_tor_root_sstring>-node_id ) ).
-
+    CHECK lt_container_unit_key IS NOT INITIAL.
     DATA(lo_tor_srv_mgr) = /bobf/cl_tra_serv_mgr_factory=>get_service_manager(
       iv_bo_key = /scmtms/if_tor_c=>sc_bo_key ).
     lo_tor_srv_mgr->retrieve_by_association(
@@ -1510,6 +1512,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
     LOOP AT lt_capa2req_link ASSIGNING FIELD-SYMBOL(<ls_capa2req_link>).
       CHECK NOT line_exists( ct_tor_root_sstring[ node_id = <ls_capa2req_link>-target_key ] ).
+      CHECK NOT line_exists( lt_fu_root_key[ key key_sort key = <ls_capa2req_link>-target_key ] ).
       INSERT VALUE #( key = <ls_capa2req_link>-target_key ) INTO TABLE lt_fu_root_key.
     ENDLOOP.
 
@@ -1546,6 +1549,7 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
     LOOP AT lt_capa2req_link ASSIGNING <ls_capa2req_link>.
       CHECK NOT line_exists( ct_tor_root_sstring[ node_id = <ls_capa2req_link>-target_key ] ).
+      CHECK NOT line_exists( lt_fo_root_key[ key key_sort key = <ls_capa2req_link>-target_key ] ).
       INSERT VALUE #( key = <ls_capa2req_link>-target_key ) INTO TABLE lt_fo_root_key.
     ENDLOOP.
 

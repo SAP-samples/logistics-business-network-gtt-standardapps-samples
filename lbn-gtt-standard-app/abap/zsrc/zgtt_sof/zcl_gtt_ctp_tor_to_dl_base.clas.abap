@@ -6,20 +6,36 @@ class ZCL_GTT_CTP_TOR_TO_DL_BASE definition
 public section.
 
   interfaces ZIF_GTT_CTP_TOR_TO_DL .
-PROTECTED SECTION.
 
-  DATA mv_appsys TYPE logsys .
-  DATA mv_base_btd_tco TYPE /scmtms/base_btd_tco .
-  DATA mt_aotype TYPE zif_gtt_ctp_types=>tt_aotype .
-  DATA mt_tor_root TYPE /scmtms/t_em_bo_tor_root .
-  DATA mt_tor_root_before TYPE /scmtms/t_em_bo_tor_root .
-  DATA mt_tor_item TYPE /scmtms/t_em_bo_tor_item .
-  DATA mt_tor_item_before TYPE /scmtms/t_em_bo_tor_item .
-  DATA mt_tor_stop TYPE /scmtms/t_em_bo_tor_stop .
-  DATA mt_tor_stop_before TYPE /scmtms/t_em_bo_tor_stop .
-  DATA mt_delivery_item_chng TYPE zif_gtt_sof_ctp_types=>tt_delivery_chng .
-  DATA mt_delivery TYPE zif_gtt_sof_ctp_types=>tt_delivery .
-  CONSTANTS:
+  TYPES:
+    BEGIN OF ts_delivery,
+      vbeln TYPE likp-vbeln,
+    END OF ts_delivery.
+
+  TYPES:
+    BEGIN OF ts_delivery_info,
+      vbeln       TYPE likp-vbeln,
+      dlv_items   TYPE zif_gtt_sof_ctp_types=>tt_delivery_chng,
+      tor_id      TYPE /scmtms/t_tor_id,
+      process_flg TYPE flag,
+    END OF ts_delivery_info.
+  TYPES:
+    tt_delivery      TYPE TABLE OF ts_delivery,
+    tt_delivery_info TYPE TABLE OF ts_delivery_info.
+protected section.
+
+  data MV_APPSYS type LOGSYS .
+  data MV_BASE_BTD_TCO type /SCMTMS/BASE_BTD_TCO .
+  data MT_AOTYPE type ZIF_GTT_CTP_TYPES=>TT_AOTYPE .
+  data MT_TOR_ROOT type /SCMTMS/T_EM_BO_TOR_ROOT .
+  data MT_TOR_ROOT_BEFORE type /SCMTMS/T_EM_BO_TOR_ROOT .
+  data MT_TOR_ITEM type /SCMTMS/T_EM_BO_TOR_ITEM .
+  data MT_TOR_ITEM_BEFORE type /SCMTMS/T_EM_BO_TOR_ITEM .
+  data MT_TOR_STOP type /SCMTMS/T_EM_BO_TOR_STOP .
+  data MT_TOR_STOP_BEFORE type /SCMTMS/T_EM_BO_TOR_STOP .
+  data MT_DELIVERY_ITEM_CHNG type ZIF_GTT_SOF_CTP_TYPES=>TT_DELIVERY_CHNG .
+  data MT_DELIVERY type ZIF_GTT_SOF_CTP_TYPES=>TT_DELIVERY .
+  constants:
     BEGIN OF cs_mapping,
       vbeln                 TYPE /saptrx/paramname VALUE 'YN_DLV_NO',
       fu_relevant           TYPE /saptrx/paramname VALUE 'YN_DL_FU_RELEVANT',
@@ -41,97 +57,106 @@ PROTECTED SECTION.
       trxid                 TYPE /saptrx/paramname VALUE 'E1EHPTID_TRXID',
       action                TYPE /saptrx/paramname VALUE 'E1EHPTID_ACTION',
     END OF cs_mapping .
-  DATA mt_idoc_data TYPE zif_gtt_sof_ctp_types=>tt_idoc_data .
-  DATA mt_delivery_item TYPE zif_gtt_sof_ctp_types=>tt_delivery_item .
-  DATA mt_fu_info TYPE /scmtms/t_tor_root_k .
+  data MT_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TT_IDOC_DATA .
+  data MT_DELIVERY_ITEM type ZIF_GTT_SOF_CTP_TYPES=>TT_DELIVERY_ITEM .
+  data MT_FU_INFO type /SCMTMS/T_TOR_ROOT_K .
 
-  METHODS get_aotype_restriction_id
-    ABSTRACT
-    RETURNING
-      VALUE(rv_rst_id) TYPE zgtt_rst_id .
-  METHODS initiate_aotypes
-    IMPORTING
-      !iv_rst_id TYPE zgtt_rst_id .
-  METHODS is_gtt_enabled
-    IMPORTING
-      !iv_trk_obj_type TYPE /saptrx/trk_obj_type
-    RETURNING
-      VALUE(rv_result) TYPE flag .
-  METHODS is_extractor_exist
-    IMPORTING
-      !iv_trk_obj_type TYPE /saptrx/trk_obj_type
-    RETURNING
-      VALUE(rv_result) TYPE abap_bool .
-  METHODS get_dlv_item_based_on_tor_root
-    CHANGING
-      !ct_delivery_item TYPE zif_gtt_sof_ctp_types=>tt_delivery_chng .
-  METHODS add_delivery_items_by_tor_root
-    IMPORTING
-      !is_tor_root      TYPE /scmtms/s_em_bo_tor_root
-      !iv_change_mode   TYPE /bobf/conf_change_mode
-    CHANGING
-      !ct_delivery_item TYPE zif_gtt_sof_ctp_types=>tt_delivery_chng .
-  METHODS add_delivery_item
-    IMPORTING
-      !is_tor_root      TYPE /scmtms/s_em_bo_tor_root
-      !is_tor_item      TYPE /scmtms/s_em_bo_tor_item
-      !iv_change_mode   TYPE /bobf/conf_change_mode
-    CHANGING
-      !ct_delivery_item TYPE zif_gtt_sof_ctp_types=>tt_delivery_chng .
-  METHODS get_dlv_item_based_on_tor_item
-    CHANGING
-      !ct_delivery_item TYPE zif_gtt_sof_ctp_types=>tt_delivery_chng .
-  METHODS get_dlv_item_based_on_tor_stop
-    CHANGING
-      !ct_delivery_item TYPE zif_gtt_sof_ctp_types=>tt_delivery_chng .
-  METHODS fill_delivery_header_data .
-  METHODS prepare_idoc_data
-    RAISING
-      cx_udm_message .
-  METHODS fill_idoc_trxserv
-    IMPORTING
-      !is_aotype    TYPE zif_gtt_sof_ctp_types=>ts_aotype
-    CHANGING
-      !cs_idoc_data TYPE zif_gtt_sof_ctp_types=>ts_idoc_data .
-  METHODS fill_idoc_appobj_ctabs
-    IMPORTING
-      !is_aotype              TYPE zif_gtt_sof_ctp_types=>ts_aotype
-      VALUE(is_likp)          TYPE zif_gtt_sof_ctp_types=>ts_delivery OPTIONAL
-      VALUE(is_delivery_item) TYPE zif_gtt_sof_ctp_types=>ts_delivery_item OPTIONAL
-    CHANGING
-      !cs_idoc_data           TYPE zif_gtt_sof_ctp_types=>ts_idoc_data .
-  METHODS fill_idoc_control_data
-    IMPORTING
-      !is_aotype              TYPE zif_gtt_sof_ctp_types=>ts_aotype
-      VALUE(is_delivery)      TYPE zif_gtt_sof_ctp_types=>ts_delivery OPTIONAL
-      VALUE(is_delivery_item) TYPE zif_gtt_sof_ctp_types=>ts_delivery_item OPTIONAL
-    CHANGING
-      !cs_idoc_data           TYPE zif_gtt_sof_ctp_types=>ts_idoc_data
-    RAISING
-      cx_udm_message .
-  METHODS fill_idoc_exp_event
-    IMPORTING
-      !is_aotype         TYPE zif_gtt_sof_ctp_types=>ts_aotype
-      VALUE(is_delivery) TYPE zif_gtt_sof_ctp_types=>ts_delivery OPTIONAL
-      VALUE(is_dlv_item) TYPE zif_gtt_sof_ctp_types=>ts_delivery_item OPTIONAL
-    CHANGING
-      !cs_idoc_data      TYPE zif_gtt_sof_ctp_types=>ts_idoc_data
-    RAISING
-      cx_udm_message .
-  METHODS fill_idoc_tracking_id
-    IMPORTING
-      !is_aotype              TYPE zif_gtt_sof_ctp_types=>ts_aotype
-      VALUE(is_delivery)      TYPE zif_gtt_sof_ctp_types=>ts_delivery OPTIONAL
-      VALUE(is_delivery_item) TYPE zif_gtt_sof_ctp_types=>ts_delivery_item OPTIONAL
-    CHANGING
-      !cs_idoc_data           TYPE zif_gtt_sof_ctp_types=>ts_idoc_data
-    RAISING
-      cx_udm_message .
-  METHODS send_idoc_data
-    EXPORTING
-      !et_bapiret TYPE bapiret2_t .
-  METHODS fill_delivery_item_data .
-  METHODS clear_data .
+  methods GET_AOTYPE_RESTRICTION_ID
+  abstract
+    returning
+      value(RV_RST_ID) type ZGTT_RST_ID .
+  methods INITIATE_AOTYPES
+    importing
+      !IV_RST_ID type ZGTT_RST_ID .
+  methods IS_GTT_ENABLED
+    importing
+      !IV_TRK_OBJ_TYPE type /SAPTRX/TRK_OBJ_TYPE
+    returning
+      value(RV_RESULT) type FLAG .
+  methods IS_EXTRACTOR_EXIST
+    importing
+      !IV_TRK_OBJ_TYPE type /SAPTRX/TRK_OBJ_TYPE
+    returning
+      value(RV_RESULT) type ABAP_BOOL .
+  methods GET_DLV_ITEM_BASED_ON_TOR_ROOT
+    changing
+      !CT_DELIVERY_ITEM type ZIF_GTT_SOF_CTP_TYPES=>TT_DELIVERY_CHNG .
+  methods ADD_DELIVERY_ITEMS_BY_TOR_ROOT
+    importing
+      !IS_TOR_ROOT type /SCMTMS/S_EM_BO_TOR_ROOT
+      !IV_CHANGE_MODE type /BOBF/CONF_CHANGE_MODE
+    changing
+      !CT_DELIVERY_ITEM type ZIF_GTT_SOF_CTP_TYPES=>TT_DELIVERY_CHNG .
+  methods ADD_DELIVERY_ITEM
+    importing
+      !IS_TOR_ROOT type /SCMTMS/S_EM_BO_TOR_ROOT
+      !IS_TOR_ITEM type /SCMTMS/S_EM_BO_TOR_ITEM
+      !IV_CHANGE_MODE type /BOBF/CONF_CHANGE_MODE
+    changing
+      !CT_DELIVERY_ITEM type ZIF_GTT_SOF_CTP_TYPES=>TT_DELIVERY_CHNG .
+  methods GET_DLV_ITEM_BASED_ON_TOR_ITEM
+    changing
+      !CT_DELIVERY_ITEM type ZIF_GTT_SOF_CTP_TYPES=>TT_DELIVERY_CHNG .
+  methods GET_DLV_ITEM_BASED_ON_TOR_STOP
+    changing
+      !CT_DELIVERY_ITEM type ZIF_GTT_SOF_CTP_TYPES=>TT_DELIVERY_CHNG .
+  methods FILL_DELIVERY_HEADER_DATA .
+  methods PREPARE_IDOC_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_IDOC_TRXSERV
+    importing
+      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA .
+  methods FILL_IDOC_APPOBJ_CTABS
+    importing
+      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
+      value(IS_LIKP) type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY optional
+      value(IS_DELIVERY_ITEM) type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY_ITEM optional
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA .
+  methods FILL_IDOC_CONTROL_DATA
+    importing
+      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
+      value(IS_DELIVERY) type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY optional
+      value(IS_DELIVERY_ITEM) type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY_ITEM optional
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_IDOC_EXP_EVENT
+    importing
+      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
+      value(IS_DELIVERY) type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY optional
+      value(IS_DLV_ITEM) type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY_ITEM optional
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_IDOC_TRACKING_ID
+    importing
+      !IS_AOTYPE type ZIF_GTT_SOF_CTP_TYPES=>TS_AOTYPE
+      value(IS_DELIVERY) type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY optional
+      value(IS_DELIVERY_ITEM) type ZIF_GTT_SOF_CTP_TYPES=>TS_DELIVERY_ITEM optional
+    changing
+      !CS_IDOC_DATA type ZIF_GTT_SOF_CTP_TYPES=>TS_IDOC_DATA
+    raising
+      CX_UDM_MESSAGE .
+  methods SEND_IDOC_DATA
+    exporting
+      !ET_BAPIRET type BAPIRET2_T .
+  methods FILL_DELIVERY_ITEM_DATA .
+  methods CLEAR_DATA .
+  methods DETERMINE_PROCESS_FLAG
+    importing
+      !IT_TOR_ID type /SCMTMS/T_TOR_ID
+      !IT_FU_DB type /SCMTMS/T_TOR_ROOT_K
+    exporting
+      !EV_PROCESS_FLG type FLAG .
+  methods CHECK_FU_STATUS
+    exporting
+      !ET_DELIVERY_INFO type TT_DELIVERY_INFO .
 private section.
 ENDCLASS.
 
@@ -153,7 +178,20 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
     ls_delivery_item-quantity     = is_tor_item-qua_pcs_val.
     ls_delivery_item-product_descr = is_tor_item-item_descr.
     ls_delivery_item-base_uom_val  = is_tor_item-base_uom_val.
-    ls_delivery_item-change_mode  = iv_change_mode.
+    IF iv_change_mode IS NOT INITIAL.
+      ls_delivery_item-change_mode  = iv_change_mode.
+    ELSE.
+      zcl_gtt_sof_toolkit=>get_fu_from_db(
+        EXPORTING
+          it_tor_id = VALUE #( ( is_tor_root-tor_id ) )
+        IMPORTING
+          et_fu     = DATA(lt_fu_db) ).
+      IF lt_fu_db IS INITIAL.
+        ls_delivery_item-change_mode  = /bobf/if_frw_c=>sc_modify_create.
+      ELSE.
+        ls_delivery_item-change_mode  = /bobf/if_frw_c=>sc_modify_update.
+      ENDIF.
+    ENDIF.
 
     zcl_gtt_sof_toolkit=>convert_unit_output(
       EXPORTING
@@ -307,13 +345,16 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
       ENDLOOP.
 
 *     Check if there is any freight unit assigned to the delivery
+      <ls_delivery>-fu_relevant = abap_false.
+
       CLEAR lv_base_btd_id.
       lv_base_btd_id = |{ <ls_delivery>-vbeln ALPHA = IN }|.
-      READ TABLE mt_fu_info TRANSPORTING NO FIELDS
-        WITH KEY base_btd_id  = lv_base_btd_id.
-      IF sy-subrc = 0.
+      LOOP AT mt_fu_info INTO DATA(ls_fu_info)
+        WHERE base_btd_id  = lv_base_btd_id
+          AND lifecycle <> /scmtms/if_tor_status_c=>sc_root-lifecycle-v_canceled.
         <ls_delivery>-fu_relevant = abap_true.
-      ENDIF.
+        EXIT.
+      ENDLOOP.
 
     ENDLOOP.
 
@@ -618,40 +659,18 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD GET_DLV_ITEM_BASED_ON_TOR_ROOT.
+  METHOD get_dlv_item_based_on_tor_root.
 
     LOOP AT mt_tor_root ASSIGNING FIELD-SYMBOL(<ls_tor_root>)
       WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit
         AND base_btd_tco = mv_base_btd_tco.
 
-      IF <ls_tor_root>-change_mode = /bobf/if_frw_c=>sc_modify_delete.
-        add_delivery_items_by_tor_root(
-          EXPORTING
-            is_tor_root      = <ls_tor_root>
-            iv_change_mode   = /bobf/if_frw_c=>sc_modify_delete
-          CHANGING
-            ct_delivery_item = ct_delivery_item ).
-        CONTINUE.
-      ENDIF.
-
-      ASSIGN mt_tor_root_before[ node_id = <ls_tor_root>-node_id ] TO FIELD-SYMBOL(<ls_tor_root_before>).
-      IF sy-subrc = 0.
-        CHECK <ls_tor_root_before>-base_btd_tco <> mv_base_btd_tco.
-
-        add_delivery_items_by_tor_root(
-          EXPORTING
-            is_tor_root      = <ls_tor_root>
-            iv_change_mode   = /bobf/if_frw_c=>sc_modify_update
-          CHANGING
-            ct_delivery_item = ct_delivery_item ).
-      ELSE.
-        add_delivery_items_by_tor_root(
-          EXPORTING
-            is_tor_root      = <ls_tor_root>
-            iv_change_mode   = /bobf/if_frw_c=>sc_modify_create
-          CHANGING
-            ct_delivery_item = ct_delivery_item ).
-      ENDIF.
+      add_delivery_items_by_tor_root(
+        EXPORTING
+          is_tor_root      = <ls_tor_root>
+          iv_change_mode   = <ls_tor_root>-change_mode
+        CHANGING
+          ct_delivery_item = ct_delivery_item ).
     ENDLOOP.
 
   ENDMETHOD.
@@ -679,7 +698,7 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
         add_delivery_items_by_tor_root(
           EXPORTING
             is_tor_root      = <ls_tor_root>
-            iv_change_mode   = /bobf/if_frw_c=>sc_modify_update
+            iv_change_mode   = <ls_tor_root>-change_mode
           CHANGING
             ct_delivery_item = ct_delivery_item ).
       ENDLOOP.
@@ -875,7 +894,10 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ZIF_GTT_CTP_TOR_TO_DL~CHECK_RELEVANCE.
+  METHOD zif_gtt_ctp_tor_to_dl~check_relevance.
+
+    DATA:
+      lt_fu_db TYPE /scmtms/t_tor_root_k.
 
     CLEAR:
       rv_result,
@@ -888,6 +910,20 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
     get_dlv_item_based_on_tor_stop(
       CHANGING
         ct_delivery_item = mt_delivery_item_chng ).
+
+    check_fu_status(
+      IMPORTING
+        et_delivery_info = DATA(lt_delivery_info) ).
+
+    LOOP AT mt_delivery_item_chng INTO DATA(ls_delivery_item_chng).
+      READ TABLE lt_delivery_info INTO DATA(ls_delivery_info)
+        WITH KEY vbeln = ls_delivery_item_chng-vbeln.
+      IF sy-subrc = 0.
+        IF ls_delivery_info-process_flg = abap_false.
+          DELETE mt_delivery_item_chng WHERE vbeln = ls_delivery_info-vbeln.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
 
     IF mt_delivery_item_chng IS NOT INITIAL.
       rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
@@ -959,6 +995,124 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
         et_bapiret = et_bapiret ).
 
     clear_data( ).
+
+  ENDMETHOD.
+
+
+  METHOD check_fu_status.
+
+    DATA:
+      lt_delivery           TYPE tt_delivery,
+      ls_delivery           TYPE ts_delivery,
+      lt_delivery_info      TYPE tt_delivery_info,
+      ls_delivery_info      TYPE ts_delivery_info,
+      lv_delivery_exist_flg TYPE flag,
+      lt_fu_db              TYPE /scmtms/t_tor_root_k.
+
+    CLEAR et_delivery_info.
+
+    LOOP AT mt_delivery_item_chng ASSIGNING FIELD-SYMBOL(<ls_delivery_item>).
+      READ TABLE lt_delivery TRANSPORTING NO FIELDS
+        WITH KEY vbeln = <ls_delivery_item>-vbeln.
+      IF sy-subrc <> 0.
+        ls_delivery-vbeln = <ls_delivery_item>-vbeln.
+        APPEND ls_delivery TO lt_delivery.
+        CLEAR ls_delivery.
+      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_delivery INTO ls_delivery.
+      CLEAR ls_delivery_info.
+      LOOP AT mt_delivery_item_chng INTO DATA(ls_delivery_item)
+        WHERE vbeln = ls_delivery-vbeln.
+        APPEND ls_delivery_item TO ls_delivery_info-dlv_items.
+        APPEND ls_delivery_item-tor_id TO ls_delivery_info-tor_id.
+      ENDLOOP.
+      IF ls_delivery_info IS NOT INITIAL.
+        ls_delivery_info-vbeln = ls_delivery-vbeln.
+        SORT ls_delivery_info-tor_id BY table_line.
+        DELETE ADJACENT DUPLICATES FROM ls_delivery_info-tor_id COMPARING ALL FIELDS.
+        APPEND ls_delivery_info TO lt_delivery_info.
+      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_delivery_info ASSIGNING FIELD-SYMBOL(<fs_delivery_info>).
+      CLEAR:
+        lv_delivery_exist_flg,
+        lt_fu_db.
+
+      <fs_delivery_info>-process_flg = abap_false.
+
+      SELECT COUNT(*)
+        FROM likp
+       WHERE vbeln = <fs_delivery_info>-vbeln.
+      IF sy-dbcnt > 0.
+        lv_delivery_exist_flg = abap_true.
+      ENDIF.
+
+      zcl_gtt_sof_toolkit=>get_fu_from_db(
+        EXPORTING
+          it_tor_id = <fs_delivery_info>-tor_id
+        IMPORTING
+          et_fu     = lt_fu_db ).
+
+*     DLV in DB,TOR not in DB(new TOR), send the IDOC
+      IF lv_delivery_exist_flg IS NOT INITIAL AND lt_fu_db IS INITIAL.
+        <fs_delivery_info>-process_flg = abap_true.
+
+*     DLV in DB,TOR in DB,and TOR in progress, do not sent out IDOC
+*     FU is deleted or canceled, send the IDOC
+      ELSEIF lv_delivery_exist_flg IS NOT INITIAL AND lt_fu_db IS NOT INITIAL.
+
+        determine_process_flag(
+          EXPORTING
+            it_tor_id      = <fs_delivery_info>-tor_id
+            it_fu_db       = lt_fu_db
+          IMPORTING
+            ev_process_flg = <fs_delivery_info>-process_flg ).
+
+      ENDIF.
+
+    ENDLOOP.
+
+    et_delivery_info = lt_delivery_info.
+
+  ENDMETHOD.
+
+
+  METHOD DETERMINE_PROCESS_FLAG.
+
+    DATA:
+      lv_all_fu_in_db_flg   TYPE flag.
+
+    CLEAR ev_process_flg.
+
+    LOOP AT it_tor_id INTO DATA(ls_tor_id).
+      READ TABLE it_fu_db TRANSPORTING NO FIELDS
+        WITH KEY tor_id COMPONENTS tor_id = ls_tor_id.
+      IF sy-subrc = 0.
+        lv_all_fu_in_db_flg = abap_true.
+      ELSE.
+        lv_all_fu_in_db_flg = abap_false.
+      ENDIF.
+    ENDLOOP.
+
+    IF lv_all_fu_in_db_flg = abap_true.
+      LOOP AT it_tor_id INTO ls_tor_id.
+        READ TABLE mt_tor_root INTO DATA(ls_tor_root)
+          WITH KEY tor_id = ls_tor_id.
+        IF sy-subrc = 0.
+*         FU is deleted or canceled, send the IDOC
+          IF ( ls_tor_root-change_mode = /bobf/if_frw_c=>sc_modify_delete
+            OR ls_tor_root-lifecycle   = /scmtms/if_tor_status_c=>sc_root-lifecycle-v_canceled ).
+            ev_process_flg = abap_true.
+            EXIT.
+          ENDIF.
+        ENDIF.
+      ENDLOOP.
+    ELSE.
+      ev_process_flg = abap_true.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.
