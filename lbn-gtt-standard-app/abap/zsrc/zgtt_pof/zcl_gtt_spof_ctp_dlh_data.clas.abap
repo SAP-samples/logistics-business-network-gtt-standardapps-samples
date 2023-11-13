@@ -91,6 +91,8 @@ CLASS ZCL_GTT_SPOF_CTP_DLH_DATA IMPLEMENTATION.
 
     CLEAR:
       et_ekko,
+      et_ekpo,
+      et_eket,
       et_ref_list.
 
     LOOP AT it_xlips ASSIGNING FIELD-SYMBOL(<ls_xlips>).

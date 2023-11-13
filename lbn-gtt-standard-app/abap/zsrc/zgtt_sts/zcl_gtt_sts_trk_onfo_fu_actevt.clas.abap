@@ -107,24 +107,18 @@ CLASS ZCL_GTT_STS_TRK_ONFO_FU_ACTEVT IMPLEMENTATION.
 
     DATA(lv_reference_event) = is_execinfo-ref_event_code.
 
-    IF iv_event_code = /scmtms/if_tor_const=>sc_tor_event-pod OR
-       lv_reference_event = /scmtms/if_tor_const=>sc_tor_event-pod.
-      ls_tracklocation-locid2 = <ls_root>-tor_id.
-    ELSE.
+    zcl_gtt_sts_tools=>get_stop_points(
+      EXPORTING
+        iv_root_id     = <ls_root>-tor_id
+        it_stop        = VALUE #( FOR <ls_stop> IN lt_stop USING KEY parent_seqnum
+                                  WHERE ( parent_node_id = <ls_root>-node_id ) ( <ls_stop> ) )
+      IMPORTING
+        et_stop_points = DATA(lt_stop_points) ).
 
-      zcl_gtt_sts_tools=>get_stop_points(
-        EXPORTING
-          iv_root_id     = <ls_root>-tor_id
-          it_stop        = VALUE #( FOR <ls_stop> IN lt_stop USING KEY parent_seqnum
-                                    WHERE ( parent_node_id = <ls_root>-node_id ) ( <ls_stop> ) )
-        IMPORTING
-          et_stop_points = DATA(lt_stop_points) ).
-
-      ASSIGN lt_stop_points[ log_locid = is_execinfo-ext_loc_id ]-stop_id TO FIELD-SYMBOL(<lv_stop_id>) ##WARN_OK.
-      IF sy-subrc = 0.
-        SHIFT <lv_stop_id> LEFT DELETING LEADING '0'.
-        ls_tracklocation-locid2 = <lv_stop_id>.
-      ENDIF.
+    ASSIGN lt_stop_points[ log_locid = is_execinfo-ext_loc_id ]-stop_id TO FIELD-SYMBOL(<lv_stop_id>) ##WARN_OK.
+    IF sy-subrc = 0.
+      SHIFT <lv_stop_id> LEFT DELETING LEADING '0'.
+      ls_tracklocation-locid2 = <lv_stop_id>.
     ENDIF.
 
     IF iv_event_code = /scmtms/if_tor_const=>sc_tor_event-delay OR

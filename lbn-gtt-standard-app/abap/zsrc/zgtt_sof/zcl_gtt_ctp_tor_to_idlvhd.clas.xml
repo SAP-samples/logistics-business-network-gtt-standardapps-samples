@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_GTT_CTP_TOR_TO_IDLVHD</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Freight Unit to Inbound Delivery Header CrossTP Update</DESCRIPT>
+    <DESCRIPT>Freight Unit to IBD Delivery Header CrossTP Update(obsolete)</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

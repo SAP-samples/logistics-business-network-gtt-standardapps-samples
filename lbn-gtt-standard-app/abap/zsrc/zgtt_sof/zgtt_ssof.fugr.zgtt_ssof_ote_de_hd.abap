@@ -51,7 +51,8 @@ FUNCTION zgtt_ssof_ote_de_hd.
     lt_relation     TYPE STANDARD TABLE OF gtys_tor_data,
     lv_kunnr        TYPE likp-kunnr,
     lt_loc_data     TYPE TABLE OF gtys_address_info,
-    lt_control_data TYPE TABLE OF /saptrx/control_data.
+    lt_control_data TYPE TABLE OF /saptrx/control_data,
+    lv_relevant     TYPE abap_bool.
 
   FIELD-SYMBOLS:
     <ls_xlikp> TYPE likpvb,
@@ -425,19 +426,17 @@ FUNCTION zgtt_ssof_ote_de_hd.
     APPEND ls_control_data TO e_control_data.
 
 *   fu relevant flag
-    CLEAR lt_relation.
-    lo_gtt_toolkit->get_relation(
+    CLEAR lv_relevant.
+    zcl_gtt_tools=>check_tm_int_relevance(
       EXPORTING
-        iv_vbeln    = <ls_xlikp>-vbeln  " Delivery
-        iv_vbtyp    = <ls_xlikp>-vbtyp  " SD Document Category
-      IMPORTING
-        et_relation = lt_relation ).
+        iv_ctrl_key = <ls_xlikp>-tm_ctrl_key
+        it_lips     = lt_xlips
+      RECEIVING
+        rv_relevant = lv_relevant ).
 
-    IF lt_relation IS NOT INITIAL.
-      ls_control_data-paramname = gc_cp_yn_fu_relevant.
-      ls_control_data-value     = abap_true.
-      APPEND ls_control_data TO e_control_data.
-    ENDIF.
+    ls_control_data-paramname = gc_cp_yn_fu_relevant.
+    ls_control_data-value     = lv_relevant.
+    APPEND ls_control_data TO e_control_data.
 
 *   Actual Business Time zone
     CALL FUNCTION 'GET_SYSTEM_TIMEZONE'

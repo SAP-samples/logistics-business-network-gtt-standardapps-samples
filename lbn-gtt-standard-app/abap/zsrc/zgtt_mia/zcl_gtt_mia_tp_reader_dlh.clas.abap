@@ -134,6 +134,7 @@ private section.
       !IR_LIPS_NEW type ref to DATA
       !IR_LIPS_OLD type ref to DATA optional
       !IV_VBELN type VBELN_VL
+      !IR_LIKP type ref to DATA
     changing
       !CS_DL_HEADER type TS_DL_HEADER
     raising
@@ -326,7 +327,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD FILL_HEADER_FROM_LIPS_TABLE.
+  METHOD fill_header_from_lips_table.
 
     TYPES: tt_posnr TYPE SORTED TABLE OF posnr_vl
                            WITH UNIQUE KEY table_line.
@@ -335,15 +336,21 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     FIELD-SYMBOLS: <lt_lips_new> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
                    <lt_lips_old> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
-                   <ls_lips>     TYPE lipsvb.
+                   <ls_lips>     TYPE lipsvb,
+                   <ls_likp>     TYPE likpvb.
 
+    ASSIGN ir_likp->* TO <ls_likp>.
     ASSIGN ir_lips_new->* TO <lt_lips_new>.
 
     " prepare positions list
-    IF <lt_lips_new> IS ASSIGNED.
+    IF <ls_likp> IS ASSIGNED AND <lt_lips_new> IS ASSIGNED.
 
-      cs_dl_header-fu_relev = zcl_gtt_mia_tm_tools=>is_fu_relevant(
-                                it_lips = CORRESPONDING #( <lt_lips_new> ) ).
+      zcl_gtt_tools=>check_tm_int_relevance(
+        EXPORTING
+          iv_ctrl_key = <ls_likp>-tm_ctrl_key
+          it_lips     = <lt_lips_new>
+        RECEIVING
+          rv_relevant = cs_dl_header-fu_relev ).
 
     ELSE.
       MESSAGE e002(zgtt) WITH 'LIPS NEW' INTO lv_dummy.
@@ -465,6 +472,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
         ir_lips_old  = mo_ef_parameters->get_appl_table(
                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_old )
         iv_vbeln     = |{ <ls_header>-vbeln ALPHA = IN }|
+        ir_likp      = is_app_object-maintabref
       CHANGING
         cs_dl_header = <ls_header> ).
 
@@ -495,9 +503,16 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
   METHOD zif_gtt_tp_reader~get_data_old.
     FIELD-SYMBOLS: <ls_header> TYPE ts_dl_header.
 
+    DATA:
+      lr_likp TYPE REF TO data.
+
     DATA(lv_vbeln)  = CONV vbeln_vl( zcl_gtt_tools=>get_field_of_structure(
                                        ir_struct_data = is_app_object-maintabref
                                        iv_field_name  = 'VBELN' ) ).
+
+    lr_likp = get_likp_struct_old(
+      is_app_object = is_app_object
+      iv_vbeln      = lv_vbeln ).
 
     rr_data   = NEW ts_dl_header( ).
 
@@ -505,9 +520,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     fill_header_from_likp_struct(
       EXPORTING
-        ir_likp      = get_likp_struct_old(
-                         is_app_object = is_app_object
-                         iv_vbeln      = lv_vbeln )
+        ir_likp      = lr_likp
       CHANGING
         cs_dl_header = <ls_header> ).
 
@@ -518,6 +531,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
         ir_lips_old  = mo_ef_parameters->get_appl_table(
                          iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_old )
         iv_vbeln     = |{ <ls_header>-vbeln ALPHA = IN }|
+        ir_likp      = lr_likp
       CHANGING
         cs_dl_header = <ls_header> ).
 

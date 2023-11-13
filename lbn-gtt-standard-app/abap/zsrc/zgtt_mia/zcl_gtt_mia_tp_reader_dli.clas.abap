@@ -524,7 +524,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
       cs_dl_item-matnr = lv_matnr.
 
     ELSE.
-      MESSAGE e002(zgtt) WITH 'LIKP' INTO DATA(lv_dummy).
+      MESSAGE e002(zgtt) WITH 'LIPS' INTO DATA(lv_dummy).
       zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 

@@ -1,4 +1,10 @@
-# What's New for Fulfillment Tracking Apps 
+# What's New for Fulfillment Tracking Apps
+## November 11th, 2023
+1. When reporting actual events in SAP TM with the event reason code provided, the event reason code can now be sent to SAP Business Network Global Track and Trace.
+2. Fix the "Proof of Delivery" event match key for the freight unit.
+3. Enhance the logic of the field "isFreightUnitRelevant" on the delivery header.
+4. When the freight unit is updated and sent to SAP Business Network Global Track and Trace, the preceding inbound/outbound delivery header will not be updated.
+
 ## September 16th, 2023 
 1. Support batch split for the inbound and outbound delivery.
 2. Correct shipper reference documents information after removing a delivery from a shipment.

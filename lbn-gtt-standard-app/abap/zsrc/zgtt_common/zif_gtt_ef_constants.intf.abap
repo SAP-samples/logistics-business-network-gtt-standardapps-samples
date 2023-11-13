@@ -70,6 +70,7 @@ interface ZIF_GTT_EF_CONSTANTS
       esc_deliv  TYPE /saptrx/trk_obj_type VALUE 'ESC_DELIV',
       esc_shipmt TYPE /saptrx/trk_obj_type VALUE 'ESC_SHIPMT',
       tms_tor    TYPE /saptrx/trk_obj_type VALUE 'TMS_TOR',
+      esc_sorder TYPE /saptrx/trk_obj_type VALUE 'ESC_SORDER',
     END OF cs_trk_obj_type .
   constants:
     BEGIN OF cs_system_fields,

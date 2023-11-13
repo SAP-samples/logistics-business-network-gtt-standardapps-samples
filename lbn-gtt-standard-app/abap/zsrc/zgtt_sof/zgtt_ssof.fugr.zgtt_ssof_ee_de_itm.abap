@@ -272,8 +272,7 @@ FUNCTION zgtt_ssof_ee_de_itm.
       ls_expeventdata-evt_exp_tzone,
       ls_expeventdata-loctype,
       ls_expeventdata-locid1,
-      ls_expeventdata-locid2,
-      lv_timezone.
+      ls_expeventdata-locid2.
 
 *   if it is a STO outbound delivery item,add Header Goods Receipt and Item Goods Receipt
     IF <ls_xlips>-vgtyp = if_sd_doc_category=>purchase_order

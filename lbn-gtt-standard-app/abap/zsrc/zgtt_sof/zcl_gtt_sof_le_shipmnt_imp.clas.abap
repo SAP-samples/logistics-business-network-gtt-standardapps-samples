@@ -1090,7 +1090,7 @@ ENDMETHOD.
   ENDMETHOD.
 
 
-  METHOD PREPARE_RELEVANT_LOC_DATA.
+  METHOD prepare_relevant_loc_data.
 
     DATA:
       lt_relevant_shp TYPE tt_tknum,
@@ -1113,7 +1113,7 @@ ENDMETHOD.
     ENDLOOP.
 
     LOOP AT lt_relevant_shp INTO ls_tknum.
-      lt_tknum_range = VALUE #( (
+      lt_tknum_range = VALUE #( BASE lt_tknum_range (
         sign   = 'I'
         option = 'EQ'
         low    = ls_tknum ) ).
