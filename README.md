@@ -1,12 +1,10 @@
 # Fulfillment Tracking Apps for SAP Business Network Global Track and Trace
 ## What's New 
-### September 16th, 2023 
-1. Support batch split for the inbound and outbound delivery.
-2. Correct shipper reference documents information after removing a delivery from a shipment.
-3. Fix the update issue of the inbound delivery item when canceling one of its freight units.  
-4. If the Goods Movement status is empty, the item Goods Receipt events (with event match key) are not planned for the inbound delivery header.
-5. Enhance the trigger condition of freight unit's cross updating delivery and delivery items.
-6. Fix the duplicate alternative keys issue when several handling units are assigned to one freight unit of an inbound delivery.
+### November 11th, 2023
+1. When reporting actual events in SAP TM with the event reason code provided, the event reason code can now be sent to SAP Business Network Global Track and Trace.
+2. Fix the "Proof of Delivery" event match key for the freight unit.
+3. Enhance the logic of the field "isFreightUnitRelevant" on the delivery header.
+4. When the freight unit is updated and sent to SAP Business Network Global Track and Trace, the preceding inbound/outbound delivery header will not be updated. 
 
 For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/main/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
 

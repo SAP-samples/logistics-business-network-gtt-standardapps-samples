@@ -296,6 +296,16 @@ CLASS ZCL_GTT_STS_ACTUAL_EVENT IMPLEMENTATION.
     ls_trackparameters-param_value = sy-uname.
     APPEND ls_trackparameters TO ct_trackparameters.
 
+*   Event reason code defined in TM must be same as the event reason code which defined in the GTT model,
+*   (path:Manage Models->gttft1->Code List->EventReasonCode)
+*   otherwise error message "Swagger validation failed. #/reasonCode_code: XXXX is not a valid enum value.
+*   Correct the message payload or contact your Model Administrator." will be shown in the Manage Message Logs App.
+    CLEAR ls_trackparameters.
+    ls_trackparameters-evtcnt      = cs_trackingheader-evtcnt.
+    ls_trackparameters-param_name  = zif_gtt_sts_ef_constants=>cs_parameter-event_reason_code.
+    ls_trackparameters-param_value = is_execinfo-event_reason_code.
+    APPEND ls_trackparameters TO ct_trackparameters.
+
   ENDMETHOD.
 
 

@@ -274,27 +274,43 @@ public section.
       !IV_VALUE type NUMC04
     returning
       value(RV_IS_ODD) type ABAP_BOOL .
+  class-methods CHECK_TM_INT_RELEVANCE
+    importing
+      !IV_CTRL_KEY type TM_CTRL_KEY
+      !IT_LIPS type VA_LIPSVB_T optional
+    returning
+      value(RV_RELEVANT) type ABAP_BOOL .
+  class-methods READ_INT_MODE_BY_CTRL_KEY
+    importing
+      !IV_CTRL_KEY type TM_CTRL_KEY
+    returning
+      value(RV_RELEVANT) type ABAP_BOOL .
+  class-methods READ_INT_MODE_BY_PREC_DOC
+    importing
+      !IT_LIPS type VA_LIPSVB_T
+    returning
+      value(RV_RELEVANT) type ABAP_BOOL .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    CLASS-METHODS is_structure_changed
-      IMPORTING
-        !ir_struct       TYPE REF TO data
-        !iv_upd_field    TYPE clike
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS is_table_changed
-      IMPORTING
-        !ir_table        TYPE REF TO data
-        !iv_key_field    TYPE clike
-        !iv_upd_field    TYPE clike
-        !iv_key_value    TYPE any
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  class-methods IS_STRUCTURE_CHANGED
+    importing
+      !IR_STRUCT type ref to DATA
+      !IV_UPD_FIELD type CLIKE
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
+  class-methods IS_TABLE_CHANGED
+    importing
+      !IR_TABLE type ref to DATA
+      !IV_KEY_FIELD type CLIKE
+      !IV_UPD_FIELD type CLIKE
+      !IV_KEY_VALUE type ANY
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -1538,6 +1554,99 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
       rv_is_odd = abap_true.
     ELSE.
       rv_is_odd = abap_false.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD check_tm_int_relevance.
+
+    CLEAR rv_relevant.
+
+    IF iv_ctrl_key IS NOT INITIAL.
+      rv_relevant = read_int_mode_by_ctrl_key( iv_ctrl_key = iv_ctrl_key ).
+    ELSE.
+      rv_relevant = read_int_mode_by_prec_doc( it_lips = it_lips ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD read_int_mode_by_ctrl_key.
+
+    DATA:
+      ls_tms_c_control     TYPE tms_s_control.
+
+    CLEAR rv_relevant.
+
+*   Read the settings of the given TM control key
+    cl_tms_int_cust=>read_tms_c_control(
+      EXPORTING
+        iv_tm_ctrl_key   = iv_ctrl_key
+      IMPORTING
+        es_tms_c_control = ls_tms_c_control ).
+
+*   Evaluate the relevance
+    IF ls_tms_c_control-sls_to_tm_ind = abap_true   "Transfer Sales Orders to TM
+      OR ls_tms_c_control-pur_to_tm_ind = abap_true "Transfer Purchase Orders to TM
+      OR ls_tms_c_control-od_to_tm_ind = abap_true  "Transfer Outbound Deliveries to TM
+      OR ls_tms_c_control-id_to_tm_ind = abap_true. "Transfer Inbound Deliveries to TM
+      rv_relevant = abap_true.
+    ELSE.
+      rv_relevant = abap_false.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD read_int_mode_by_prec_doc.
+
+    DATA:
+      lt_purchase TYPE TABLE OF lips-vgbel,
+      lt_sales    TYPE TABLE OF lips-vgbel,
+      lt_vbak     TYPE TABLE OF vbak,
+      lt_poext    TYPE TABLE OF poext.
+
+    CLEAR rv_relevant.
+
+    LOOP AT it_lips INTO DATA(ls_lips).
+      IF ls_lips-vgtyp = if_sd_doc_category=>order.
+        APPEND ls_lips-vgbel TO lt_sales.
+      ELSEIF ls_lips-vgtyp = if_sd_doc_category=>purchase_order.
+        APPEND ls_lips-vgbel TO lt_purchase.
+      ENDIF.
+    ENDLOOP.
+
+    SORT lt_sales BY table_line.
+    SORT lt_purchase BY table_line.
+    DELETE ADJACENT DUPLICATES FROM lt_sales COMPARING ALL FIELDS.
+    DELETE ADJACENT DUPLICATES FROM lt_purchase COMPARING ALL FIELDS.
+
+    IF lt_sales IS NOT INITIAL.
+      SELECT *
+        INTO TABLE lt_vbak
+        FROM vbak
+         FOR ALL ENTRIES IN lt_sales
+       WHERE vbeln = lt_sales-table_line.
+    ENDIF.
+
+    IF lt_purchase IS NOT INITIAL.
+      SELECT *
+        INTO TABLE lt_poext
+        FROM poext
+         FOR ALL ENTRIES IN lt_purchase
+       WHERE ebeln = lt_purchase-table_line
+         AND ebelp = /scmtms/if_logint_c=>c_ebelp_init.
+    ENDIF.
+
+    READ TABLE lt_vbak INTO DATA(ls_vbak) INDEX 1.
+    IF sy-subrc = 0.
+      rv_relevant = zcl_gtt_tools=>read_int_mode_by_ctrl_key( ls_vbak-tm_ctrl_key ).
+    ENDIF.
+
+    READ TABLE lt_poext INTO DATA(ls_poext) INDEX 1.
+    IF sy-subrc = 0.
+      rv_relevant = zcl_gtt_tools=>read_int_mode_by_ctrl_key( ls_poext-tm_ctrl_key ).
     ENDIF.
 
   ENDMETHOD.

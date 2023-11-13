@@ -14,7 +14,6 @@ FUNCTION zgtt_ctp_tor_to_dl .
   DATA:
     lt_tor_stop_before TYPE /scmtms/t_em_bo_tor_stop,
     lv_base_btd_tco    TYPE /scmtms/base_btd_tco,
-    lo_tor_to_dlv_hd   TYPE REF TO zif_gtt_ctp_tor_to_dl,
     lo_tor_to_dlv_it   TYPE REF TO zif_gtt_ctp_tor_to_dl,
     lv_result          TYPE syst_binpt,
     lt_callstack       TYPE abap_callstack.
@@ -55,36 +54,15 @@ FUNCTION zgtt_ctp_tor_to_dl .
   ENDLOOP.
 
   IF lv_base_btd_tco = /scmtms/if_common_c=>c_btd_tco-outbounddelivery.
-    lo_tor_to_dlv_hd = NEW zcl_gtt_ctp_tor_to_odlvhd( ).
     lo_tor_to_dlv_it = NEW zcl_gtt_ctp_tor_to_odlvit( ).
   ELSEIF lv_base_btd_tco = /scmtms/if_common_c=>c_btd_tco-inbounddelivery.
-    lo_tor_to_dlv_hd = NEW zcl_gtt_ctp_tor_to_idlvhd( ).
     lo_tor_to_dlv_it = NEW zcl_gtt_ctp_tor_to_idlvit( ).
   ENDIF.
 
-  CHECK lo_tor_to_dlv_hd IS BOUND AND lo_tor_to_dlv_it IS BOUND.
+  CHECK lo_tor_to_dlv_it IS BOUND.
 
   TRY.
-*     1)Process Delivery header IDOC
-      lo_tor_to_dlv_hd->initiate(
-        it_tor_root        = it_tor_root_sstring
-        it_tor_root_before = it_tor_root_before_sstring
-        it_tor_item        = it_tor_item_sstring
-        it_tor_item_before = it_tor_item_before_sstring
-        it_tor_stop        = it_tor_stop_sstring
-        it_tor_stop_before = lt_tor_stop_before
-        it_fu_info         = lt_fu_info ).
-
-      lo_tor_to_dlv_hd->check_relevance(
-        RECEIVING
-          rv_result = lv_result ).
-
-      IF lv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-        lo_tor_to_dlv_hd->extract_data( ).
-        lo_tor_to_dlv_hd->process_data( ).
-      ENDIF.
-
-*     2)Process Delivery Item IDOC
+*     Process Delivery Item IDOC
       CLEAR lv_result.
       lo_tor_to_dlv_it->initiate(
         it_tor_root        = it_tor_root_sstring

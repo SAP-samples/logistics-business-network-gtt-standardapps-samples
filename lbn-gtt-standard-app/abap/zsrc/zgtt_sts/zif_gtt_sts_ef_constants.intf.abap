@@ -20,6 +20,7 @@ interface ZIF_GTT_STS_EF_CONSTANTS
       estimated_timezone          TYPE /saptrx/paramname VALUE 'ESTIMATED_TIMEZONE',
       stop_id                     TYPE /saptrx/paramname VALUE 'STOP_ID',
       additional_match_key        TYPE /saptrx/paramname VALUE 'ADDITIONAL_MATCH_KEY',
+      event_reason_code           TYPE /saptrx/paramname VALUE 'EVENT_REASON_CODE',
     END OF cs_parameter .
   constants CV_LOGISTIC_LOCATION type STRING value 'LogisticLocation' ##NO_TEXT.
   constants:

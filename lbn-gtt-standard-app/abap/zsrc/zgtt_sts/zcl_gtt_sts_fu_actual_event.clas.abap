@@ -147,17 +147,12 @@ CLASS ZCL_GTT_STS_FU_ACTUAL_EVENT IMPLEMENTATION.
 
     DATA(lv_reference_event) = is_execinfo-ref_event_code.
 
-    IF iv_event_code = /scmtms/if_tor_const=>sc_tor_event-pod OR
-       lv_reference_event = /scmtms/if_tor_const=>sc_tor_event-pod.
-      ls_tracklocation-locid2 = <ls_root>-tor_id.
-    ELSE.
-      IF <ls_stop> IS ASSIGNED.
-        READ TABLE lt_req2capa_info INTO DATA(ls_req2capa_info)
-          WITH KEY req_assgn_stop_key = <ls_stop>-assgn_stop_key.
-        IF sy-subrc = 0.
-          ls_tracklocation-locid2 = |{ ls_req2capa_info-cap_no }{ ls_req2capa_info-cap_seq }|.
-          SHIFT ls_tracklocation-locid2 LEFT DELETING LEADING '0'.
-        ENDIF.
+    IF <ls_stop> IS ASSIGNED.
+      READ TABLE lt_req2capa_info INTO DATA(ls_req2capa_info)
+        WITH KEY req_assgn_stop_key = <ls_stop>-assgn_stop_key.
+      IF sy-subrc = 0.
+        ls_tracklocation-locid2 = |{ ls_req2capa_info-cap_no }{ ls_req2capa_info-cap_seq }|.
+        SHIFT ls_tracklocation-locid2 LEFT DELETING LEADING '0'.
       ENDIF.
     ENDIF.
 

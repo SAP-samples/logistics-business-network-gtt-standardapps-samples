@@ -1058,7 +1058,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
     ENDLOOP.
 
     LOOP AT lt_relevant_shp INTO ls_tknum.
-      lt_tknum_range = VALUE #( (
+      lt_tknum_range = VALUE #( BASE lt_tknum_range (
         sign   = 'I'
         option = 'EQ'
         low    = ls_tknum ) ).

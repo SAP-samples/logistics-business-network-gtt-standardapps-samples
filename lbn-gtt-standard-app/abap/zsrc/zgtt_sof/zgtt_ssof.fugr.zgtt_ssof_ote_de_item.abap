@@ -132,7 +132,8 @@ FUNCTION zgtt_ssof_ote_de_item.
   LOOP AT i_app_objects INTO ls_app_objects.
     CLEAR:
       gt_loc_data,
-      lt_loc_data.
+      lt_loc_data,
+      lv_count.
 
 *   Application Object ID
     ls_control_data-appobjid   = ls_app_objects-appobjid.
