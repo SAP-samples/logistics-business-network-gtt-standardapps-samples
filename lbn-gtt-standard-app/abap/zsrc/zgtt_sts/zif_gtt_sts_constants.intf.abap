@@ -134,4 +134,58 @@ INTERFACE zif_gtt_sts_constants
     END OF cs_separator.
   CONSTANTS:
     cv_scac_prefix TYPE char5 VALUE 'SCAC#'.
+  CONSTANTS:
+    BEGIN OF sc_tor_event,  "TOR Events
+      scheduled           TYPE /scmtms/tor_event VALUE 'SCHEDULED', "#EC NOTEXT
+      cancel              TYPE /scmtms/tor_event VALUE 'CANCEL', "#EC NOTEXT
+      cancel_unassign_fus TYPE /scmtms/tor_event VALUE 'CANCEL_UNASSIGN_FUS', "#EC NOTEXT
+      cancel_status_reset TYPE /scmtms/tor_event VALUE 'CANCEL_STATUS_RESET', "#EC NOTEXT
+      cancel_exec_doc     TYPE /scmtms/tor_event VALUE 'CANCEL_EXEC_DOC', "#EC NOTEXT
+      load_begin          TYPE /scmtms/tor_event VALUE 'LOAD_BEGIN', "#EC NOTEXT
+      load_end            TYPE /scmtms/tor_event VALUE 'LOAD_END', "#EC NOTEXT
+      unload_begin        TYPE /scmtms/tor_event VALUE 'UNLOAD_BEGIN', "#EC NOTEXT
+      unload_end          TYPE /scmtms/tor_event VALUE 'UNLOAD_END', "#EC NOTEXT
+      ready_load          TYPE /scmtms/tor_event VALUE 'READY_LOAD', "#EC NOTEXT
+      ready_unload        TYPE /scmtms/tor_event VALUE 'READY_UNLOAD', "#EC NOTEXT
+      departure           TYPE /scmtms/tor_event VALUE 'DEPARTURE', "#EC NOTEXT
+      arriv_dest          TYPE /scmtms/tor_event VALUE 'ARRIV_DEST', "#EC NOTEXT
+      damage              TYPE /scmtms/tor_event VALUE 'DAMAGE', "#EC NOTEXT
+      delay               TYPE /scmtms/tor_event VALUE 'DELAYED', "#EC NOTEXT
+      delay_fu            TYPE /scmtms/tor_event VALUE 'DELAYED_FU', "#EC NOTEXT
+      remove              TYPE /scmtms/tor_event VALUE 'REMOVE_TRQ_ASSIGN', "#EC NOTEXT
+      pod                 TYPE /scmtms/tor_event VALUE 'POD', "#EC NOTEXT
+      popu                TYPE /scmtms/tor_event VALUE 'POPU', "#EC NOTEXT
+      ready_for_wh_proc   TYPE /scmtms/tor_event VALUE 'READY_FOR_WH_PROC', "#EC NOTEXT
+      ready_for_execution TYPE /scmtms/tor_event VALUE 'READY_FOR_EXECUTION', "#EC NOTEXT
+      clear_customs       TYPE /scmtms/tor_event VALUE 'CLEAR_CUSTOMS', "#EC NOTEXT
+      block_for_exec      TYPE /scmtms/tor_event VALUE 'BLOCK_FOR_EXEC', "#EC NOTEXT
+      unblock_for_exec    TYPE /scmtms/tor_event VALUE 'UNBLOCK_FOR_EXEC', "#EC NOTEXT
+      report_quantity     TYPE /scmtms/tor_event VALUE 'REPORT_QUANTITY', "#EC NOTEXT
+      report_vgm          TYPE /scmtms/tor_event VALUE 'REPORT_VGM', "#EC NOTEXT
+      recall_event        TYPE /scmtms/tor_event VALUE 'RECALL_EVENT', "#EC NOTEXT
+      gen_discrepancy     TYPE /scmtms/tor_event VALUE 'GEN_DISCRP', "#EC NOTEXT
+      item_delivery       TYPE /scmtms/tor_event VALUE 'ITEM_DELIVERY', "#EC NOTEXT
+      ee_modify           TYPE /scmtms/tor_event VALUE 'EE_MODIFY', "#EC NOTEXT
+      coupling            TYPE /scmtms/tor_event VALUE 'COUPLING', "#EC NOTEXT
+      decoupling          TYPE /scmtms/tor_event VALUE 'DECOUPLING', "#EC NOTEXT
+      check_out           TYPE /scmtms/tor_event VALUE 'CHECK_OUT', "#EC NOTEXT
+      check_in            TYPE /scmtms/tor_event VALUE 'CHECK_IN', "#EC NOTEXT
+      arrival_door        TYPE /scmtms/tor_event VALUE 'ARRIVAL_DOOR', "#EC NOTEXT
+      departure_door      TYPE /scmtms/tor_event VALUE 'DEPARTURE_DOOR', "#EC NOTEXT
+      etd                 TYPE /scmtms/tor_event VALUE 'EXPECTED_DEPARTURE', "#EC NOTEXT
+      eta                 TYPE /scmtms/tor_event VALUE 'EXPECTED_ARRIVAL', "#EC NOTEXT
+      rep_emival_doc      TYPE /scmtms/tor_event VALUE 'REPORT_EMIVAL_DOC', "#EC NOTEXT
+      rep_emival_stage    TYPE /scmtms/tor_event VALUE 'REPORT_EMIVAL_STAGE', "#EC NOTEXT
+      " event codes for event first processing
+      ep_arrival          TYPE /scmtms/tor_event VALUE 'EP_ARRIVAL', "#EC NOTEXT
+      ep_departure        TYPE /scmtms/tor_event VALUE 'EP_DEPARTURE', "#EC NOTEXT
+      ep_check_in         TYPE /scmtms/tor_event VALUE 'EP_CHECK_IN', "#EC NOTEXT
+      ep_check_out        TYPE /scmtms/tor_event VALUE 'EP_CHECK_OUT', "#EC NOTEXT
+      ep_load_begin       TYPE /scmtms/tor_event VALUE 'EP_LOAD_BEGIN', "#EC NOTEXT
+      ep_load_end         TYPE /scmtms/tor_event VALUE 'EP_LOAD_END', "#EC NOTEXT
+      ep_unload_begin     TYPE /scmtms/tor_event VALUE 'EP_UNLOAD_BEGIN', "#EC NOTEXT
+      ep_unload_end       TYPE /scmtms/tor_event VALUE 'EP_UNLOAD_END', "#EC NOTEXT
+      ep_load_end_item    TYPE /scmtms/tor_event VALUE 'EP_LOAD_END_ITEM', "#EC NOTEXT
+      ep_unload_end_item  TYPE /scmtms/tor_event VALUE 'EP_UNLOAD_END_ITEM', "#EC NOTEXT
+    END OF sc_tor_event .
 ENDINTERFACE.

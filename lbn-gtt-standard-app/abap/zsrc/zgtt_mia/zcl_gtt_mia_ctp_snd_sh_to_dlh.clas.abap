@@ -178,6 +178,14 @@ private section.
       !IT_ADDR_INFO type TT_ADDRESS_INFO
     exporting
       !ET_CONTROL_DATA type /SAPTRX/BAPI_TRK_CONTROL_TAB .
+  methods ADD_PLANNED_SOURCE_ARRIVAL
+    importing
+      !IT_EXPEVENTDATA type /SAPTRX/BAPI_TRK_EE_TAB
+      !IS_SHIP type ZCL_GTT_MIA_CTP_SHIPMENT_DATA=>TS_SHIPMENT_MERGE
+    exporting
+      !ET_EXPEVENTDATA type /SAPTRX/BAPI_TRK_EE_TAB
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -418,6 +426,14 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
     lt_exp_event    = VALUE #( BASE lt_exp_event
                                 ( LINES OF lt_exp_event_dlv ) ).
+
+    add_planned_source_arrival(
+      EXPORTING
+        it_expeventdata = lt_exp_event
+        is_ship         = is_ship
+      IMPORTING
+        et_expeventdata = DATA(lt_expeventdata) ).
+    APPEND LINES OF lt_expeventdata TO lt_exp_event.
 
     IF lt_exp_event[] IS INITIAL.
       lt_exp_event = VALUE #( (
@@ -923,6 +939,13 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
 
     ENDLOOP.
 
+    IF et_control_data IS INITIAL.
+      ls_control_data-paramindex = 1.
+      ls_control_data-paramname = cs_mapping-otl_locid.
+      ls_control_data-value = ''.
+      APPEND ls_control_data TO et_control_data.
+    ENDIF.
+
   ENDMETHOD.
 
 
@@ -936,7 +959,10 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
       ls_loc_addr      TYPE addr1_data,
       lv_loc_email     TYPE ad_smtpadr,
       lv_loc_tel       TYPE char50,
-      lt_vttsvb        TYPE vttsvb_tab.
+      lt_vttsvb        TYPE vttsvb_tab,
+      ls_loc_addr_tmp  TYPE addr1_data,
+      lv_loc_email_tmp TYPE ad_smtpadr,
+      lv_loc_tel_tmp   TYPE char50.
 
     CLEAR et_address_info.
 
@@ -963,7 +989,10 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
       CLEAR:
         ls_loc_addr,
         lv_loc_email,
-        lv_loc_tel.
+        lv_loc_tel,
+        ls_loc_addr_tmp,
+        lv_loc_email_tmp,
+        lv_loc_tel_tmp.
 
       IF ls_loc_info_curr-locaddrnum CN '0 ' AND ls_loc_info_curr-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
         zcl_gtt_tools=>get_address_from_memory(
@@ -974,12 +1003,25 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
             ev_email      = lv_loc_email
             ev_telephone  = lv_loc_tel ).
 
-        ls_address_info-locid = ls_loc_info_curr-locid.
-        ls_address_info-loctype = ls_loc_info_curr-loctype.
-        ls_address_info-addr1 = ls_loc_addr.
-        ls_address_info-email = lv_loc_email.
-        ls_address_info-telephone = lv_loc_tel.
-        APPEND ls_address_info TO et_address_info.
+        zcl_gtt_tools=>get_address_detail_by_loctype(
+          EXPORTING
+            iv_loctype   = ls_loc_info_curr-loctype
+            iv_locid     = ls_loc_info_curr-locid
+          IMPORTING
+            es_addr      = ls_loc_addr_tmp
+            ev_email     = lv_loc_email_tmp
+            ev_telephone = lv_loc_tel_tmp ).
+
+        IF ls_loc_addr <> ls_loc_addr_tmp
+          OR lv_loc_email <> lv_loc_email_tmp
+          OR lv_loc_tel <> lv_loc_tel_tmp.
+          ls_address_info-locid = ls_loc_info_curr-locid.
+          ls_address_info-loctype = ls_loc_info_curr-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO et_address_info.
+        ENDIF.
         CLEAR:
           ls_address_info.
       ENDIF.
@@ -1038,14 +1080,17 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
   METHOD prepare_relevant_loc_data.
 
     DATA:
-      lt_relevant_shp TYPE tt_tknum,
-      lt_tknum_range  TYPE STANDARD TABLE OF range_c10,
-      lt_vttsvb       TYPE vttsvb_tab,
-      lt_loc_info     TYPE tt_loc_info,
-      ls_address_info TYPE ts_address_info,
-      ls_loc_addr     TYPE addr1_data,
-      lv_loc_email    TYPE ad_smtpadr,
-      lv_loc_tel      TYPE char50.
+      lt_relevant_shp  TYPE tt_tknum,
+      lt_tknum_range   TYPE STANDARD TABLE OF range_c10,
+      lt_vttsvb        TYPE vttsvb_tab,
+      lt_loc_info      TYPE tt_loc_info,
+      ls_address_info  TYPE ts_address_info,
+      ls_loc_addr      TYPE addr1_data,
+      lv_loc_email     TYPE ad_smtpadr,
+      lv_loc_tel       TYPE char50,
+      ls_loc_addr_tmp  TYPE addr1_data,
+      lv_loc_email_tmp TYPE ad_smtpadr,
+      lv_loc_tel_tmp   TYPE char50.
 
     CLEAR et_address_info.
 
@@ -1083,7 +1128,10 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
       CLEAR:
         ls_loc_addr,
         lv_loc_email,
-        lv_loc_tel.
+        lv_loc_tel,
+        ls_loc_addr_tmp,
+        lv_loc_email_tmp,
+        lv_loc_tel_tmp.
 
       IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
         zcl_gtt_tools=>get_address_from_db(
@@ -1094,14 +1142,83 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
             ev_email      = lv_loc_email
             ev_telephone  = lv_loc_tel ).
 
-        ls_address_info-locid = ls_loc_info-locid.
-        ls_address_info-loctype = ls_loc_info-loctype.
-        ls_address_info-addr1 = ls_loc_addr.
-        ls_address_info-email = lv_loc_email.
-        ls_address_info-telephone = lv_loc_tel.
-        APPEND ls_address_info TO et_address_info.
+        zcl_gtt_tools=>get_address_detail_by_loctype(
+          EXPORTING
+            iv_loctype   = ls_loc_info-loctype
+            iv_locid     = ls_loc_info-locid
+          IMPORTING
+            es_addr      = ls_loc_addr_tmp
+            ev_email     = lv_loc_email_tmp
+            ev_telephone = lv_loc_tel_tmp ).
+
+        IF ls_loc_addr <> ls_loc_addr_tmp
+          OR lv_loc_email <> lv_loc_email_tmp
+          OR lv_loc_tel <> lv_loc_tel_tmp.
+          ls_address_info-locid = ls_loc_info-locid.
+          ls_address_info-loctype = ls_loc_info-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO et_address_info.
+        ENDIF.
         CLEAR:
           ls_address_info.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD add_planned_source_arrival.
+
+    DATA:
+      lv_length       TYPE i,
+      lv_seq          TYPE char04,
+      lv_tknum        TYPE vttk-tknum,
+      lv_ltl_flag     TYPE flag,
+      ls_eventdata    TYPE /saptrx/bapi_trk_exp_events,
+      lt_vttk         TYPE vttkvb_tab,
+      lt_vttp         TYPE vttpvb_tab,
+      lv_exp_datetime TYPE /saptrx/event_exp_datetime.
+
+    CLEAR et_expeventdata.
+
+    lt_vttk = CORRESPONDING #( is_ship-vttk ).
+    lt_vttp = CORRESPONDING #( is_ship-vttp ).
+
+    LOOP AT it_expeventdata INTO DATA(ls_expeventdata)
+      WHERE milestone = zif_gtt_ef_constants=>cs_milestone-sh_departure.
+      CLEAR:
+        lv_length,
+        lv_tknum,
+        lv_seq.
+
+      lv_length = strlen( ls_expeventdata-locid2 ) - 4.
+      IF lv_length >= 0.
+        lv_tknum = ls_expeventdata-locid2+0(lv_length).
+        lv_tknum = |{ lv_tknum ALPHA = IN }|.
+        lv_seq = ls_expeventdata-locid2+lv_length(4).
+        zcl_gtt_tools=>check_ltl_shipment(
+          EXPORTING
+            iv_tknum    = lv_tknum
+            it_vttk     = lt_vttk
+            it_vttp     = lt_vttp
+          IMPORTING
+            ev_ltl_flag = lv_ltl_flag
+            es_vttk     = DATA(ls_vttk) ).
+
+        IF lv_ltl_flag = abap_true AND lv_seq = '0001'. "only for source location of the shipment
+          lv_exp_datetime = zcl_gtt_tools=>get_local_timestamp(
+            iv_date = ls_vttk-dpreg     "Planned date of check-in
+            iv_time = ls_vttk-upreg ).  "Planned check-in time
+          ls_eventdata = ls_expeventdata.
+          ls_eventdata-milestonenum = 0.
+          ls_eventdata-milestone = zif_gtt_ef_constants=>cs_milestone-sh_arrival.
+          ls_eventdata-evt_exp_datetime = lv_exp_datetime.
+          ls_eventdata-evt_exp_tzone = zcl_gtt_tools=>get_system_time_zone( ).
+          APPEND ls_eventdata TO et_expeventdata.
+          CLEAR ls_eventdata.
+        ENDIF.
       ENDIF.
     ENDLOOP.
 

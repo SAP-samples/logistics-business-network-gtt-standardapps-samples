@@ -73,6 +73,13 @@ private section.
       value(RV_RESULT) type ABAP_BOOL
     raising
       CX_UDM_MESSAGE .
+  methods ADD_PLANNED_SOURCE_ARRIVAL
+    importing
+      !IT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -242,6 +249,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
     DATA(lo_sh_stops_events) = zcl_gtt_mia_sh_stops_events=>get_instance_for_delivery(
       iv_vbeln         = lv_vbeln
       iv_appobjid      = is_app_objects-appobjid
+      is_app_objects   = is_app_objects
       io_ef_parameters = mo_ef_parameters ).
 
     lo_sh_stops_events->get_planned_events(
@@ -433,7 +441,64 @@ CLASS ZCL_GTT_MIA_PE_FILLER_DLH IMPLEMENTATION.
         CHANGING
           ct_expeventdata = ct_expeventdata ).
 
+      add_planned_source_arrival(
+        EXPORTING
+          it_expeventdata = ct_expeventdata
+        CHANGING
+          ct_expeventdata = ct_expeventdata ).
+
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD add_planned_source_arrival.
+
+    DATA:
+      lv_length       TYPE i,
+      lv_seq          TYPE char04,
+      lv_tknum        TYPE vttk-tknum,
+      lv_ltl_flag     TYPE flag,
+      ls_eventdata    TYPE zif_gtt_ef_types=>ts_expeventdata,
+      lt_expeventdata TYPE zif_gtt_ef_types=>tt_expeventdata,
+      lv_exp_datetime TYPE /saptrx/event_exp_datetime.
+
+    lt_expeventdata = it_expeventdata.
+
+    LOOP AT lt_expeventdata INTO DATA(ls_expeventdata)
+      WHERE milestone = zif_gtt_ef_constants=>cs_milestone-departure.
+
+      lv_length = strlen( ls_expeventdata-locid2 ) - 4.
+      IF lv_length >= 0.
+        lv_tknum = ls_expeventdata-locid2+0(lv_length).
+        lv_tknum = |{ lv_tknum ALPHA = IN }|.
+        lv_seq = ls_expeventdata-locid2+lv_length(4).
+
+        zcl_gtt_tools=>check_ltl_shipment(
+          EXPORTING
+            iv_tknum    = lv_tknum
+          IMPORTING
+            ev_ltl_flag = lv_ltl_flag
+            es_vttk     = DATA(ls_vttk) ).
+
+        IF lv_ltl_flag = abap_true AND lv_seq = '0001'. "only for source location of the shipment
+          lv_exp_datetime = zcl_gtt_tools=>get_local_timestamp(
+            iv_date = ls_vttk-dpreg     "Planned date of check-in
+            iv_time = ls_vttk-upreg ).  "Planned check-in time
+
+          ls_eventdata = ls_expeventdata.
+          ls_eventdata-milestonenum = 0.
+          ls_eventdata-milestone = zif_gtt_ef_constants=>cs_milestone-arriv_dest.
+          ls_eventdata-evt_exp_datetime = lv_exp_datetime.
+          ls_eventdata-evt_exp_tzone = zcl_gtt_tools=>get_system_time_zone( ).
+          APPEND ls_eventdata TO ct_expeventdata.
+        ENDIF.
+      ENDIF.
+      CLEAR:
+        lv_ltl_flag,
+        ls_eventdata,
+        lv_exp_datetime.
+    ENDLOOP.
 
   ENDMETHOD.
 ENDCLASS.

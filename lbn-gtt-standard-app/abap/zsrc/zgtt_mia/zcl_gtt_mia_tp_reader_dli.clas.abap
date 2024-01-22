@@ -23,6 +23,17 @@ protected section.
   types tt_otl_postal_code TYPE STANDARD TABLE OF addr1_data-post_code1 WITH EMPTY KEY .
   types tt_otl_email_address TYPE STANDARD TABLE OF ad_smtpadr WITH EMPTY KEY .
   types tt_otl_phone_number TYPE STANDARD TABLE OF char50 WITH EMPTY KEY .
+
+  TYPES:
+    BEGIN OF ts_address_info,
+      locid     type char20,
+      loctype   type char30,
+      addr1     TYPE addr1_data,
+      email     TYPE ad_smtpadr,
+      telephone TYPE char50,
+    END OF ts_address_info.
+  TYPES:
+    tt_address_info type TABLE OF ts_address_info.
 private section.
 
   types TV_POSNR_TXT type CHAR6 .
@@ -399,6 +410,13 @@ private section.
       !CS_DL_ITEM type TS_DL_ITEM
     raising
       CX_UDM_MESSAGE .
+  methods CHECK_NON_IDOC_FIELDS
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ZIF_GTT_EF_TYPES=>TV_CONDITION
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -696,7 +714,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ZIF_GTT_TP_READER~CHECK_RELEVANCE.
+  METHOD zif_gtt_tp_reader~check_relevance.
 
     rv_result   = zif_gtt_ef_constants=>cs_condition-false.
 
@@ -715,6 +733,9 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
                                         is_app_object = is_app_object )
                           ir_data2  = zif_gtt_tp_reader~get_data_old(
                                         is_app_object = is_app_object ) ).
+          IF rv_result = zif_gtt_ef_constants=>cs_condition-false.
+            rv_result = check_non_idoc_fields( is_app_object = is_app_object ).
+          ENDIF.
       ENDCASE.
     ENDIF.
 
@@ -1107,10 +1128,75 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
       <ls_vbpa> TYPE vbpavb.
 
     DATA:
-      ls_loc_addr  TYPE addr1_data,
-      lv_loc_email TYPE ad_smtpadr,
-      lv_loc_tel   TYPE char50.
+      ls_loc_addr      TYPE addr1_data,
+      lv_loc_email     TYPE ad_smtpadr,
+      lv_loc_tel       TYPE char50,
+      ls_address_info  TYPE ts_address_info,
+      lt_address_info  TYPE tt_address_info,
+      lt_vttsvb        TYPE vttsvb_tab,
+      ls_loc_addr_tmp  TYPE addr1_data,
+      lv_loc_email_tmp TYPE ad_smtpadr,
+      lv_loc_tel_tmp   TYPE char50.
 
+*   Get one-time location from shipment
+    zcl_gtt_tools=>get_stage_by_delivery(
+      EXPORTING
+        iv_vbeln  = iv_vbeln
+      IMPORTING
+        et_vttsvb = lt_vttsvb ).
+
+    zcl_gtt_tools=>get_location_info(
+      EXPORTING
+        it_vttsvb   = lt_vttsvb
+      IMPORTING
+        et_loc_info = DATA(lt_loc_info) ).
+
+    LOOP AT lt_loc_info INTO DATA(ls_loc_info).
+      CLEAR:
+       ls_loc_addr,
+       lv_loc_email,
+       lv_loc_tel,
+       ls_loc_addr_tmp,
+       lv_loc_email_tmp,
+       lv_loc_tel_tmp.
+
+      IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
+
+        zcl_gtt_tools=>get_address_from_db(
+          EXPORTING
+            iv_addrnumber = ls_loc_info-locaddrnum
+          IMPORTING
+            es_addr       = ls_loc_addr
+            ev_email      = lv_loc_email
+            ev_telephone  = lv_loc_tel ).
+
+        zcl_gtt_tools=>get_address_detail_by_loctype(
+          EXPORTING
+            iv_loctype   = ls_loc_info-loctype
+            iv_locid     = ls_loc_info-locid
+          IMPORTING
+            es_addr      = ls_loc_addr_tmp
+            ev_email     = lv_loc_email_tmp
+            ev_telephone = lv_loc_tel_tmp ).
+
+        IF ls_loc_addr <> ls_loc_addr_tmp
+          OR lv_loc_email <> lv_loc_email_tmp
+          OR lv_loc_tel <> lv_loc_tel_tmp.
+          ls_address_info-locid = ls_loc_info-locid.
+          ls_address_info-loctype = ls_loc_info-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO lt_address_info.
+        ENDIF.
+        CLEAR:
+          ls_address_info.
+      ENDIF.
+    ENDLOOP.
+
+    CLEAR:ls_address_info.
+
+*   Get one-time location from delivery item itself(supplier)
     ASSIGN ir_vbpa->* TO <lt_vbpa>.
 
     IF <lt_vbpa> IS ASSIGNED.
@@ -1121,46 +1207,134 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
       IF sy-subrc = 0 AND <ls_vbpa> IS ASSIGNED AND <ls_vbpa> IS NOT INITIAL
         AND <ls_vbpa>-adrnr CN '0 ' AND <ls_vbpa>-adrda CA zif_gtt_ef_constants=>vbpa_addr_ind_man_all.
-        zcl_gtt_tools=>get_address_from_memory(
-          EXPORTING
-            iv_addrnumber = <ls_vbpa>-adrnr
-          IMPORTING
-            es_addr       = ls_loc_addr
-            ev_email      = lv_loc_email
-            ev_telephone  = lv_loc_tel ).
 
-        APPEND |{ <ls_vbpa>-lifnr ALPHA = OUT }| TO cs_dl_item-otl_locid.
-        APPEND zif_gtt_ef_constants=>cs_loc_types-businesspartner TO cs_dl_item-otl_loctype.
-        APPEND ls_loc_addr-time_zone TO cs_dl_item-otl_timezone.
-        APPEND ls_loc_addr-name1 TO cs_dl_item-otl_description.
-        APPEND ls_loc_addr-country TO cs_dl_item-otl_country_code.
-        APPEND ls_loc_addr-city1 TO cs_dl_item-otl_city_name.
-        APPEND ls_loc_addr-region TO cs_dl_item-otl_region_code.
-        APPEND ls_loc_addr-house_num1 TO cs_dl_item-otl_house_number.
-        APPEND ls_loc_addr-street TO cs_dl_item-otl_street_name.
-        APPEND ls_loc_addr-post_code1 TO cs_dl_item-otl_postal_code.
-        APPEND lv_loc_email TO cs_dl_item-otl_email_address.
-        APPEND lv_loc_tel TO cs_dl_item-otl_phone_number.
+*       For same one-Time location id and location type which exists in delivey item and shipment,
+*       use the shipment's address as one-Time location address
+        READ TABLE lt_address_info TRANSPORTING NO FIELDS
+          WITH KEY locid = |{ <ls_vbpa>-lifnr ALPHA = OUT }|
+                   loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+        IF sy-subrc <> 0.
+          zcl_gtt_tools=>get_address_from_memory(
+            EXPORTING
+              iv_addrnumber = <ls_vbpa>-adrnr
+            IMPORTING
+              es_addr       = ls_loc_addr
+              ev_email      = lv_loc_email
+              ev_telephone  = lv_loc_tel ).
+
+          ls_address_info-locid = |{ <ls_vbpa>-lifnr ALPHA = OUT }|.
+          ls_address_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO lt_address_info.
+          CLEAR:
+            ls_address_info.
+        ENDIF.
       ENDIF.
     ELSE.
       MESSAGE e002(zgtt) WITH 'VBPA' INTO DATA(lv_dummy).
       zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
+    LOOP AT lt_address_info INTO ls_address_info.
+      APPEND ls_address_info-locid TO cs_dl_item-otl_locid.
+      APPEND ls_address_info-loctype TO cs_dl_item-otl_loctype.
+      APPEND ls_address_info-addr1-time_zone TO cs_dl_item-otl_timezone.
+      APPEND ls_address_info-addr1-name1 TO cs_dl_item-otl_description.
+      APPEND ls_address_info-addr1-country TO cs_dl_item-otl_country_code.
+      APPEND ls_address_info-addr1-city1 TO cs_dl_item-otl_city_name.
+      APPEND ls_address_info-addr1-region TO cs_dl_item-otl_region_code.
+      APPEND ls_address_info-addr1-house_num1 TO cs_dl_item-otl_house_number.
+      APPEND ls_address_info-addr1-street TO cs_dl_item-otl_street_name.
+      APPEND ls_address_info-addr1-post_code1 TO cs_dl_item-otl_postal_code.
+      APPEND ls_address_info-email TO cs_dl_item-otl_email_address.
+      APPEND ls_address_info-telephone TO cs_dl_item-otl_phone_number.
+      CLEAR:
+        ls_address_info.
+
+    ENDLOOP.
+
   ENDMETHOD.
 
 
-  METHOD FILL_ONE_TIME_LOCATION_OLD.
+  METHOD fill_one_time_location_old.
 
     FIELD-SYMBOLS:
       <lt_vbpa> TYPE vbpavb_tab,
       <ls_vbpa> TYPE vbpavb.
 
     DATA:
-      ls_loc_addr  TYPE addr1_data,
-      lv_loc_email TYPE ad_smtpadr,
-      lv_loc_tel   TYPE char50.
+      ls_loc_addr      TYPE addr1_data,
+      lv_loc_email     TYPE ad_smtpadr,
+      lv_loc_tel       TYPE char50,
+      ls_address_info  TYPE ts_address_info,
+      lt_address_info  TYPE tt_address_info,
+      lt_vttsvb        TYPE vttsvb_tab,
+      ls_loc_addr_tmp  TYPE addr1_data,
+      lv_loc_email_tmp TYPE ad_smtpadr,
+      lv_loc_tel_tmp   TYPE char50.
 
+*   Get one-time location from shipment
+    zcl_gtt_tools=>get_stage_by_delivery(
+      EXPORTING
+        iv_vbeln  = iv_vbeln
+      IMPORTING
+        et_vttsvb = lt_vttsvb ).
+
+    zcl_gtt_tools=>get_location_info(
+      EXPORTING
+        it_vttsvb   = lt_vttsvb
+      IMPORTING
+        et_loc_info = DATA(lt_loc_info) ).
+
+    LOOP AT lt_loc_info INTO DATA(ls_loc_info).
+      CLEAR:
+       ls_loc_addr,
+       lv_loc_email,
+       lv_loc_tel,
+       ls_loc_addr_tmp,
+       lv_loc_email_tmp,
+       lv_loc_tel_tmp.
+
+      IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
+
+        zcl_gtt_tools=>get_address_from_db(
+          EXPORTING
+            iv_addrnumber = ls_loc_info-locaddrnum
+          IMPORTING
+            es_addr       = ls_loc_addr
+            ev_email      = lv_loc_email
+            ev_telephone  = lv_loc_tel ).
+
+        zcl_gtt_tools=>get_address_detail_by_loctype(
+          EXPORTING
+            iv_loctype   = ls_loc_info-loctype
+            iv_locid     = ls_loc_info-locid
+          IMPORTING
+            es_addr      = ls_loc_addr_tmp
+            ev_email     = lv_loc_email_tmp
+            ev_telephone = lv_loc_tel_tmp ).
+
+        IF ls_loc_addr <> ls_loc_addr_tmp
+          OR lv_loc_email <> lv_loc_email_tmp
+          OR lv_loc_tel <> lv_loc_tel_tmp.
+
+          ls_address_info-locid = ls_loc_info-locid.
+          ls_address_info-loctype = ls_loc_info-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO lt_address_info.
+        ENDIF.
+        CLEAR:
+          ls_address_info.
+      ENDIF.
+    ENDLOOP.
+
+    CLEAR:ls_address_info.
+
+*   Get one-time location from delivery item itself(supplier)
     ASSIGN ir_vbpa->* TO <lt_vbpa>.
 
     IF <lt_vbpa> IS ASSIGNED.
@@ -1171,30 +1345,93 @@ CLASS ZCL_GTT_MIA_TP_READER_DLI IMPLEMENTATION.
 
       IF sy-subrc = 0 AND <ls_vbpa> IS ASSIGNED AND <ls_vbpa> IS NOT INITIAL
         AND <ls_vbpa>-adrnr CN '0 ' AND <ls_vbpa>-adrda CA zif_gtt_ef_constants=>vbpa_addr_ind_man_all.
-        zcl_gtt_tools=>get_address_from_db(
-          EXPORTING
-            iv_addrnumber = <ls_vbpa>-adrnr
-          IMPORTING
-            es_addr       = ls_loc_addr
-            ev_email      = lv_loc_email
-            ev_telephone  = lv_loc_tel ).
+*       For same one-Time location id and location type which exists in delivey item and shipment,
+*       use the shipment's address as one-Time location address
+        READ TABLE lt_address_info TRANSPORTING NO FIELDS
+          WITH KEY locid = |{ <ls_vbpa>-lifnr ALPHA = OUT }|
+                   loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+        IF sy-subrc <> 0.
+          zcl_gtt_tools=>get_address_from_db(
+            EXPORTING
+              iv_addrnumber = <ls_vbpa>-adrnr
+            IMPORTING
+              es_addr       = ls_loc_addr
+              ev_email      = lv_loc_email
+              ev_telephone  = lv_loc_tel ).
 
-        APPEND |{ <ls_vbpa>-lifnr ALPHA = OUT }| TO cs_dl_item-otl_locid.
-        APPEND zif_gtt_ef_constants=>cs_loc_types-businesspartner TO cs_dl_item-otl_loctype.
-        APPEND ls_loc_addr-time_zone TO cs_dl_item-otl_timezone.
-        APPEND ls_loc_addr-name1 TO cs_dl_item-otl_description.
-        APPEND ls_loc_addr-country TO cs_dl_item-otl_country_code.
-        APPEND ls_loc_addr-city1 TO cs_dl_item-otl_city_name.
-        APPEND ls_loc_addr-region TO cs_dl_item-otl_region_code.
-        APPEND ls_loc_addr-house_num1 TO cs_dl_item-otl_house_number.
-        APPEND ls_loc_addr-street TO cs_dl_item-otl_street_name.
-        APPEND ls_loc_addr-post_code1 TO cs_dl_item-otl_postal_code.
-        APPEND lv_loc_email TO cs_dl_item-otl_email_address.
-        APPEND lv_loc_tel TO cs_dl_item-otl_phone_number.
+          ls_address_info-locid = |{ <ls_vbpa>-lifnr ALPHA = OUT }|.
+          ls_address_info-loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO lt_address_info.
+          CLEAR:
+            ls_address_info.
+        ENDIF.
       ENDIF.
     ELSE.
       MESSAGE e002(zgtt) WITH 'VBPA' INTO DATA(lv_dummy).
       zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+    LOOP AT lt_address_info INTO ls_address_info.
+      APPEND ls_address_info-locid TO cs_dl_item-otl_locid.
+      APPEND ls_address_info-loctype TO cs_dl_item-otl_loctype.
+      APPEND ls_address_info-addr1-time_zone TO cs_dl_item-otl_timezone.
+      APPEND ls_address_info-addr1-name1 TO cs_dl_item-otl_description.
+      APPEND ls_address_info-addr1-country TO cs_dl_item-otl_country_code.
+      APPEND ls_address_info-addr1-city1 TO cs_dl_item-otl_city_name.
+      APPEND ls_address_info-addr1-region TO cs_dl_item-otl_region_code.
+      APPEND ls_address_info-addr1-house_num1 TO cs_dl_item-otl_house_number.
+      APPEND ls_address_info-addr1-street TO cs_dl_item-otl_street_name.
+      APPEND ls_address_info-addr1-post_code1 TO cs_dl_item-otl_postal_code.
+      APPEND ls_address_info-email TO cs_dl_item-otl_email_address.
+      APPEND ls_address_info-telephone TO cs_dl_item-otl_phone_number.
+      CLEAR:
+        ls_address_info.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD check_non_idoc_fields.
+
+    FIELD-SYMBOLS:
+      <ls_likp_new> TYPE any,
+      <ls_likp_old> TYPE any.
+
+    DATA:
+      lv_vbeln    TYPE vbeln_vl,
+      lr_likp_new TYPE REF TO data,
+      lr_likp_old TYPE REF TO data,
+      ls_likp_new TYPE likpvb,
+      ls_likp_old TYPE likpvb.
+
+    rv_result = zif_gtt_ef_constants=>cs_condition-false.
+
+    lv_vbeln = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = is_app_object-maintabref
+      iv_field_name  = 'VBELN' ).
+
+    lr_likp_new = is_app_object-mastertabref.
+    lr_likp_old = get_likp_struct_old(
+      is_app_object = is_app_object
+      iv_vbeln      = lv_vbeln ).
+
+    ASSIGN lr_likp_new->* TO <ls_likp_new>.
+    ASSIGN lr_likp_old->* TO <ls_likp_old>.
+
+    IF <ls_likp_new> IS NOT ASSIGNED OR <ls_likp_old> IS NOT ASSIGNED.
+      MESSAGE e002(zgtt) WITH 'LIKP' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+
+    MOVE-CORRESPONDING <ls_likp_new> TO ls_likp_new.
+    MOVE-CORRESPONDING <ls_likp_old> TO ls_likp_old.
+
+    IF ls_likp_new-dlv_version <> ls_likp_old-dlv_version.
+      rv_result = zif_gtt_ef_constants=>cs_condition-true.
     ENDIF.
 
   ENDMETHOD.

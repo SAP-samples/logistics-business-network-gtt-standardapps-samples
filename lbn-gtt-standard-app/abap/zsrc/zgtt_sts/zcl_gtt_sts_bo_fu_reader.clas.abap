@@ -50,10 +50,20 @@ public section.
         capa_doc_first_stop   TYPE tt_stop,
         capa_doc_last_stop    TYPE tt_stop,
       END OF ts_freight_unit .
-
+    TYPES:
+      BEGIN OF ts_shipping_info,
+        tor_id           TYPE /scmtms/tor_id,
+        shipping_type    TYPE /scmtms/shipping_type,
+      END OF ts_shipping_info.
+    TYPES:
+      tt_shipping_info TYPE TABLE OF ts_shipping_info.
   constants CS_BASE_BTD_TCO_INB_DLV type /SCMTMS/BASE_BTD_TCO value '58' ##NO_TEXT.
   constants CS_BASE_BTD_TCO_OUTB_DLV type /SCMTMS/BASE_BTD_TCO value '73' ##NO_TEXT.
   constants CS_BASE_BTD_TCO_DELIVERY_ITEM type /SCMTMS/BASE_BTD_ITEM_TCO value '14' ##NO_TEXT.
+  data MT_CAPA_LIST_NEW type ZCL_GTT_STS_TOOLS=>TT_CAPA_LIST .
+  data MT_REQ2CAPA_INFO_NEW type ZCL_GTT_STS_TOOLS=>TT_REQ2CAPA_INFO .
+  data MT_CAPA_LIST_OLD type ZCL_GTT_STS_TOOLS=>TT_CAPA_LIST .
+  data MT_REQ2CAPA_INFO_OLD type ZCL_GTT_STS_TOOLS=>TT_REQ2CAPA_INFO .
 
   methods GET_DATA_FROM_MAINTAB
     importing
@@ -101,6 +111,13 @@ public section.
       value(RV_RESULT) type ZIF_GTT_STS_EF_TYPES=>TV_CONDITION
     raising
       CX_UDM_MESSAGE .
+  methods CHECK_FO_SHIPPING_TYPE
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+    returning
+      value(RV_RESULT) type ZIF_GTT_STS_EF_TYPES=>TV_CONDITION
+    raising
+      CX_UDM_MESSAGE .
 
   methods ZIF_GTT_STS_BO_READER~CHECK_RELEVANCE
     redefinition .
@@ -133,29 +150,10 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
 
     rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
-    ASSIGN is_app_object-maintabref->* TO <ls_header>.
-    IF sy-subrc <> 0.
-      RETURN.
-    ENDIF.
-
-    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
-      EXPORTING
-        ir_root      = REF #( <ls_header> )
-        iv_old_data  = abap_false
-      IMPORTING
-        et_capa_list = DATA(lt_capa_list_new) ).
-
-    zcl_gtt_sts_tools=>get_reqcapa_info_mul(
-      EXPORTING
-        ir_root      = REF #( <ls_header> )
-        iv_old_data  = abap_true
-      IMPORTING
-        et_capa_list = DATA(lt_capa_list_old) ).
-
     CALL FUNCTION 'CTVB_COMPARE_TABLES'
       EXPORTING
-        table_old  = lt_capa_list_old
-        table_new  = lt_capa_list_new
+        table_old  = mt_capa_list_old
+        table_new  = mt_capa_list_new
         key_length = 120
       IMPORTING
         no_changes = lv_no_changes.
@@ -305,12 +303,23 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
 
   METHOD check_non_idoc_fields.
 
+    CLEAR:
+      mt_capa_list_new,
+      mt_req2capa_info_new,
+      mt_capa_list_old,
+      mt_req2capa_info_old.
+
     rv_result = check_non_idoc_stop_fields( is_app_object = is_app_object ).
     IF rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
       RETURN.
     ENDIF.
 
     rv_result = check_fo_route_change( is_app_object = is_app_object ).
+    IF rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+      RETURN.
+    ENDIF.
+
+    rv_result = check_fo_shipping_type( is_app_object = is_app_object ).
 
   ENDMETHOD.
 
@@ -318,9 +327,9 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
   METHOD check_non_idoc_stop_fields.
 
     FIELD-SYMBOLS:
-      <lt_stop_new>      TYPE /scmtms/t_em_bo_tor_stop,
-      <lt_stop_old>      TYPE /scmtms/t_em_bo_tor_stop,
-      <ls_header>        TYPE /scmtms/s_em_bo_tor_root.
+      <lt_stop_new> TYPE /scmtms/t_em_bo_tor_stop,
+      <lt_stop_old> TYPE /scmtms/t_em_bo_tor_stop,
+      <ls_header>   TYPE /scmtms/s_em_bo_tor_root.
 
     rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
@@ -343,14 +352,16 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
         ir_root          = REF #( <ls_header> )
         iv_old_data      = abap_false
       IMPORTING
-        et_req2capa_info = DATA(lt_req2capa_info_new) ).
+        et_req2capa_info = mt_req2capa_info_new
+        et_capa_list     = mt_capa_list_new ).
 
     zcl_gtt_sts_tools=>get_reqcapa_info_mul(
       EXPORTING
         ir_root          = REF #( <ls_header> )
         iv_old_data      = abap_true
       IMPORTING
-        et_req2capa_info = DATA(lt_req2capa_info_old) ).
+        et_req2capa_info = mt_req2capa_info_old
+        et_capa_list     = mt_capa_list_old ).
 
     LOOP AT <lt_stop_new> ASSIGNING FIELD-SYMBOL(<ls_stop_new>)
       USING KEY parent_seqnum WHERE parent_node_id = <ls_header>-node_id.
@@ -364,10 +375,10 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
         EXIT.
       ENDIF.
 
-      ASSIGN lt_req2capa_info_new[ req_assgn_stop_key = <ls_stop_new>-assgn_stop_key ] TO FIELD-SYMBOL(<ls_capa_stop_new>).
+      ASSIGN mt_req2capa_info_new[ req_assgn_stop_key = <ls_stop_new>-assgn_stop_key ] TO FIELD-SYMBOL(<ls_capa_stop_new>).
       CHECK sy-subrc = 0.
 
-      ASSIGN lt_req2capa_info_old[ req_assgn_stop_key = <ls_stop_new>-assgn_stop_key ] TO FIELD-SYMBOL(<ls_capa_stop_old>).
+      ASSIGN mt_req2capa_info_old[ req_assgn_stop_key = <ls_stop_new>-assgn_stop_key ] TO FIELD-SYMBOL(<ls_capa_stop_old>).
       CHECK sy-subrc = 0.
 
       IF <ls_capa_stop_new>-cap_plan_trans_time <> <ls_capa_stop_old>-cap_plan_trans_time.
@@ -894,6 +905,53 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
         it_track_id_data_old = lt_track_id_data_old
       CHANGING
         ct_track_id_data     = et_track_id_data ).
+
+  ENDMETHOD.
+
+
+  METHOD check_fo_shipping_type.
+
+    DATA:
+      ls_shipping_info_old TYPE ts_shipping_info,
+      ls_shipping_info_new TYPE ts_shipping_info,
+      lt_shipping_info_old TYPE tt_shipping_info,
+      lt_shipping_info_new TYPE tt_shipping_info,
+      lv_no_changes        TYPE flag.
+
+    rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+
+    LOOP AT mt_req2capa_info_old INTO DATA(ls_req2capa_info_old).
+      ls_shipping_info_old-tor_id = ls_req2capa_info_old-cap_no.
+      ls_shipping_info_old-shipping_type = ls_req2capa_info_old-cap_shipping_type.
+      APPEND ls_shipping_info_old TO lt_shipping_info_old.
+      CLEAR ls_shipping_info_old.
+    ENDLOOP.
+
+    LOOP AT mt_req2capa_info_new INTO DATA(ls_req2capa_info_new).
+      ls_shipping_info_new-tor_id = ls_req2capa_info_new-cap_no.
+      ls_shipping_info_new-shipping_type = ls_req2capa_info_new-cap_shipping_type.
+      APPEND ls_shipping_info_new TO lt_shipping_info_new.
+      CLEAR ls_shipping_info_new.
+    ENDLOOP.
+
+    SORT lt_shipping_info_old BY tor_id.
+    SORT lt_shipping_info_new BY tor_id.
+    DELETE ADJACENT DUPLICATES FROM lt_shipping_info_old COMPARING ALL FIELDS.
+    DELETE ADJACENT DUPLICATES FROM lt_shipping_info_new COMPARING ALL FIELDS.
+
+    CALL FUNCTION 'CTVB_COMPARE_TABLES'
+      EXPORTING
+        table_old  = lt_shipping_info_old
+        table_new  = lt_shipping_info_new
+        key_length = 23
+      IMPORTING
+        no_changes = lv_no_changes.
+
+    IF lv_no_changes = abap_true.
+      rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
+    ELSE.
+      rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

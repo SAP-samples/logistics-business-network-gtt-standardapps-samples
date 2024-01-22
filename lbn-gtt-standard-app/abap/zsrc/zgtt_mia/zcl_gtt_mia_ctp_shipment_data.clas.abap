@@ -101,101 +101,102 @@ public section.
     returning
       value(RR_STOPS) type ref to DATA .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    TYPES:
-      tt_tknum   TYPE RANGE OF tknum .
+  types:
+    tt_tknum   TYPE RANGE OF tknum .
 
-    DATA ms_ship TYPE ts_shipment_merge .
-    DATA mt_stops TYPE tt_stops_srt .
+  data MS_SHIP type TS_SHIPMENT_MERGE .
+  data MT_STOPS type TT_STOPS_SRT .
 
-    METHODS get_vttk_merged_data
-      IMPORTING
-        !is_shipment TYPE cxshipment
-      EXPORTING
-        !et_vttk     TYPE tt_vttkvb_srt
-      RAISING
-        cx_udm_message .
-    METHODS get_vttp_merged_data
-      IMPORTING
-        !is_shipment   TYPE cxshipment
-        !it_tknum      TYPE tt_tknum
-      EXPORTING
-        !et_vttp_full  TYPE tt_vttpvb_srt
-        !et_vttp_delta TYPE tt_vttpvb_srt
-      RAISING
-        cx_udm_message .
-    METHODS get_vtts_merged_data
-      IMPORTING
-        !is_shipment   TYPE cxshipment
-        !it_tknum      TYPE tt_tknum
-      EXPORTING
-        !et_vtts_full  TYPE tt_vttsvb_srt
-        !et_vtts_delta TYPE tt_vttsvb_srt
-      RAISING
-        cx_udm_message .
-    METHODS get_vtsp_merged_data
-      IMPORTING
-        !is_shipment   TYPE cxshipment
-        !it_tknum      TYPE tt_tknum
-      EXPORTING
-        !et_vtsp_full  TYPE tt_vtspvb_srt
-        !et_vtsp_delta TYPE tt_vtspvb_srt
-      RAISING
-        cx_udm_message .
-    METHODS get_likp_delta_data
-      IMPORTING
-        !is_ship       TYPE ts_shipment_merge
-        !it_tknum      TYPE tt_tknum
-      EXPORTING
-        !et_likp_delta TYPE tt_likpdl_srt
-      RAISING
-        cx_udm_message .
-    METHODS get_vbfa_and_likp_data
-      IMPORTING
-        !is_ship TYPE ts_shipment_merge
-      EXPORTING
-        !et_vbfa TYPE tt_vbfaex_srt
-        !et_likp TYPE tt_likpex_srt
-      RAISING
-        cx_udm_message .
-    METHODS get_lips_data
-      IMPORTING
-        !is_ship TYPE ts_shipment_merge
-      EXPORTING
-        !et_lips TYPE tt_lips_srt
-      RAISING
-        cx_udm_message .
-    METHODS get_ee_rel_data
-      IMPORTING
-        !is_ship   TYPE ts_shipment_merge
-      EXPORTING
-        !et_ee_rel TYPE tt_ee_rel_srt
-      RAISING
-        cx_udm_message .
-    METHODS init_shipment_data
-      IMPORTING
-        !is_shipment TYPE cxshipment
-      EXPORTING
-        !es_ship     TYPE ts_shipment_merge
-      RAISING
-        cx_udm_message .
-    METHODS init_stops_data
-      IMPORTING
-        !is_shipment TYPE cxshipment
-        !is_ship     TYPE ts_shipment_merge
-      EXPORTING
-        !et_stops    TYPE tt_stops_srt
-      RAISING
-        cx_udm_message .
-    METHODS is_vtts_changed
-      IMPORTING
-        !is_shipment     TYPE cxshipment
-        !is_vtts         TYPE vttsvb
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool
-      RAISING
-        cx_udm_message .
+  methods GET_VTTK_MERGED_DATA
+    importing
+      !IS_SHIPMENT type CXSHIPMENT
+    exporting
+      !ET_VTTK type TT_VTTKVB_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_VTTP_MERGED_DATA
+    importing
+      !IS_SHIPMENT type CXSHIPMENT
+      !IT_TKNUM type TT_TKNUM
+    exporting
+      !ET_VTTP_FULL type TT_VTTPVB_SRT
+      !ET_VTTP_DELTA type TT_VTTPVB_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_VTTS_MERGED_DATA
+    importing
+      !IS_SHIPMENT type CXSHIPMENT
+      !IT_TKNUM type TT_TKNUM
+    exporting
+      !ET_VTTS_FULL type TT_VTTSVB_SRT
+      !ET_VTTS_DELTA type TT_VTTSVB_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_VTSP_MERGED_DATA
+    importing
+      !IS_SHIPMENT type CXSHIPMENT
+      !IT_TKNUM type TT_TKNUM
+    exporting
+      !ET_VTSP_FULL type TT_VTSPVB_SRT
+      !ET_VTSP_DELTA type TT_VTSPVB_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_LIKP_DELTA_DATA
+    importing
+      !IS_SHIP type TS_SHIPMENT_MERGE
+      !IT_TKNUM type TT_TKNUM
+      !IS_SHIPMENT type CXSHIPMENT optional
+    exporting
+      !ET_LIKP_DELTA type TT_LIKPDL_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_VBFA_AND_LIKP_DATA
+    importing
+      !IS_SHIP type TS_SHIPMENT_MERGE
+    exporting
+      !ET_VBFA type TT_VBFAEX_SRT
+      !ET_LIKP type TT_LIKPEX_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_LIPS_DATA
+    importing
+      !IS_SHIP type TS_SHIPMENT_MERGE
+    exporting
+      !ET_LIPS type TT_LIPS_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods GET_EE_REL_DATA
+    importing
+      !IS_SHIP type TS_SHIPMENT_MERGE
+    exporting
+      !ET_EE_REL type TT_EE_REL_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods INIT_SHIPMENT_DATA
+    importing
+      !IS_SHIPMENT type CXSHIPMENT
+    exporting
+      !ES_SHIP type TS_SHIPMENT_MERGE
+    raising
+      CX_UDM_MESSAGE .
+  methods INIT_STOPS_DATA
+    importing
+      !IS_SHIPMENT type CXSHIPMENT
+      !IS_SHIP type TS_SHIPMENT_MERGE
+    exporting
+      !ET_STOPS type TT_STOPS_SRT
+    raising
+      CX_UDM_MESSAGE .
+  methods IS_VTTS_CHANGED
+    importing
+      !IS_SHIPMENT type CXSHIPMENT
+      !IS_VTTS type VTTSVB
+    returning
+      value(RV_RESULT) type ABAP_BOOL
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -256,7 +257,11 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
 
   METHOD get_likp_delta_data.
 
-    DATA: ls_likp_delta   TYPE ts_likpdl.
+    DATA:
+      ls_likp_delta TYPE ts_likpdl,
+      lt_updkz      TYPE RANGE OF updkz_d,
+      lv_likp_flg   TYPE flag,
+      lt_vttp       TYPE vttpvb_tab.
 
     CLEAR: et_likp_delta[].
 
@@ -304,6 +309,54 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
           ENDIF.
         ENDIF.
       ENDLOOP.
+    ENDLOOP.
+
+*   Additional logic for add planned destination arrival event
+*   1.Check the check-in date and time in shipment is changed or not
+*   2.If Shipment Item(VTTP) contains newly insert or delete item,all of the delivery should be send to GTT again
+*   because we need to generate new planned destination arrival event for these delivery
+    lt_updkz  = VALUE #(
+      (
+        sign = 'I'
+        option = 'EQ'
+        low = zif_gtt_ef_constants=>cs_change_mode-insert
+      )
+      (
+        sign = 'I'
+        option = 'EQ'
+        low = zif_gtt_ef_constants=>cs_change_mode-delete
+      ) ).
+
+    APPEND LINES OF is_shipment-new_vttp TO lt_vttp.
+    APPEND LINES OF is_shipment-old_vttp TO lt_vttp.
+    LOOP AT lt_vttp TRANSPORTING NO FIELDS
+      WHERE tknum IN it_tknum
+        AND updkz IN lt_updkz.
+      lv_likp_flg = abap_true.
+      EXIT.
+    ENDLOOP.
+
+    LOOP AT lt_vttp INTO DATA(ls_vttp)
+      WHERE tknum IN it_tknum.
+
+      READ TABLE is_shipment-new_vttk INTO DATA(ls_vttk_new)
+        WITH KEY tknum = ls_vttp-tknum.
+
+      READ TABLE is_shipment-old_vttk INTO DATA(ls_vttk_old)
+        WITH KEY tknum = ls_vttp-tknum.
+      IF ls_vttk_new-dpreg <> ls_vttk_old-dpreg OR ls_vttk_new-upreg <> ls_vttk_old-upreg
+        OR lv_likp_flg = abap_true.
+        IF NOT line_exists( et_likp_delta[ KEY primary_key
+                                           COMPONENTS tknum = ls_vttp-tknum
+                                                      vbeln = ls_vttp-vbeln ] ).
+          ls_likp_delta = CORRESPONDING #( ls_vttp ).
+          INSERT ls_likp_delta INTO TABLE et_likp_delta.
+        ENDIF.
+      ENDIF.
+      CLEAR:
+        ls_vttk_new,
+        ls_vttk_old,
+        ls_likp_delta.
     ENDLOOP.
 
   ENDMETHOD.
@@ -601,6 +654,7 @@ CLASS ZCL_GTT_MIA_CTP_SHIPMENT_DATA IMPLEMENTATION.
       EXPORTING
         is_ship       = es_ship
         it_tknum      = lt_tknum
+        is_shipment   = is_shipment
       IMPORTING
         et_likp_delta = es_ship-likp_dlt ).
 

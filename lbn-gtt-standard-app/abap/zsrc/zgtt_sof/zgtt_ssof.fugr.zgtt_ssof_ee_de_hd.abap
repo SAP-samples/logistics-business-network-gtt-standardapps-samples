@@ -48,7 +48,11 @@ FUNCTION zgtt_ssof_ee_de_hd.
     lv_appobjid               TYPE /saptrx/aoid,
     lv_pdstk                  TYPE zgtt_mia_ee_rel-z_pdstk,
     lt_relation               TYPE STANDARD TABLE OF gtys_tor_data,
-    lv_plan_flag              TYPE flag.
+    lv_plan_flag              TYPE flag,
+    lv_length                 TYPE i,
+    lv_seq_num                TYPE /saptrx/seq_num,
+    lv_tknum                  TYPE tknum,
+    lv_current_tknum          TYPE tknum.
 
   FIELD-SYMBOLS:
 *   Delivery Header
@@ -181,8 +185,14 @@ FUNCTION zgtt_ssof_ee_de_hd.
     SORT lt_dlv_watching_stops BY vbeln stopid loccat.
     DELETE ADJACENT DUPLICATES FROM lt_stops COMPARING stopid loccat.
     DELETE ADJACENT DUPLICATES FROM lt_dlv_watching_stops COMPARING vbeln stopid loccat.
-
+    lv_seq_num = lv_milestonenum.
     LOOP AT lt_dlv_watching_stops INTO ls_dlv_watching_stop WHERE vbeln = <ls_xlikp>-vbeln.
+      lv_length = strlen( ls_dlv_watching_stop-stopid ) - 4.
+      lv_tknum = ls_dlv_watching_stop-stopid+0(lv_length).
+      IF lv_current_tknum <> lv_tknum.
+        lv_current_tknum = lv_tknum.
+        lv_seq_num = lv_milestonenum.
+      ENDIF.
 
       READ TABLE lt_stops INTO ls_stop WITH KEY stopid = ls_dlv_watching_stop-stopid
                                                 loccat = ls_dlv_watching_stop-loccat.
@@ -190,9 +200,28 @@ FUNCTION zgtt_ssof_ee_de_hd.
         SHIFT ls_stop-locid LEFT DELETING LEADING '0'.
       ENDIF.
       IF ls_dlv_watching_stop-loccat = zif_gtt_sof_constants=>cs_loccat-departure.
+*       Add planned source arrival event for LTL mode
+        ls_expeventdata-locid2            = ls_stop-stopid.
+        ls_expeventdata-loctype           = ls_stop-loctype.
+        ls_expeventdata-locid1            = ls_stop-locid.
+        TRY.
+            zcl_gtt_sof_toolkit=>add_planned_source_arrival(
+              EXPORTING
+                is_expeventdata = ls_expeventdata
+                iv_seq_num      = lv_seq_num
+              IMPORTING
+                es_eventdata    = DATA(ls_eventdata) ).
+          CATCH cx_udm_message.
+        ENDTRY.
+        IF ls_eventdata IS NOT INITIAL.
+          APPEND ls_eventdata TO e_expeventdata.
+          ADD 1 TO lv_seq_num.
+        ENDIF.
+        CLEAR ls_eventdata.
+
 *       DEPARTURE planned event
         ls_expeventdata-milestone         = zif_gtt_sof_constants=>cs_milestone-departure.
-        ls_expeventdata-milestonenum      = lv_milestonenum.
+        ls_expeventdata-milestonenum      = lv_seq_num.
         ls_expeventdata-locid2            = ls_stop-stopid.
         ls_expeventdata-loctype           = ls_stop-loctype.
         ls_expeventdata-locid1            = ls_stop-locid.
@@ -200,12 +229,12 @@ FUNCTION zgtt_ssof_ee_de_hd.
         ls_expeventdata-evt_exp_tzone     = ls_stop-pln_evt_timezone.
         APPEND ls_expeventdata TO e_expeventdata.
 
-        ADD 1 TO lv_milestonenum.
+        ADD 1 TO lv_seq_num.
 
       ELSEIF ls_dlv_watching_stop-loccat = zif_gtt_sof_constants=>cs_loccat-arrival.
 *       ARRIVAL planned event
         ls_expeventdata-milestone         = zif_gtt_sof_constants=>cs_milestone-arriv_dest.
-        ls_expeventdata-milestonenum      = lv_milestonenum.
+        ls_expeventdata-milestonenum      = lv_seq_num.
         ls_expeventdata-locid2            = ls_stop-stopid.
         ls_expeventdata-loctype           = ls_stop-loctype.
         ls_expeventdata-locid1            = ls_stop-locid.
@@ -213,25 +242,25 @@ FUNCTION zgtt_ssof_ee_de_hd.
         ls_expeventdata-evt_exp_tzone     = ls_stop-pln_evt_timezone.
         APPEND ls_expeventdata TO e_expeventdata.
 
-        ADD 1 TO lv_milestonenum.
+        ADD 1 TO lv_seq_num.
 
 *       POD planned event
         IF <ls_xlikp>-kunnr EQ ls_stop-locid AND ls_eerel-z_pdstk = 'X'.
           ls_expeventdata-milestone         = zif_gtt_sof_constants=>cs_milestone-pod.
-          ls_expeventdata-milestonenum      = lv_milestonenum.
+          ls_expeventdata-milestonenum      = lv_seq_num.
           ls_expeventdata-locid2            = ls_stop-stopid.
           ls_expeventdata-loctype           = ls_stop-loctype.
           ls_expeventdata-locid1            = ls_stop-locid.
           ls_expeventdata-evt_exp_datetime  = ls_stop-pln_evt_datetime.
           ls_expeventdata-evt_exp_tzone     = ls_stop-pln_evt_timezone.
           APPEND ls_expeventdata TO e_expeventdata.
-          ADD 1 TO lv_milestonenum.
+          ADD 1 TO lv_seq_num.
         ENDIF.
 
       ENDIF.
 
     ENDLOOP.
-
+    lv_milestonenum = lv_seq_num.
 *   Add planned event ItemPOD
     CLEAR:
       ls_expeventdata-milestonenum,

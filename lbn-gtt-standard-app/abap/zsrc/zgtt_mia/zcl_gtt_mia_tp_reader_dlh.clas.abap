@@ -131,8 +131,7 @@ private section.
       CX_UDM_MESSAGE .
   methods FILL_HEADER_FROM_LIPS_TABLE
     importing
-      !IR_LIPS_NEW type ref to DATA
-      !IR_LIPS_OLD type ref to DATA optional
+      !IR_LIPS type ref to DATA
       !IV_VBELN type VBELN_VL
       !IR_LIKP type ref to DATA
     changing
@@ -329,33 +328,33 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
   METHOD fill_header_from_lips_table.
 
-    TYPES: tt_posnr TYPE SORTED TABLE OF posnr_vl
-                           WITH UNIQUE KEY table_line.
+    FIELD-SYMBOLS:
+      <lt_lips> TYPE va_lipsvb_t,
+      <ls_likp> TYPE likpvb.
 
-    DATA: lv_dummy TYPE char100.
-
-    FIELD-SYMBOLS: <lt_lips_new> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
-                   <lt_lips_old> TYPE zif_gtt_mia_app_types=>tt_lipsvb,
-                   <ls_lips>     TYPE lipsvb,
-                   <ls_likp>     TYPE likpvb.
+    DATA:
+      lv_dummy TYPE char100,
+      lt_lips  TYPE va_lipsvb_t.
 
     ASSIGN ir_likp->* TO <ls_likp>.
-    ASSIGN ir_lips_new->* TO <lt_lips_new>.
+    ASSIGN ir_lips->* TO <lt_lips>.
 
-    " prepare positions list
-    IF <ls_likp> IS ASSIGNED AND <lt_lips_new> IS ASSIGNED.
-
-      zcl_gtt_tools=>check_tm_int_relevance(
-        EXPORTING
-          iv_ctrl_key = <ls_likp>-tm_ctrl_key
-          it_lips     = <lt_lips_new>
-        RECEIVING
-          rv_relevant = cs_dl_header-fu_relev ).
-
-    ELSE.
-      MESSAGE e002(zgtt) WITH 'LIPS NEW' INTO lv_dummy.
+    IF <ls_likp> IS NOT ASSIGNED OR <lt_lips> IS NOT ASSIGNED.
+      MESSAGE e002(zgtt) WITH 'LIKP LIPS' INTO lv_dummy.
       zcl_gtt_tools=>throw_exception( ).
     ENDIF.
+
+    LOOP AT <lt_lips> ASSIGNING FIELD-SYMBOL(<ls_lips>)
+      WHERE vbeln = iv_vbeln.
+      APPEND <ls_lips> TO lt_lips.
+    ENDLOOP.
+
+    zcl_gtt_tools=>check_tm_int_relevance(
+      EXPORTING
+        iv_ctrl_key = <ls_likp>-tm_ctrl_key
+        it_lips     = lt_lips
+      RECEIVING
+        rv_relevant = cs_dl_header-fu_relev ).
 
   ENDMETHOD.
 
@@ -455,9 +454,15 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     FIELD-SYMBOLS: <ls_header> TYPE ts_dl_header.
 
+    DATA:
+      lr_lips  TYPE REF TO data.
+
     rr_data   = NEW ts_dl_header( ).
 
     ASSIGN rr_data->* TO <ls_header>.
+
+    lr_lips = mo_ef_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new ).
 
     fill_header_from_likp_struct(
       EXPORTING
@@ -467,10 +472,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     fill_header_from_lips_table(
       EXPORTING
-        ir_lips_new  = mo_ef_parameters->get_appl_table(
-                         iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new )
-        ir_lips_old  = mo_ef_parameters->get_appl_table(
-                         iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_old )
+        ir_lips      = lr_lips
         iv_vbeln     = |{ <ls_header>-vbeln ALPHA = IN }|
         ir_likp      = is_app_object-maintabref
       CHANGING
@@ -504,7 +506,8 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
     FIELD-SYMBOLS: <ls_header> TYPE ts_dl_header.
 
     DATA:
-      lr_likp TYPE REF TO data.
+      lr_likp TYPE REF TO data,
+      lr_lips TYPE REF TO data.
 
     DATA(lv_vbeln)  = CONV vbeln_vl( zcl_gtt_tools=>get_field_of_structure(
                                        ir_struct_data = is_app_object-maintabref
@@ -513,6 +516,9 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
     lr_likp = get_likp_struct_old(
       is_app_object = is_app_object
       iv_vbeln      = lv_vbeln ).
+
+    lr_lips = mo_ef_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_old ).
 
     rr_data   = NEW ts_dl_header( ).
 
@@ -526,10 +532,7 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
 
     fill_header_from_lips_table(
       EXPORTING
-        ir_lips_new  = mo_ef_parameters->get_appl_table(
-                         iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_new )
-        ir_lips_old  = mo_ef_parameters->get_appl_table(
-                         iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-dl_item_old )
+        ir_lips      = lr_lips
         iv_vbeln     = |{ <ls_header>-vbeln ALPHA = IN }|
         ir_likp      = lr_likp
       CHANGING
@@ -612,13 +615,16 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
       <ls_vbpa> TYPE vbpavb.
 
     DATA:
-      lv_dummy        TYPE char100,
-      ls_loc_addr     TYPE addr1_data,
-      lv_loc_email    TYPE ad_smtpadr,
-      lv_loc_tel      TYPE char50,
-      ls_address_info TYPE ts_address_info,
-      lt_address_info TYPE tt_address_info,
-      lt_vttsvb       TYPE vttsvb_tab.
+      lv_dummy         TYPE char100,
+      ls_loc_addr      TYPE addr1_data,
+      lv_loc_email     TYPE ad_smtpadr,
+      lv_loc_tel       TYPE char50,
+      ls_address_info  TYPE ts_address_info,
+      lt_address_info  TYPE tt_address_info,
+      lt_vttsvb        TYPE vttsvb_tab,
+      ls_loc_addr_tmp  TYPE addr1_data,
+      lv_loc_email_tmp TYPE ad_smtpadr,
+      lv_loc_tel_tmp   TYPE char50.
 
 *   Get one-time location from shipment
     zcl_gtt_tools=>get_stage_by_delivery(
@@ -637,7 +643,10 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
       CLEAR:
        ls_loc_addr,
        lv_loc_email,
-       lv_loc_tel.
+       lv_loc_tel,
+       ls_loc_addr_tmp,
+       lv_loc_email_tmp,
+       lv_loc_tel_tmp.
 
       IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
 
@@ -649,12 +658,25 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
             ev_email      = lv_loc_email
             ev_telephone  = lv_loc_tel ).
 
-        ls_address_info-locid = ls_loc_info-locid.
-        ls_address_info-loctype = ls_loc_info-loctype.
-        ls_address_info-addr1 = ls_loc_addr.
-        ls_address_info-email = lv_loc_email.
-        ls_address_info-telephone = lv_loc_tel.
-        APPEND ls_address_info TO lt_address_info.
+        zcl_gtt_tools=>get_address_detail_by_loctype(
+          EXPORTING
+            iv_loctype   = ls_loc_info-loctype
+            iv_locid     = ls_loc_info-locid
+          IMPORTING
+            es_addr      = ls_loc_addr_tmp
+            ev_email     = lv_loc_email_tmp
+            ev_telephone = lv_loc_tel_tmp ).
+
+        IF ls_loc_addr <> ls_loc_addr_tmp
+          OR lv_loc_email <> lv_loc_email_tmp
+          OR lv_loc_tel <> lv_loc_tel_tmp.
+          ls_address_info-locid = ls_loc_info-locid.
+          ls_address_info-loctype = ls_loc_info-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO lt_address_info.
+        ENDIF.
         CLEAR:
           ls_address_info.
       ENDIF.
@@ -731,13 +753,16 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
       <ls_vbpa> TYPE vbpavb.
 
     DATA:
-      lv_dummy        TYPE char100,
-      ls_loc_addr     TYPE addr1_data,
-      lv_loc_email    TYPE ad_smtpadr,
-      lv_loc_tel      TYPE char50,
-      ls_address_info TYPE ts_address_info,
-      lt_address_info TYPE tt_address_info,
-      lt_vttsvb       TYPE vttsvb_tab.
+      lv_dummy         TYPE char100,
+      ls_loc_addr      TYPE addr1_data,
+      lv_loc_email     TYPE ad_smtpadr,
+      lv_loc_tel       TYPE char50,
+      ls_address_info  TYPE ts_address_info,
+      lt_address_info  TYPE tt_address_info,
+      lt_vttsvb        TYPE vttsvb_tab,
+      ls_loc_addr_tmp  TYPE addr1_data,
+      lv_loc_email_tmp TYPE ad_smtpadr,
+      lv_loc_tel_tmp   TYPE char50.
 
 *   Get one-time location from shipment
     zcl_gtt_tools=>get_stage_by_delivery(
@@ -756,7 +781,10 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
       CLEAR:
        ls_loc_addr,
        lv_loc_email,
-       lv_loc_tel.
+       lv_loc_tel,
+       ls_loc_addr_tmp,
+       lv_loc_email_tmp,
+       lv_loc_tel_tmp.
 
       IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
 
@@ -768,12 +796,26 @@ CLASS ZCL_GTT_MIA_TP_READER_DLH IMPLEMENTATION.
             ev_email      = lv_loc_email
             ev_telephone  = lv_loc_tel ).
 
-        ls_address_info-locid = ls_loc_info-locid.
-        ls_address_info-loctype = ls_loc_info-loctype.
-        ls_address_info-addr1 = ls_loc_addr.
-        ls_address_info-email = lv_loc_email.
-        ls_address_info-telephone = lv_loc_tel.
-        APPEND ls_address_info TO lt_address_info.
+        zcl_gtt_tools=>get_address_detail_by_loctype(
+          EXPORTING
+            iv_loctype   = ls_loc_info-loctype
+            iv_locid     = ls_loc_info-locid
+          IMPORTING
+            es_addr      = ls_loc_addr_tmp
+            ev_email     = lv_loc_email_tmp
+            ev_telephone = lv_loc_tel_tmp ).
+
+        IF ls_loc_addr <> ls_loc_addr_tmp
+          OR lv_loc_email <> lv_loc_email_tmp
+          OR lv_loc_tel <> lv_loc_tel_tmp.
+
+          ls_address_info-locid = ls_loc_info-locid.
+          ls_address_info-loctype = ls_loc_info-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO lt_address_info.
+        ENDIF.
         CLEAR:
           ls_address_info.
       ENDIF.

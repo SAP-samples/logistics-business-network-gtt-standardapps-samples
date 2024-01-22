@@ -173,6 +173,10 @@ private section.
       !CT_REQ_STOP_SSTRING type /SCMTMS/T_EM_BO_TOR_STOP
     raising
       /SCMTMS/CX_EVENT_MANAGEMENT .
+  methods ADJUST_EXECINFO
+    changing
+      !CT_EXECINFO_SSTRING type /SCMTMS/T_EM_BO_TOR_EXECINFO
+      !CT_EXECINFO_BEFORE_SSTRING type /SCMTMS/T_EM_BO_TOR_EXECINFO .
 ENDCLASS.
 
 
@@ -649,6 +653,11 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
 
       ENDLOOP. "LOOP AT lt_root_sstring_tmp
     ENDIF.
+
+    adjust_execinfo(
+      CHANGING
+        ct_execinfo_sstring        = lt_execinfo_sstring_tmp
+        ct_execinfo_before_sstring = lt_execinfo_before_sstring_tmp ).
 
     CALL FUNCTION '/SAPTRX/EVENT_MGR_FILL_TABCONT'
       EXPORTING
@@ -1573,6 +1582,24 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
         ct_stop_addr_sstring        = ct_stop_addr_sstring
         ct_req_root_sstring         = ct_req_root_sstring
         ct_req_root_bef_sstring     = ct_req_root_bef_sstring ).
+
+  ENDMETHOD.
+
+
+  METHOD adjust_execinfo.
+
+    LOOP AT ct_execinfo_sstring ASSIGNING FIELD-SYMBOL(<ls_execinfo_sstring>).
+      <ls_execinfo_sstring>-event_code = zcl_gtt_sts_tools=>map_ep_evnt_code_to_event_code( iv_ep_event_code = <ls_execinfo_sstring>-event_code ).
+    ENDLOOP.
+
+    LOOP AT ct_execinfo_before_sstring ASSIGNING FIELD-SYMBOL(<ls_execinfo_before_sstring>).
+      <ls_execinfo_before_sstring>-event_code = zcl_gtt_sts_tools=>map_ep_evnt_code_to_event_code( iv_ep_event_code = <ls_execinfo_before_sstring>-event_code ).
+    ENDLOOP.
+
+*   Execution info will be used in method CHECK_EVENT_RELEVANCE of class /SCMTMS/CL_EM_TM_HELPER,
+*   hence we need to sort the execution info by parent_node_id event_code
+    SORT ct_execinfo_sstring            BY parent_node_id ASCENDING event_code ASCENDING.
+    SORT ct_execinfo_before_sstring     BY parent_node_id ASCENDING event_code ASCENDING.
 
   ENDMETHOD.
 ENDCLASS.

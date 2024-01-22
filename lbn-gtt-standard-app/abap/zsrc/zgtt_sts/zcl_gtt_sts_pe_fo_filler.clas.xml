@@ -11,6 +11,14 @@
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
    </VSEOCLASS>
+   <DESCRIPTIONS>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_PE_FO_FILLER</CLSNAME>
+     <CMPNAME>ADD_PLANNED_SOURCE_ARRIVAL</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Add planned source arrival event for LTL shipment</DESCRIPT>
+    </SEOCOMPOTX>
+   </DESCRIPTIONS>
   </asx:values>
  </asx:abap>
 </abapGit>

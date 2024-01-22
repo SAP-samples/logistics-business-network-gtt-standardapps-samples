@@ -14,21 +14,6 @@ public section.
       END OF ts_capa_match_key .
   types:
     tt_capa_match_key TYPE TABLE OF ts_capa_match_key .
-  types:
-    BEGIN OF ts_req2capa_info,
-      req_no              TYPE /scmtms/tor_id,
-      req_key             TYPE /bobf/conf_key,
-      req_stop_key        TYPE /bobf/conf_key,
-      req_assgn_stop_key  TYPE /bobf/conf_key,
-      req_log_locid       TYPE /scmtms/location_id,
-      cap_no              TYPE /scmtms/tor_id,
-      cap_key             TYPE /bobf/conf_key,
-      cap_stop_key        TYPE /bobf/conf_key,
-      cap_plan_trans_time TYPE /scmtms/stop_plan_date,
-      cap_seq             TYPE numc04,
-    END OF ts_req2capa_info .
-  types:
-    tt_req2capa_info TYPE TABLE OF ts_req2capa_info .
 
   methods GET_CAPA_MATCHKEY
     importing
@@ -47,7 +32,7 @@ public section.
     redefinition .
 protected section.
 
-  data MT_REQ2CAPA_INFO type TT_REQ2CAPA_INFO .
+  data MT_REQ2CAPA_INFO type ZCL_GTT_STS_TOOLS=>TT_REQ2CAPA_INFO .
 
   methods LOAD_END
     redefinition .

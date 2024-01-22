@@ -1,11 +1,13 @@
 # Fulfillment Tracking Apps for SAP Business Network Global Track and Trace 
 
 ## What's New
-### November 11th, 2023 
-1. When reporting actual events in SAP TM with the event reason code provided, the event reason code can now be sent to SAP Business Network Global Track and Trace.
-2. Fix the "Proof of Delivery" event match key for the freight unit.
-3. Enhance the logic of the field "isFreightUnitRelevant" on the delivery header.
-4. When the freight unit is updated and sent to SAP Business Network Global Track and Trace, the preceding inbound/outbound delivery header will not be updated.
+### January 20th, 2024
+1. You can send the carrier’s note to SAP Business Network Global Track and Trace as shipment’s tracked object to initialize tracking.
+2. Add the planned "Arrival" event on the source location of the LTL shipment.
+3. The actual events that you report in SAP S/4HANA 2023 can be sent to SAP Business Network Global Track and Trace.
+4. Fix the planned “Proof of Delivery” event issue for inbound deliveries.
+5. Fix one-time location relevant issues. 
+6. The document "SAP ERP Sample Code Configuration Guide for Fulfillment Tracking Apps" is renamed "[Sample Code Configuration Guide for Integration with SAP Business Network Global Track and Trace](https://github.wdf.sap.corp/TrackAndTrace/GTT-V2-Standard-Apps/blob/test/lbn-gtt-standard-app/Documents/Sample%20Code%20Configuration%20Guide%20for%20Integration%20with%20SAP%20Business%20Network%20Global%20Track%20and%20Trace.pdf)".
 
 For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
 
@@ -14,19 +16,19 @@ You can find the following contents in this project:
 * Sample codes for SAP ERP extractors to send the tracked processes and events to SAP Business Network Global Track and Trace (ABAP)
 * Configuration file for SAP ERP extractors
 
-The sample codes are provided not as part of standard delivery, but only as an example to show you how to set up the SAP ERP extractors for use with fulfillment tracking apps. They are not standard codes and you can customize them for your business scenarios. 
+The sample codes are not provided as part of standard delivery, but only as an example to show you how to set up the SAP ERP extractors for use with fulfillment tracking apps. They are not standard codes and you can customize them for your business scenarios. 
 
 You should determine what documents with certain condition need to be sent to SAP Business Network Global Track and Trace for tracking. You don't need to send unnecessary ones. For example, if you only need the sales order, then you don't have to implement the purchase order.
 
  
 ## Requirements
 
-* Make sure that you have met the requirements for the product version mentioned in the [Prerequisites](https://help.sap.com/docs/business-network-global-track-and-trace/a01652f35ace458c91e9c915ba052b64/6af8c81399a042168b19a3b74f5fb7bb.html) chapter of How to Send Documents from SAP ERP to SAP Business Network Global Track and Trace. You can find this guide at http://help.sap.com/gtt. 
+* Make sure that you have met the requirements for the product version mentioned in the [Prerequisites](https://help.sap.com/docs/business-network-global-track-and-trace/a01652f35ace458c91e9c915ba052b64/6af8c81399a042168b19a3b74f5fb7bb.html) chapter of How to Send Documents from SAP S/4HANA to SAP Business Network Global Track and Trace. You can find this guide at http://help.sap.com/gtt. 
 * The ABAP codes on Github to support fulfillment tracking apps for SAP Business Network Global Track and Trace shall be implemented in SAP S/4HANA 1909 SP03 on premise or higher. Please note that the codes are not validated in its lower version or other ECC series of products, so you might need to do further adaptation work or build your own extractor.
 
 ## Download and Installation
 Click the link below to find the detailed installation guide. You can also find the guide in the “Document” folder.
-* [SAP ERP Sample Code Configuration Guide for Fulfillment Tracking Apps.pdf](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/master/lbn-gtt-standard-app/Documents/SAP%20ERP%20Sample%20Code%20Configuration%20Guide%20for%20Fulfillment%20Tracking%20Apps.pdf) </br>
+* [Sample Code Configuration Guide for Integration with SAP Business Network Global Track and Trace.pdf](https://github.wdf.sap.corp/TrackAndTrace/GTT-V2-Standard-Apps/blob/test/lbn-gtt-standard-app/Documents/Sample%20Code%20Configuration%20Guide%20for%20Integration%20with%20SAP%20Business%20Network%20Global%20Track%20and%20Trace.pdf) </br>
 
 
 ## Known Issues

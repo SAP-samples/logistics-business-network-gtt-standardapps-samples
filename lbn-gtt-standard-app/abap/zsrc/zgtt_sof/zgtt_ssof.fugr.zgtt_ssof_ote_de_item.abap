@@ -682,10 +682,29 @@ FUNCTION zgtt_ssof_ote_de_item.
 
 *   Support one-time location(ship-to-party)
     IF <ls_xvbpa> IS ASSIGNED AND <ls_xvbpa> IS NOT INITIAL.
+*     Get one-time location from shipment
+      CLEAR lt_loc_data.
+      PERFORM get_one_time_location_from_shp TABLES lt_loc_data
+                                              USING <ls_xlikp>-vbeln.
+      APPEND LINES OF lt_loc_data TO gt_loc_data.
+
+*     Get one-time location from delivery item itself(ship-to-party)
       CLEAR lt_loc_data.
       PERFORM fill_one_time_location TABLES lt_loc_data
                                       USING <ls_xvbpa>
                                             zif_gtt_sof_constants=>cs_loctype-bp.
+*     For same one-Time location id and location type which exists in delivey and shipment,
+*     use the shipment's address as one-Time location address
+      LOOP AT lt_loc_data INTO DATA(ls_loc_data).
+        READ TABLE gt_loc_data TRANSPORTING NO FIELDS
+          WITH KEY locid   = ls_loc_data-locid
+                   loctype = ls_loc_data-loctype.
+        IF sy-subrc = 0.
+          DELETE lt_loc_data WHERE locid   = ls_loc_data-locid
+                               AND loctype = ls_loc_data-loctype.
+        ENDIF.
+      ENDLOOP.
+
       APPEND LINES OF lt_loc_data TO gt_loc_data.
     ENDIF.
 

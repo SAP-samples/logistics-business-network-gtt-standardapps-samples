@@ -14,6 +14,18 @@
    <DESCRIPTIONS>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>CHECK_LTL_SHIPMENT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Check the freight order is LTL(less than truckload) or not</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>CONVERT_CARRIER_NOTE_TO_TABLE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Convert Carrier&apos;s Note into a table</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
      <CMPNAME>CS_CONDITION</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>CS_CONDITION</DESCRIPT>
@@ -377,6 +389,12 @@
      <CMPNAME>GET_TXC_KEY_MAPPING</CMPNAME>
      <LANGU>닱</LANGU>
      <DESCRIPT>[Ģēţ∙Ţēχţ∙Ķēŷ∙Μąρρįŋğ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_TOOLS</CLSNAME>
+     <CMPNAME>MAP_EP_EVNT_CODE_TO_EVENT_CODE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Mapping of event-first event code to legacy event code</DESCRIPT>
     </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>

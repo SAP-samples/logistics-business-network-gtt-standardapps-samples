@@ -110,11 +110,17 @@ CLASS ZCL_GTT_SPOF_CTP_DLH_DATA IMPLEMENTATION.
 
     zcl_gtt_tools=>get_po_so_by_delivery(
       EXPORTING
-        iv_vgtyp    = if_sd_doc_category=>purchase_order
-        it_xlikp    = it_xlikp
-        it_xlips    = lt_lips
+        iv_vgtyp       = if_sd_doc_category=>purchase_order
+        it_xlikp       = it_xlikp
+        it_xlips       = lt_lips
       IMPORTING
-        et_ref_list = lt_ref_list ).
+        et_ref_list    = lt_ref_list
+        ev_ref_chg_flg = DATA(lv_chg_flg) ).
+
+*   The relationship between PO and IDLV is not changed,no need send out the Cross TP IDOC
+    IF lv_chg_flg IS INITIAL.
+      RETURN.
+    ENDIF.
 
     IF lt_ref_list IS NOT INITIAL.
       SELECT *
