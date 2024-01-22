@@ -217,7 +217,8 @@ public section.
       !IT_XLIKP type SHP_LIKP_T
       !IT_XLIPS type SHP_LIPS_T
     exporting
-      !ET_REF_LIST type TT_REF_LIST .
+      !ET_REF_LIST type TT_REF_LIST
+      !EV_REF_CHG_FLG type BOOLEAN .
   class-methods CONVERT_UNIT_OUTPUT
     importing
       !IV_INPUT type CLIKE
@@ -290,6 +291,22 @@ public section.
       !IT_LIPS type VA_LIPSVB_T
     returning
       value(RV_RELEVANT) type ABAP_BOOL .
+  class-methods CHECK_LTL_SHIPMENT
+    importing
+      !IV_TKNUM type VTTK-TKNUM
+      !IT_VTTK type VTTKVB_TAB optional
+      !IT_VTTP type VTTPVB_TAB optional
+    exporting
+      !EV_LTL_FLAG type FLAG
+      !ES_VTTK type VTTKVB .
+  class-methods GET_ADDRESS_DETAIL_BY_LOCTYPE
+    importing
+      !IV_LOCTYPE type TEXT20
+      !IV_LOCID type CHAR10
+    exporting
+      !ES_ADDR type ADDR1_DATA
+      !EV_EMAIL type AD_SMTPADR
+      !EV_TELEPHONE type CHAR50 .
   PROTECTED SECTION.
 private section.
 
@@ -1090,10 +1107,14 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
       ls_ref_list     TYPE ts_ref_list,
       ls_likp         TYPE likpvb,
       lt_likp_dt      TYPE tt_likp,
-      ls_likp_dt      TYPE ts_likp.
+      ls_likp_dt      TYPE ts_likp,
+      lv_no_changes   TYPE flag.
 
-    CLEAR et_ref_list.
+    CLEAR:
+     et_ref_list,
+     ev_ref_chg_flg.
 
+*   Based on current processing delivery,get preceding document
     LOOP AT it_xlips INTO DATA(ls_lips) WHERE vgtyp = iv_vgtyp.
 *    For purchase order,only need the inbound delivery
       IF ls_lips-vgtyp = if_sd_doc_category=>purchase_order.
@@ -1114,6 +1135,7 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
     SORT lt_ref_doc_curr BY vbeln vgbel.
     DELETE ADJACENT DUPLICATES FROM lt_ref_doc_curr COMPARING ALL FIELDS.
 
+*   Based on reference document,get preceding document from DB
     IF lt_ref_doc_curr IS NOT INITIAL.
       SELECT vbeln
              vgbel
@@ -1145,6 +1167,7 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
       ENDLOOP.
     ENDIF.
 
+*   Merge the preceding document
     APPEND LINES OF lt_ref_doc_curr TO lt_ref_doc_all.
     APPEND LINES OF lt_ref_doc_db TO lt_ref_doc_all.
 
@@ -1173,6 +1196,23 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
     ENDLOOP.
 
     et_ref_list = lt_ref_list.
+
+*   Check the reference document is changed or not
+    IF ev_ref_chg_flg IS REQUESTED.
+      SORT lt_ref_doc_db BY vbeln vgbel.
+      CALL FUNCTION 'CTVB_COMPARE_TABLES'
+        EXPORTING
+          table_old  = lt_ref_doc_db
+          table_new  = lt_ref_doc_all
+          key_length = 20
+        IMPORTING
+          no_changes = lv_no_changes.
+      IF lv_no_changes = abap_true.
+        ev_ref_chg_flg = abap_false.
+      ELSE.
+        ev_ref_chg_flg = abap_true.
+      ENDIF.
+    ENDIF.
 
   ENDMETHOD.
 
@@ -1521,7 +1561,7 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
     CHECK lt_vttp IS NOT INITIAL.
 
     LOOP AT lt_vttp INTO DATA(ls_vttp).
-      lt_tknum_range = VALUE #( (
+      lt_tknum_range = VALUE #( BASE lt_tknum_range (
         sign   = 'I'
         option = 'EQ'
         low    = ls_vttp ) ).
@@ -1648,6 +1688,128 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
     IF sy-subrc = 0.
       rv_relevant = zcl_gtt_tools=>read_int_mode_by_ctrl_key( ls_poext-tm_ctrl_key ).
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD check_ltl_shipment.
+
+    DATA:
+      ls_vttk  TYPE vttk,
+      lv_count TYPE i.
+
+    CLEAR:
+      ev_ltl_flag,
+      es_vttk.
+
+    READ TABLE it_vttk INTO DATA(ls_vttkvb)
+      WITH KEY tknum = iv_tknum.
+    IF sy-subrc = 0.
+      ls_vttk-vsart = ls_vttkvb-vsart.
+      es_vttk = ls_vttkvb.
+    ELSE.
+      SELECT SINGLE *
+        INTO ls_vttk
+        FROM vttk
+       WHERE tknum = iv_tknum.
+      MOVE-CORRESPONDING ls_vttk TO es_vttk.
+    ENDIF.
+
+    LOOP AT it_vttp INTO DATA(ls_vttpvb)
+      WHERE tknum = iv_tknum
+        AND updkz <> zif_gtt_ef_constants=>cs_change_mode-delete.
+      ADD 1 TO lv_count.
+    ENDLOOP.
+    IF sy-subrc <> 0.
+      SELECT COUNT(*)
+        FROM vttp
+       WHERE tknum = iv_tknum.
+      lv_count = sy-dbcnt.
+    ENDIF.
+
+    IF lv_count > 1 AND ls_vttk-vsart = '01'. "Truck
+      ev_ltl_flag = abap_true.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD GET_ADDRESS_DETAIL_BY_LOCTYPE.
+
+    DATA:
+      lt_but020   TYPE TABLE OF but020,
+      lv_addr_num TYPE ad_addrnum,
+      lv_vstel    TYPE vstel,
+      ls_tvst     TYPE tvst,
+      lv_werks    TYPE t001w-werks,
+      ls_t001w    TYPE t001w.
+
+    CLEAR:
+      es_addr,
+      ev_email,
+      ev_telephone.
+
+    IF iv_loctype = zif_gtt_ef_constants=>cs_loc_types-businesspartner.
+
+      CALL FUNCTION 'BUA_BUT020_SELECT_WITH_PARTNER'
+        EXPORTING
+          i_partner        = iv_locid
+        TABLES
+          t_but020         = lt_but020
+        EXCEPTIONS
+          not_found        = 1
+          wrong_parameters = 2
+          internal_error   = 3
+          not_valid        = 4
+          blocked_partner  = 5
+          OTHERS           = 6.
+      IF sy-subrc = 0.
+        READ TABLE lt_but020 INTO DATA(ls_but020) INDEX 1.
+        IF sy-subrc = 0.
+          lv_addr_num = ls_but020-addrnumber.
+        ENDIF.
+      ENDIF.
+
+    ELSEIF iv_loctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint.
+      lv_vstel = iv_locid.
+      CALL FUNCTION 'SHP_TVST_SELECT_01'
+        EXPORTING
+          if_vstel         = lv_vstel
+        CHANGING
+          cs_tvst          = ls_tvst
+        EXCEPTIONS
+          no_item_selected = 1
+          no_authority     = 2
+          no_key_specified = 3
+          OTHERS           = 4.
+      IF sy-subrc = 0.
+        lv_addr_num = ls_tvst-adrnr.
+      ENDIF.
+
+    ELSEIF iv_loctype = zif_gtt_ef_constants=>cs_loc_types-plant.
+      lv_werks = iv_locid.
+      CALL FUNCTION 'T001W_SINGLE_READ'
+        EXPORTING
+          t001w_werks = lv_werks
+        IMPORTING
+          wt001w      = ls_t001w
+        EXCEPTIONS
+          not_found   = 1
+          OTHERS      = 2.
+      IF sy-subrc = 0.
+        lv_addr_num = ls_t001w-adrnr.
+      ENDIF.
+    ENDIF.
+
+    CHECK lv_addr_num IS NOT INITIAL.
+
+    zcl_gtt_tools=>get_address_from_db(
+      EXPORTING
+        iv_addrnumber = lv_addr_num
+      IMPORTING
+        es_addr       = es_addr
+        ev_email      = ev_email
+        ev_telephone  = ev_telephone ).
 
   ENDMETHOD.
 ENDCLASS.

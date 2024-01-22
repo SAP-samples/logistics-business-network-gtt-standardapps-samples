@@ -1,5 +1,13 @@
 # What's New for Fulfillment Tracking Apps
-## Nonvember 11th, 2023
+## January 20th, 2024
+1. You can send the carrier’s note to SAP Business Network Global Track and Trace as shipment’s tracked object to initialize tracking.
+2. Add the planned "Arrival" event on the source location of the LTL shipment.
+3. The actual events that you report in SAP S/4HANA 2023 can be sent to SAP Business Network Global Track and Trace.
+4. Fix the planned “Proof of Delivery” event issue for inbound deliveries.
+5. Fix one-time location relevant issues. 
+6. The document "SAP ERP Sample Code Configuration Guide for Fulfillment Tracking Apps" is renamed "[Sample Code Configuration Guide for Integration with SAP Business Network Global Track and Trace](https://github.wdf.sap.corp/TrackAndTrace/GTT-V2-Standard-Apps/blob/main/lbn-gtt-standard-app/Documents/Sample%20Code%20Configuration%20Guide%20for%20Integration%20with%20SAP%20Business%20Network%20Global%20Track%20and%20Trace.pdf)".
+
+## November 11th, 2023
 1. When reporting actual events in SAP TM with the event reason code provided, the event reason code can now be sent to SAP Business Network Global Track and Trace.
 2. Fix the "Proof of Delivery" event match key for the freight unit.
 3. Enhance the logic of the field "isFreightUnitRelevant" on the delivery header.

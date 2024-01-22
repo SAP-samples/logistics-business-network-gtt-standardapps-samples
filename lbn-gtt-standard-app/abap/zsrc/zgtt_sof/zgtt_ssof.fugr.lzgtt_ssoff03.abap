@@ -473,7 +473,10 @@ FORM get_one_time_location_from_shp  TABLES   ct_loc_data   TYPE STANDARD TABLE
     lv_loc_email        TYPE ad_smtpadr,
     lv_loc_tel          TYPE char50,
     ls_address_info     TYPE gtys_address_info,
-    lt_address_info     TYPE TABLE OF gtys_address_info.
+    lt_address_info     TYPE TABLE OF gtys_address_info,
+    ls_loc_addr_tmp     TYPE addr1_data,
+    lv_loc_email_tmp    TYPE ad_smtpadr,
+    lv_loc_tel_tmp      TYPE char50.
 
   CLEAR ct_loc_data[].
 
@@ -493,7 +496,10 @@ FORM get_one_time_location_from_shp  TABLES   ct_loc_data   TYPE STANDARD TABLE
     CLEAR:
      ls_loc_addr,
      lv_loc_email,
-     lv_loc_tel.
+     lv_loc_tel,
+     ls_loc_addr_tmp,
+     lv_loc_email_tmp,
+     lv_loc_tel_tmp.
 
     IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
 
@@ -505,12 +511,26 @@ FORM get_one_time_location_from_shp  TABLES   ct_loc_data   TYPE STANDARD TABLE
           ev_email      = lv_loc_email
           ev_telephone  = lv_loc_tel ).
 
-      ls_address_info-locid = ls_loc_info-locid.
-      ls_address_info-loctype = ls_loc_info-loctype.
-      ls_address_info-addr1 = ls_loc_addr.
-      ls_address_info-email = lv_loc_email.
-      ls_address_info-telephone = lv_loc_tel.
-      APPEND ls_address_info TO lt_address_info.
+      zcl_gtt_tools=>get_address_detail_by_loctype(
+        EXPORTING
+          iv_loctype   = ls_loc_info-loctype
+          iv_locid     = ls_loc_info-locid
+        IMPORTING
+          es_addr      = ls_loc_addr_tmp
+          ev_email     = lv_loc_email_tmp
+          ev_telephone = lv_loc_tel_tmp ).
+
+      IF ls_loc_addr <> ls_loc_addr_tmp
+        OR lv_loc_email <> lv_loc_email_tmp
+        OR lv_loc_tel <> lv_loc_tel_tmp.
+
+        ls_address_info-locid = ls_loc_info-locid.
+        ls_address_info-loctype = ls_loc_info-loctype.
+        ls_address_info-addr1 = ls_loc_addr.
+        ls_address_info-email = lv_loc_email.
+        ls_address_info-telephone = lv_loc_tel.
+        APPEND ls_address_info TO lt_address_info.
+      ENDIF.
       CLEAR:
         ls_address_info.
     ENDIF.

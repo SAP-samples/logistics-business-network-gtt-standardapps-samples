@@ -13,6 +13,8 @@ protected section.
 
   methods GET_REQUIREMENT_DOC_LIST
     redefinition .
+  methods GET_CONTAINER_AND_MOBILE_TRACK
+    redefinition .
 private section.
 
   types:
@@ -232,19 +234,23 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
 
   METHOD get_data_from_textcoll.
 
-  TEST-SEAM get_container_and_mobile_track.
-    get_container_and_mobile_track(
-      EXPORTING
-        ir_data         = ir_root
-        iv_old_data     = iv_old_data
-      CHANGING
-        ct_tracked_object_type = cs_fo_header-tracked_object_type
-        ct_tracked_object_id   = cs_fo_header-tracked_object_id ).
-  END-TEST-SEAM.
+    TEST-SEAM get_container_and_mobile_track.
+      get_container_and_mobile_track(
+        EXPORTING
+          ir_data                = ir_root
+          iv_old_data            = iv_old_data
+        CHANGING
+          ct_tracked_object_type = cs_fo_header-tracked_object_type
+          ct_tracked_object_id   = cs_fo_header-tracked_object_id ).
+    END-TEST-SEAM.
 
-    IF cs_fo_header-tor_id IS NOT INITIAL AND cs_fo_header-res_id IS NOT INITIAL.
-      APPEND cs_track_id-truck_id TO cs_fo_header-tracked_object_id.
-      APPEND cs_fo_header-res_id  TO cs_fo_header-tracked_object_type.
+    READ TABLE cs_fo_header-tracked_object_id INTO DATA(ls_tracked_object_id)
+      WITH KEY table_line = cs_track_id-truck_id.
+    IF sy-subrc <> 0.
+      IF cs_fo_header-tor_id IS NOT INITIAL AND cs_fo_header-res_id IS NOT INITIAL.
+        APPEND cs_track_id-truck_id TO cs_fo_header-tracked_object_id.
+        APPEND cs_fo_header-res_id  TO cs_fo_header-tracked_object_type.
+      ENDIF.
     ENDIF.
     IF cs_fo_header-tor_id IS NOT INITIAL AND cs_fo_header-platenumber IS NOT INITIAL AND cs_fo_header-mtr = '31'.
       APPEND cs_track_id-license_plate TO cs_fo_header-tracked_object_id.
@@ -419,6 +425,94 @@ CLASS ZCL_GTT_STS_BO_FO_READER IMPLEMENTATION.
       lv_freight_unit_line_no = lv_freight_unit_line_no + 1.
       APPEND lv_freight_unit_line_no TO ct_req_doc_line_no.
       APPEND |{ ls_req-tor_id ALPHA = OUT }| TO ct_req_doc_no.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_container_and_mobile_track.
+
+    DATA:
+      lt_text             TYPE /bobf/t_txc_txt_k,
+      lt_text_content     TYPE /bobf/t_txc_con_k,
+      ls_text             TYPE /bobf/s_txc_txt_k,
+      ls_text_content     TYPE /bobf/s_txc_con_k,
+      lt_note_value       TYPE zcl_gtt_sts_tools=>tt_split_result,
+      ls_note_value       TYPE zcl_gtt_sts_tools=>ts_split_result,
+      lt_note_value_mobl  TYPE zcl_gtt_sts_tools=>tt_split_result,
+      ls_note_value_mobl  TYPE zcl_gtt_sts_tools=>ts_split_result,
+      lt_carrier_note_tmp TYPE zcl_gtt_sts_tools=>tt_split_result,
+      lt_carrier_note     TYPE zcl_gtt_sts_tools=>tt_split_result,
+      ls_carrier_note     TYPE zcl_gtt_sts_tools=>ts_split_result.
+
+    get_data_from_text_collection(
+      EXPORTING
+        iv_old_data     = iv_old_data
+        ir_data         = ir_data
+      IMPORTING
+        er_text         = DATA(lr_text)
+        er_text_content = DATA(lr_text_content) ).
+
+    APPEND LINES OF lr_text->* TO lt_text.
+    APPEND LINES OF lr_text_content->* TO lt_text_content.
+
+    LOOP AT lt_text INTO ls_text.
+      CLEAR:
+       ls_text_content,
+       lt_carrier_note_tmp.
+      READ TABLE lt_text_content INTO ls_text_content
+         WITH KEY parent_key COMPONENTS parent_key = ls_text-key.
+      IF sy-subrc = 0 AND ls_text_content-text IS NOT INITIAL.
+        IF ls_text-text_type = cs_text_type-cont."Container
+          ls_note_value-key = cs_track_id-container_id.
+          ls_note_value-val = ls_text_content-text.
+          APPEND ls_note_value TO lt_note_value.
+          CLEAR ls_note_value.
+        ENDIF.
+        IF ls_text-text_type = cs_text_type-carrier_note."Carrier's Note in Subcontr/Tendering
+          zcl_gtt_sts_tools=>convert_carrier_note_to_table(
+            EXPORTING
+              iv_text         = ls_text_content-text
+            IMPORTING
+              et_split_result = lt_carrier_note_tmp ).
+          APPEND LINES OF lt_carrier_note_tmp TO lt_carrier_note.
+        ENDIF.
+        IF ls_text-text_type = cs_text_type-mobl."Mobile
+          ls_note_value_mobl-key = cs_track_id-mobile_number.
+          ls_note_value_mobl-val = ls_text_content-text.
+          APPEND ls_note_value_mobl TO lt_note_value_mobl.
+          CLEAR ls_note_value_mobl.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+
+*   Merge container ID and Carrier's Note
+    LOOP AT lt_carrier_note INTO ls_carrier_note
+      WHERE val IS NOT INITIAL
+        AND ( key = cs_text_type-mobl
+             OR key = cs_text_type-truck
+             OR key = cs_text_type-trail ).
+      IF ls_carrier_note-key = cs_text_type-mobl.
+        ls_note_value-key = cs_track_id-mobile_number.
+      ELSEIF ls_carrier_note-key = cs_text_type-truck.
+        ls_note_value-key = cs_track_id-truck_id.
+      ELSEIF ls_carrier_note-key = cs_text_type-trail.
+        ls_note_value-key = cs_track_id-trailer_id.
+      ENDIF.
+      ls_note_value-val = ls_carrier_note-val.
+      APPEND ls_note_value TO lt_note_value.
+      CLEAR ls_note_value.
+    ENDLOOP.
+
+    READ TABLE lt_note_value INTO ls_note_value
+      WITH KEY key = cs_track_id-mobile_number.
+    IF sy-subrc <> 0.
+      APPEND LINES OF lt_note_value_mobl TO lt_note_value.
+    ENDIF.
+
+    LOOP AT lt_note_value INTO ls_note_value.
+      APPEND ls_note_value-key TO ct_tracked_object_id.
+      APPEND ls_note_value-val TO ct_tracked_object_type.
     ENDLOOP.
 
   ENDMETHOD.

@@ -18,6 +18,7 @@ public section.
       !IV_APPOBJID type /SAPTRX/AOID
       !IV_VBELN type VBELN_VL
       !IV_POSNR type POSNR_VL default 0
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
       !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS
     returning
       value(RO_SH_STOPS_EVENTS) type ref to ZCL_GTT_MIA_SH_STOPS_EVENTS
@@ -29,64 +30,74 @@ public section.
     raising
       CX_UDM_MESSAGE .
   PROTECTED SECTION.
-  PRIVATE SECTION.
+private section.
 
-    TYPES:
-      tt_tknum   TYPE STANDARD TABLE OF tknum .
-    TYPES:
-      BEGIN OF ts_stops_info,
+  types:
+    tt_tknum   TYPE STANDARD TABLE OF tknum .
+  types:
+    BEGIN OF ts_stops_info,
         tknum    TYPE vttk-tknum,
         stops    TYPE zif_gtt_mia_app_types=>tt_stops,
         watching TYPE zif_gtt_mia_app_types=>tt_dlv_watch_stops,
       END OF ts_stops_info .
-    TYPES:
-      tt_stops_info TYPE STANDARD TABLE OF ts_stops_info .
+  types:
+    tt_stops_info TYPE STANDARD TABLE OF ts_stops_info .
 
-    DATA mv_vbeln TYPE vbeln_vl .
-    DATA mv_posnr TYPE posnr_vl .
-    DATA ms_event_info TYPE ts_event_info .
-    DATA mt_stops_info TYPE tt_stops_info .
-    DATA mt_lips TYPE zif_gtt_mia_app_types=>tt_lipsvb .
+  data MV_VBELN type VBELN_VL .
+  data MV_POSNR type POSNR_VL .
+  data MS_EVENT_INFO type TS_EVENT_INFO .
+  data MT_STOPS_INFO type TT_STOPS_INFO .
+  data MT_LIPS type ZIF_GTT_MIA_APP_TYPES=>TT_LIPSVB .
+  data MT_LIKP type VA_LIKPVB_T .
 
-    METHODS constructor
-      IMPORTING
-        !iv_vbeln      TYPE vbeln_vl
-        !iv_posnr      TYPE posnr_vl
-        !is_event_info TYPE ts_event_info
-        !it_stops_info TYPE tt_stops_info
-        !it_lips       TYPE zif_gtt_mia_app_types=>tt_lipsvb .
-    CLASS-METHODS get_delivery_items
-      IMPORTING
-        !iv_vbeln TYPE vbeln_vl
-        !iv_posnr TYPE posnr_vl
-        !ir_lips  TYPE REF TO data
-      EXPORTING
-        !et_lips  TYPE zif_gtt_mia_app_types=>tt_lipsvb
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_event_info
-      IMPORTING
-        !iv_appobjid         TYPE /saptrx/aoid
-        !io_ef_parameters    TYPE REF TO zif_gtt_ef_parameters
-      RETURNING
-        VALUE(rs_event_info) TYPE ts_event_info
-      RAISING
-        cx_udm_message .
-    CLASS-METHODS get_shipments_for_delivery
-      IMPORTING
-        !iv_vbeln TYPE vbeln_vl
-      EXPORTING
-        !et_tknum TYPE tt_tknum .
-    CLASS-METHODS get_stops_info_for_delivery
-      IMPORTING
-        !iv_vbeln      TYPE vbeln_vl
-      EXPORTING
-        !et_stops_info TYPE tt_stops_info .
-    METHODS is_pod_relevant
-      IMPORTING
-        !iv_locid        TYPE clike
-      RETURNING
-        VALUE(rv_result) TYPE abap_bool .
+  methods CONSTRUCTOR
+    importing
+      !IV_VBELN type VBELN_VL
+      !IV_POSNR type POSNR_VL
+      !IS_EVENT_INFO type TS_EVENT_INFO
+      !IT_STOPS_INFO type TT_STOPS_INFO
+      !IT_LIPS type ZIF_GTT_MIA_APP_TYPES=>TT_LIPSVB
+      !IT_LIKP type VA_LIKPVB_T .
+  class-methods GET_DELIVERY_ITEMS
+    importing
+      !IV_VBELN type VBELN_VL
+      !IV_POSNR type POSNR_VL
+      !IR_LIPS type ref to DATA
+    exporting
+      !ET_LIPS type ZIF_GTT_MIA_APP_TYPES=>TT_LIPSVB
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_EVENT_INFO
+    importing
+      !IV_APPOBJID type /SAPTRX/AOID
+      !IO_EF_PARAMETERS type ref to ZIF_GTT_EF_PARAMETERS
+    returning
+      value(RS_EVENT_INFO) type TS_EVENT_INFO
+    raising
+      CX_UDM_MESSAGE .
+  class-methods GET_SHIPMENTS_FOR_DELIVERY
+    importing
+      !IV_VBELN type VBELN_VL
+    exporting
+      !ET_TKNUM type TT_TKNUM .
+  class-methods GET_STOPS_INFO_FOR_DELIVERY
+    importing
+      !IV_VBELN type VBELN_VL
+    exporting
+      !ET_STOPS_INFO type TT_STOPS_INFO .
+  methods IS_POD_RELEVANT
+    importing
+      !IV_LOCID type CLIKE
+    returning
+      value(RV_RESULT) type ABAP_BOOL .
+  class-methods GET_DELIVERY_HEADER
+    importing
+      !IV_VBELN type VBELN_VL
+      !IR_LIKP type DATA
+    exporting
+      !ET_LIKP type VA_LIKPVB_T
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -100,6 +111,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
     ms_event_info = is_event_info.
     mt_stops_info = it_stops_info.
     mt_lips       = it_lips.
+    mt_likp       = it_likp.
 
   ENDMETHOD.
 
@@ -151,10 +163,11 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD GET_INSTANCE_FOR_DELIVERY.
+  METHOD get_instance_for_delivery.
 
     DATA: lt_stops_info TYPE tt_stops_info,
-          lt_lips       TYPE zif_gtt_mia_app_types=>tt_lipsvb.
+          lt_lips       TYPE zif_gtt_mia_app_types=>tt_lipsvb,
+          lt_likp       TYPE va_likpvb_t.
 
     DATA(ls_event_info) = get_event_info(
       iv_appobjid      = iv_appobjid
@@ -175,12 +188,20 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
       IMPORTING
         et_lips  = lt_lips ).
 
+    get_delivery_header(
+      EXPORTING
+        iv_vbeln = iv_vbeln
+        ir_likp  = is_app_objects-maintabref
+      IMPORTING
+        et_likp  = lt_likp ).
+
     ro_sh_stops_events = NEW zcl_gtt_mia_sh_stops_events(
       iv_vbeln      = iv_vbeln
       iv_posnr      = iv_posnr
       is_event_info = ls_event_info
       it_stops_info = lt_stops_info
-      it_lips       = lt_lips ).
+      it_lips       = lt_lips
+      it_likp       = lt_likp ).
 
   ENDMETHOD.
 
@@ -220,7 +241,7 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
 
           " POD
           IF <ls_stops>-loccat  = zif_gtt_mia_app_constants=>cs_loccat-arrival AND
-             <ls_stops>-loctype = zif_gtt_ef_constants=>cs_loc_types-plant AND
+             <ls_stops>-loctype = zif_gtt_ef_constants=>cs_loc_types-shippingpoint AND
              is_pod_relevant( iv_locid = <ls_stops>-locid ) = abap_true.
 
             lt_exp_event = VALUE #( BASE lt_exp_event (
@@ -327,19 +348,13 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD IS_POD_RELEVANT.
+  METHOD is_pod_relevant.
 
     CLEAR: rv_result.
 
-    IF mv_vbeln IS NOT INITIAL.
-      READ TABLE mt_lips TRANSPORTING NO FIELDS
-        WITH KEY vbeln = mv_vbeln
-                 werks = iv_locid.
-    ELSE.
-      READ TABLE mt_lips TRANSPORTING NO FIELDS
-        WITH KEY werks = iv_locid.
-    ENDIF.
-
+    READ TABLE mt_likp TRANSPORTING NO FIELDS
+      WITH KEY vbeln = mv_vbeln
+               vstel = iv_locid.
     IF sy-subrc = 0.
       SELECT SINGLE z_pdstk INTO rv_result
         FROM zgtt_mia_ee_rel
@@ -347,6 +362,26 @@ CLASS ZCL_GTT_MIA_SH_STOPS_EVENTS IMPLEMENTATION.
 
       rv_result   = boolc( sy-subrc = 0 AND rv_result = abap_true ).
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD get_delivery_header.
+
+    FIELD-SYMBOLS:
+      <ls_likp> TYPE any.
+    DATA:
+      ls_likpvb TYPE likpvb.
+
+    CLEAR et_likp.
+
+    ASSIGN ir_likp->* TO <ls_likp>.
+    IF <ls_likp> IS NOT ASSIGNED.
+      MESSAGE e002(zgtt) WITH 'LIKP' INTO DATA(lv_dummy).
+      zcl_gtt_tools=>throw_exception( ).
+    ENDIF.
+    MOVE-CORRESPONDING <ls_likp> TO ls_likpvb.
+    APPEND ls_likpvb TO et_likp.
 
   ENDMETHOD.
 ENDCLASS.

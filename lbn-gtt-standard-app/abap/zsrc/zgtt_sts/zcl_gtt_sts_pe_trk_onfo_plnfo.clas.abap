@@ -5,23 +5,6 @@ class ZCL_GTT_STS_PE_TRK_ONFO_PLNFO definition
 
 public section.
 
-  types:
-    BEGIN OF ts_req2capa_info,
-        req_no              TYPE /scmtms/tor_id,
-        req_key             TYPE /bobf/conf_key,
-        req_stop_key        TYPE /bobf/conf_key,
-        req_assgn_stop_key  TYPE /bobf/conf_key,
-        req_log_locid       TYPE /scmtms/location_id,
-        cap_no              TYPE /scmtms/tor_id,
-        cap_key             TYPE /bobf/conf_key,
-        cap_stop_key        TYPE /bobf/conf_key,
-        cap_plan_trans_time TYPE /scmtms/stop_plan_date,
-        cap_seq             TYPE numc04,
-      END OF ts_req2capa_info .
-
-  types:
-    tt_req2capa_info TYPE TABLE OF ts_req2capa_info .
-
   methods GET_PLANNED_EVENTS
     importing
       !IR_FU_ROOT type ref to DATA
@@ -168,7 +151,7 @@ private section.
     importing
       !IS_CAPA type /SCMTMS/S_EM_BO_TOR_ROOT
       !IT_STOP_SEQ type /SCMTMS/T_EM_BO_TOR_STOP
-      !IT_REQ2CAPA_INFO type TT_REQ2CAPA_INFO
+      !IT_REQ2CAPA_INFO type ZCL_GTT_STS_TOOLS=>TT_REQ2CAPA_INFO
     exporting
       !ET_STOP type /SCMTMS/T_EM_BO_TOR_STOP
       !ET_STOP_POINTS type ZIF_GTT_STS_EF_TYPES=>TT_STOP_POINTS .

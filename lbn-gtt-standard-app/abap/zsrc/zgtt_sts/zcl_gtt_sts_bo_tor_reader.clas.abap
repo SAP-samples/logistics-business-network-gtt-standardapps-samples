@@ -86,8 +86,11 @@ protected section.
 
   constants:
     BEGIN OF cs_text_type,
-      cont TYPE /bobf/txc_text_type VALUE 'CONT',
-      mobl TYPE /bobf/txc_text_type VALUE 'MOBL',
+      cont         TYPE /bobf/txc_text_type VALUE 'CONT',
+      mobl         TYPE /bobf/txc_text_type VALUE 'MOBL',
+      truck        TYPE /bobf/txc_text_type VALUE 'TRUCK',
+      trail        TYPE /bobf/txc_text_type VALUE 'TRAIL',
+      carrier_note TYPE /bobf/txc_text_type VALUE 'E0103',"Carrier's Note in Subcontr/Tendering
     END OF cs_text_type .
   constants:
     BEGIN OF cs_track_id,
@@ -100,6 +103,7 @@ protected section.
       imo           TYPE tv_tracked_object_type VALUE 'IMO',
       pkg_id        TYPE tv_tracked_object_type VALUE 'PACKAGE_ID',
       pkg_ext_id    TYPE tv_tracked_object_type VALUE 'PACKAGE_EXT_ID',
+      trailer_id    TYPE tv_tracked_object_type VALUE 'TRAILER_ID',
     END OF cs_track_id .
   constants:
     BEGIN OF cs_mapping,

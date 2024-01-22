@@ -93,6 +93,13 @@ private section.
       value(RV_RESULT) type ABAP_BOOL
     raising
       CX_UDM_MESSAGE .
+  methods ADD_PLANNED_SOURCE_ARRIVAL
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -575,7 +582,7 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ZIF_GTT_PE_FILLER~GET_PLANED_EVENTS.
+  METHOD zif_gtt_pe_filler~get_planed_events.
 
     add_shipment_events(
       EXPORTING
@@ -595,6 +602,12 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
         ct_measrmntdata = ct_measrmntdata
         ct_infodata     = ct_infodata ).
 
+    add_planned_source_arrival(
+      EXPORTING
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
     IF NOT line_exists( ct_expeventdata[ appobjid = is_app_objects-appobjid ] ).
       " planned events DELETION
       ct_expeventdata = VALUE #( BASE ct_expeventdata (
@@ -606,6 +619,65 @@ CLASS ZCL_GTT_MIA_PE_FILLER_SHH IMPLEMENTATION.
         evt_exp_datetime  = '000000000000000'
         evt_exp_tzone     = ''
       ) ).
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD add_planned_source_arrival.
+
+    FIELD-SYMBOLS:
+      <ls_vttk> TYPE vttkvb,
+      <lt_vttp> TYPE vttpvb_tab.
+
+    DATA:
+      lr_vttk         TYPE REF TO data,
+      lr_vttp         TYPE REF TO data,
+      lv_count        TYPE i,
+      lv_ltl          TYPE flag,
+      lv_tknum        TYPE vttk-tknum,
+      lv_locid2       TYPE /saptrx/loc_id_2,
+      ls_eventdata    TYPE zif_gtt_ef_types=>ts_expeventdata,
+      lv_exp_datetime TYPE /saptrx/event_exp_datetime.
+
+    lr_vttk = is_app_objects-maintabref.
+    lr_vttp = mo_ef_parameters->get_appl_table(
+      iv_tabledef = zif_gtt_mia_app_constants=>cs_tabledef-sh_item_new ).
+
+    ASSIGN lr_vttk->* TO <ls_vttk>.
+    ASSIGN lr_vttp->* TO <lt_vttp>.
+
+    CHECK <ls_vttk> IS ASSIGNED AND <lt_vttp> IS ASSIGNED.
+
+    lv_tknum = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = lr_vttk
+      iv_field_name  = 'TKNUM' ).
+
+    SHIFT lv_tknum LEFT DELETING LEADING '0'.
+    CONCATENATE lv_tknum '0001' INTO lv_locid2.
+
+    lv_count = lines( <lt_vttp> ).
+    IF lv_count > 1 AND <ls_vttk>-vsart = '01'. "Truck
+      lv_ltl = abap_true.
+    ENDIF.
+
+    CHECK lv_ltl = abap_true.
+
+    lv_exp_datetime = zcl_gtt_tools=>get_local_timestamp(
+      iv_date = <ls_vttk>-dpreg     "Planned date of check-in
+      iv_time = <ls_vttk>-upreg ).  "Planned check-in time
+
+    READ TABLE ct_expeventdata INTO DATA(ls_expeventdata)
+      WITH KEY milestone = zif_gtt_ef_constants=>cs_milestone-sh_departure
+               locid2    = lv_locid2.
+    IF sy-subrc = 0.
+      ls_eventdata = ls_expeventdata.
+      ls_eventdata-milestonenum = 0.
+      ls_eventdata-milestone = zif_gtt_ef_constants=>cs_milestone-sh_arrival.
+      ls_eventdata-evt_exp_datetime = lv_exp_datetime.
+      ls_eventdata-evt_exp_tzone = zcl_gtt_tools=>get_system_time_zone( ).
+*     Add planned source arrival event for LTL shipment
+      APPEND ls_eventdata TO ct_expeventdata.
     ENDIF.
 
   ENDMETHOD.

@@ -50,6 +50,12 @@
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_GTT_TOOLS</CLSNAME>
+     <CMPNAME>CHECK_LTL_SHIPMENT</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Check shipment is LTL or not</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_TOOLS</CLSNAME>
      <CMPNAME>CHECK_TM_INT_RELEVANCE</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Check TM relevance</DESCRIPT>
@@ -161,6 +167,12 @@
      <CMPNAME>FILL_LOCATION_INFO</CMPNAME>
      <LANGU>닱</LANGU>
      <DESCRIPT>[Ƒįĺĺ∙ĺŏċąţįŏŋ∙įŋƒŏŗɱąţįŏŋ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_TOOLS</CLSNAME>
+     <CMPNAME>GET_ADDRESS_DETAIL_BY_LOCTYPE</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Get detail address information based on location type</DESCRIPT>
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_GTT_TOOLS</CLSNAME>

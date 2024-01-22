@@ -110,6 +110,16 @@ public section.
       !IT_TOR_ID type /SCMTMS/T_TOR_ID
     exporting
       !ET_FU type /SCMTMS/T_TOR_ROOT_K .
+  class-methods ADD_PLANNED_SOURCE_ARRIVAL
+    importing
+      !IS_EXPEVENTDATA type /SAPTRX/EXP_EVENTS
+      !IT_VTTK type VTTKVB_TAB optional
+      !IT_VTTP type VTTPVB_TAB optional
+      !IV_SEQ_NUM type /SAPTRX/SEQ_NUM optional
+    exporting
+      !ES_EVENTDATA type /SAPTRX/EXP_EVENTS
+    raising
+      CX_UDM_MESSAGE .
 protected section.
 
   class-data GO_ME type ref to ZCL_GTT_SOF_TOOLKIT .
@@ -545,6 +555,53 @@ CLASS ZCL_GTT_SOF_TOOLKIT IMPLEMENTATION.
 
       CATCH /bobf/cx_frw_contrct_violation. " Caller violates a BOPF contract
     ENDTRY.
+
+  ENDMETHOD.
+
+
+  METHOD add_planned_source_arrival.
+
+    DATA:
+      lv_length       TYPE i,
+      lv_seq          TYPE char04,
+      lv_tknum        TYPE vttk-tknum,
+      lv_ltl_flag     TYPE flag,
+      ls_vttk         TYPE vttkvb,
+      lv_exp_datetime TYPE /saptrx/event_exp_datetime.
+
+    CLEAR es_eventdata.
+
+    lv_length = strlen( is_expeventdata-locid2 ) - 4.
+    IF lv_length >= 0.
+      lv_tknum = is_expeventdata-locid2+0(lv_length).
+      lv_tknum = |{ lv_tknum ALPHA = IN }|.
+      lv_seq = is_expeventdata-locid2+lv_length(4).
+      zcl_gtt_tools=>check_ltl_shipment(
+        EXPORTING
+          iv_tknum    = lv_tknum
+          it_vttk     = it_vttk
+          it_vttp     = it_vttp
+        IMPORTING
+          ev_ltl_flag = lv_ltl_flag
+          es_vttk     = ls_vttk ).
+
+      IF lv_ltl_flag = abap_true AND lv_seq = '0001'. "only for source location of the shipment
+        lv_exp_datetime = zcl_gtt_tools=>get_local_timestamp(
+          iv_date = ls_vttk-dpreg     "Planned date of check-in
+          iv_time = ls_vttk-upreg ).  "Planned check-in time
+
+        es_eventdata = is_expeventdata.
+        IF iv_seq_num IS NOT INITIAL.
+          es_eventdata-milestonenum = iv_seq_num.
+        ELSE.
+          es_eventdata-milestonenum = 0.
+        ENDIF.
+        es_eventdata-milestone = zif_gtt_ef_constants=>cs_milestone-sh_arrival.
+        es_eventdata-evt_exp_datetime = lv_exp_datetime.
+        es_eventdata-evt_exp_tzone = zcl_gtt_tools=>get_system_time_zone( ).
+
+      ENDIF.
+    ENDIF.
 
   ENDMETHOD.
 ENDCLASS.

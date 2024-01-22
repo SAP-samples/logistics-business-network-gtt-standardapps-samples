@@ -586,11 +586,17 @@ endmethod. "IF_EX_LE_SHP_DELIVERY_PROC~SAVE_DOCUMENT_PREPARE
 
     zcl_gtt_tools=>get_po_so_by_delivery(
       EXPORTING
-        iv_vgtyp    = if_sd_doc_category=>order
-        it_xlikp    = it_xlikp
-        it_xlips    = lt_xlips
+        iv_vgtyp       = if_sd_doc_category=>order
+        it_xlikp       = it_xlikp
+        it_xlips       = lt_xlips
       IMPORTING
-        et_ref_list = DATA(lt_ref_list) ).
+        et_ref_list    = DATA(lt_ref_list)
+        ev_ref_chg_flg = DATA(lv_chg_flg) ).
+
+*   The relationship between SO and ODLV is not changed,no need send out the Cross TP IDOC
+    IF lv_chg_flg IS INITIAL.
+      RETURN.
+    ENDIF.
 
     IF lt_ref_list IS NOT INITIAL.
       SELECT *

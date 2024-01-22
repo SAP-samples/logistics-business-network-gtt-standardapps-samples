@@ -40,6 +40,8 @@ public section.
         cap_stop_key        TYPE /bobf/conf_key,
         cap_plan_trans_time TYPE /scmtms/stop_plan_date,
         cap_seq             TYPE numc04,
+        cap_trmodcat        TYPE /scmtms/trmodcat,
+        cap_shipping_type   type /scmtms/shipping_type,
       END OF ts_req2capa_info .
   types:
     BEGIN OF ts_cap_stop_seq,
@@ -60,6 +62,13 @@ public section.
     tt_cap_stop_seq  TYPE TABLE OF ts_cap_stop_seq .
   types:
     tt_capa_list TYPE TABLE OF ts_capa_list .
+  types:
+    BEGIN OF ts_split_result,
+      key type char60,
+      val type string,
+    END OF ts_split_result .
+  types:
+    tt_split_result type TABLE of ts_split_result .
 
   constants:
     BEGIN OF cs_condition,
@@ -349,6 +358,23 @@ public section.
       !IV_AOTYPE type /SAPTRX/AOTYPE
     returning
       value(RV_TORELEVANT) type /SAPTRX/TRKRELINDICATOR .
+  class-methods CONVERT_CARRIER_NOTE_TO_TABLE
+    importing
+      !IV_TEXT type STRING
+    exporting
+      !ET_SPLIT_RESULT type TT_SPLIT_RESULT .
+  class-methods CHECK_LTL_SHIPMENT
+    importing
+      !IR_ROOT type ref to DATA
+    exporting
+      !EV_LTL_FLAG type FLAG
+    raising
+      CX_UDM_MESSAGE .
+  class-methods MAP_EP_EVNT_CODE_TO_EVENT_CODE
+    importing
+      !IV_EP_EVENT_CODE type /SCMTMS/TOR_EVENT
+    returning
+      value(EV_LEGACY_EVENT_CODE) type /SCMTMS/TOR_EVENT .
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.
@@ -1487,6 +1513,8 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
             ls_req2capa_info-cap_key = ls_capa_stop-parent_key.
             ls_req2capa_info-cap_stop_key = ls_capa_stop-key.
             ls_req2capa_info-cap_plan_trans_time = ls_capa_stop-plan_trans_time.
+            ls_req2capa_info-cap_trmodcat = ls_capa-trmodcat.
+            ls_req2capa_info-cap_shipping_type = ls_capa-shipping_type.
             APPEND ls_req2capa_info TO lt_req2capa_info.
             CLEAR ls_req2capa_info.
             EXIT.
@@ -2106,6 +2134,96 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
       FROM /saptrx/aotypes
      WHERE trk_obj_type = iv_trk_obj_type
        AND aotype = iv_aotype.
+
+  ENDMETHOD.
+
+
+  METHOD check_ltl_shipment.
+
+    FIELD-SYMBOLS:
+      <ls_root>  TYPE /scmtms/s_em_bo_tor_root.
+
+    CLEAR:ev_ltl_flag.
+
+    ASSIGN ir_root->* TO <ls_root>.
+    IF sy-subrc <> 0.
+      MESSAGE e010(zgtt_sts) INTO DATA(lv_dummy) ##needed.
+      zcl_gtt_sts_tools=>throw_exception( ).
+    ENDIF.
+
+    IF <ls_root>-trmodcat = /scmtms/if_common_c=>sc_c_trmodcat_road           "Road transport
+      AND <ls_root>-shipping_type = /scmtms/if_common_c=>c_shipping_type-ltl. "Shipping Type = "LTL (Less Than Truck Load)"
+      ev_ltl_flag = abap_true.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD convert_carrier_note_to_table.
+
+*Example text,we only need the latest content between ##
+*Will pick it up in the evening
+*##MOBL:9198769876;MOBL1:9112341234;TRUCK:VIN2;TRAIL:TRAIL2;##
+*(Reply from: 20.10.2023 03:55:10 UTC)
+*-----------------------------------------------------------------
+*Will pick it up in the afternoon
+*##MOBL:81123456789;MOBL1:71987654321;TRUCK:VIN1;TRAIL:TRAIL1;##
+
+    DATA:
+      lv_pattern      TYPE char1024,
+      lr_matcher      TYPE REF TO cl_abap_matcher,
+      lt_match_result TYPE match_result_tab,
+      ls_match_result TYPE match_result,
+      lv_value        TYPE char16384,
+      lt_list         TYPE TABLE OF char1024,
+      ls_split_result TYPE ts_split_result.
+
+    CLEAR et_split_result.
+
+    lv_pattern = '##([^#]+)##'.
+
+    lr_matcher = cl_abap_matcher=>create( pattern = lv_pattern text = iv_text ).
+    lt_match_result = lr_matcher->find_all( ).
+*   Only need the latest information
+    READ TABLE lt_match_result INTO ls_match_result INDEX 1.
+    IF sy-subrc = 0.
+      lv_value = lr_matcher->text+ls_match_result-offset(ls_match_result-length).
+      REPLACE ALL OCCURRENCES OF '##' IN lv_value WITH ''.
+      SPLIT lv_value AT ';' INTO TABLE lt_list.
+    ENDIF.
+
+    LOOP AT lt_list INTO DATA(ls_list).
+      SPLIT ls_list AT ':' INTO ls_split_result-key ls_split_result-val.
+      APPEND ls_split_result TO et_split_result.
+      CLEAR ls_split_result.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD map_ep_evnt_code_to_event_code.
+
+    CASE iv_ep_event_code.
+      WHEN zif_gtt_sts_constants=>sc_tor_event-ep_arrival.
+        ev_legacy_event_code = zif_gtt_sts_constants=>sc_tor_event-arriv_dest.
+      WHEN zif_gtt_sts_constants=>sc_tor_event-ep_check_in.
+        ev_legacy_event_code = zif_gtt_sts_constants=>sc_tor_event-check_in.
+      WHEN zif_gtt_sts_constants=>sc_tor_event-ep_load_begin.
+        ev_legacy_event_code = zif_gtt_sts_constants=>sc_tor_event-load_begin.
+      WHEN zif_gtt_sts_constants=>sc_tor_event-ep_load_end.
+        ev_legacy_event_code = zif_gtt_sts_constants=>sc_tor_event-load_end.
+      WHEN zif_gtt_sts_constants=>sc_tor_event-ep_unload_begin.
+        ev_legacy_event_code = zif_gtt_sts_constants=>sc_tor_event-unload_begin.
+      WHEN zif_gtt_sts_constants=>sc_tor_event-ep_unload_end.
+        ev_legacy_event_code = zif_gtt_sts_constants=>sc_tor_event-unload_end.
+      WHEN zif_gtt_sts_constants=>sc_tor_event-ep_check_out.
+        ev_legacy_event_code = zif_gtt_sts_constants=>sc_tor_event-check_out.
+      WHEN zif_gtt_sts_constants=>sc_tor_event-ep_departure.
+        ev_legacy_event_code = zif_gtt_sts_constants=>sc_tor_event-departure.
+      WHEN OTHERS.
+        " fallback to provided event code
+        ev_legacy_event_code = iv_ep_event_code.
+    ENDCASE.
 
   ENDMETHOD.
 ENDCLASS.

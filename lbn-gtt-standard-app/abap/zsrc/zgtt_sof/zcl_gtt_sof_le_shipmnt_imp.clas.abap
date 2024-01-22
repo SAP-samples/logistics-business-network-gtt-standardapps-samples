@@ -90,6 +90,15 @@ private section.
       !IS_CONTROL type /SAPTRX/BAPI_TRK_CONTROL_DATA
     exporting
       !ET_CONTROL_DATA type /SAPTRX/BAPI_TRK_CONTROL_TAB .
+  methods GET_LIKP_DELTA_DATA
+    importing
+      !IV_TKNUM type TKNUM
+      !IT_NEW_VTTP type VTTPVB_TAB
+      !IT_NEW_VTTK type VTTKVB_TAB
+      !IT_OLD_VTTK type VTTKVB_TAB
+      !IT_LIKP_DELTA type VA_LIKPVB_T
+    exporting
+      !ET_LIKP_DELTA type VA_LIKPVB_T .
 ENDCLASS.
 
 
@@ -226,7 +235,11 @@ METHOD if_ex_badi_le_shipment~before_update.
     lt_dlv_type               TYPE rseloption,
     lv_timezone               TYPE timezone,
     lv_plan_gr                TYPE boolean,
-    lt_tknum                  TYPE tt_tknum.
+    lt_tknum                  TYPE tt_tknum,
+    lt_vttp                   TYPE vttpvb_tab,
+    lv_seq_num                TYPE /saptrx/seq_num,
+    lv_tknum                  TYPE tknum,
+    lv_current_tknum          TYPE tknum.
 
 * Check package dependent BADI disabling
   lv_structure_package = '/SAPTRX/SCEM_AI_R3'.
@@ -375,6 +388,25 @@ METHOD if_ex_badi_le_shipment~before_update.
         ENDLOOP.
       ENDLOOP.
     ENDIF.
+
+*   Additional logic for add planned destination arrival event
+*   1.Check the check-in date and time in shipment is changed or not
+*   2.If Shipment Item(VTTP) contains newly insert or delete item,all of the delivery should be send to GTT again
+*   because we need to generate new planned destination arrival event for these delivery
+    CLEAR lt_vttp.
+    APPEND LINES OF im_shipments_before_update-new_vttp TO lt_vttp.
+    APPEND LINES OF im_shipments_before_update-old_vttp TO lt_vttp.
+    get_likp_delta_data(
+      EXPORTING
+        iv_tknum      = ls_vttk-tknum
+        it_new_vttp   = lt_vttp
+        it_new_vttk   = im_shipments_before_update-new_vttk
+        it_old_vttk   = im_shipments_before_update-old_vttk
+        it_likp_delta = lt_likp_delta
+      IMPORTING
+        et_likp_delta = DATA(lt_likp_delta_additional) ).
+    APPEND LINES OF lt_likp_delta_additional TO lt_likp_delta.
+    CLEAR lt_likp_delta_additional.
 
     CLEAR: lt_vbfa_new, lt_likp_new.
     LOOP AT lt_likp_delta INTO ls_likp_delta.
@@ -628,54 +660,84 @@ METHOD if_ex_badi_le_shipment~before_update.
           lv_plan_gr = abap_true.
 
         ENDIF.
-
+        lv_seq_num = lv_milestonenum.
         LOOP AT lt_dlv_watching_stops INTO ls_dlv_watching_stop WHERE vbeln = ls_likp_new-vbeln.
+          lv_length = strlen( ls_dlv_watching_stop-stopid ) - 4.
+          lv_tknum = ls_dlv_watching_stop-stopid+0(lv_length).
+          IF lv_current_tknum <> lv_tknum.
+            lv_current_tknum = lv_tknum.
+            lv_seq_num = lv_milestonenum.
+          ENDIF.
+
           READ TABLE lt_stops INTO ls_stop WITH KEY stopid = ls_dlv_watching_stop-stopid
                                                     loccat = ls_dlv_watching_stop-loccat.
           IF ls_stop-loctype = zif_gtt_sof_constants=>cs_loctype-bp.
             SHIFT ls_stop-locid LEFT DELETING LEADING '0'.
           ENDIF.
           IF ls_dlv_watching_stop-loccat = zif_gtt_sof_constants=>cs_loccat-departure.
+*           Add planned source arrival event for LTL mode
+            ls_expeventdata-locid2       = ls_stop-stopid.
+            ls_expeventdata-loctype      = ls_stop-loctype.
+            ls_expeventdata-locid1       = ls_stop-locid.
+            TRY.
+                zcl_gtt_sof_toolkit=>add_planned_source_arrival(
+                  EXPORTING
+                    is_expeventdata = ls_expeventdata
+                    it_vttk         = im_shipments_before_update-new_vttk
+                    it_vttp         = im_shipments_before_update-new_vttp
+                    iv_seq_num      = lv_seq_num
+                  IMPORTING
+                    es_eventdata    = DATA(ls_eventdata) ).
+              CATCH cx_udm_message.
+            ENDTRY.
+            IF ls_eventdata IS NOT INITIAL.
+              APPEND ls_eventdata TO lt_exp_events.
+              ADD 1 TO lv_seq_num.
+            ENDIF.
+            CLEAR ls_eventdata.
+
 *           DEPARTURE planned event
             ls_expeventdata-milestone    = zif_gtt_sof_constants=>cs_milestone-departure.
-            ls_expeventdata-milestonenum = lv_milestonenum.
+            ls_expeventdata-milestonenum = lv_seq_num.
             ls_expeventdata-locid2       = ls_stop-stopid.
             ls_expeventdata-loctype      = ls_stop-loctype.
             ls_expeventdata-locid1       = ls_stop-locid.
             ls_expeventdata-evt_exp_datetime  = ls_stop-pln_evt_datetime.
             ls_expeventdata-evt_exp_tzone = ls_stop-pln_evt_timezone.
             APPEND ls_expeventdata TO lt_exp_events.
-            ADD 1 TO lv_milestonenum.
+            ADD 1 TO lv_seq_num.
+
           ELSEIF ls_dlv_watching_stop-loccat = zif_gtt_sof_constants=>cs_loccat-arrival.
 *           ARRIVAL planned event
             ls_expeventdata-milestone    = zif_gtt_sof_constants=>cs_milestone-arriv_dest.
-            ls_expeventdata-milestonenum = lv_milestonenum.
+            ls_expeventdata-milestonenum = lv_seq_num.
             ls_expeventdata-locid2       = ls_stop-stopid.
             ls_expeventdata-loctype      = ls_stop-loctype.
             ls_expeventdata-locid1       = ls_stop-locid.
             ls_expeventdata-evt_exp_datetime  = ls_stop-pln_evt_datetime.
             ls_expeventdata-evt_exp_tzone = ls_stop-pln_evt_timezone.
             APPEND ls_expeventdata TO lt_exp_events.
-            ADD 1 TO lv_milestonenum.
+            ADD 1 TO lv_seq_num.
 
 *           POD planned event
             CLEAR: lv_locid.
             SELECT SINGLE kunnr INTO lv_locid FROM likp WHERE vbeln = ls_likp_new-vbeln.
             IF lv_locid EQ ls_stop-locid AND ls_eerel-z_pdstk = 'X'.
               ls_expeventdata-milestone    = zif_gtt_sof_constants=>cs_milestone-pod.
-              ls_expeventdata-milestonenum = lv_milestonenum.
+              ls_expeventdata-milestonenum = lv_seq_num.
               ls_expeventdata-locid2       = ls_stop-stopid.
               ls_expeventdata-loctype      = ls_stop-loctype.
               ls_expeventdata-locid1       = ls_stop-locid.
               ls_expeventdata-evt_exp_datetime  = ls_stop-pln_evt_datetime.
               ls_expeventdata-evt_exp_tzone = ls_stop-pln_evt_timezone.
               APPEND ls_expeventdata TO lt_exp_events.
-              ADD 1 TO lv_milestonenum.
+              ADD 1 TO lv_seq_num.
             ENDIF.
 
           ENDIF.
 
         ENDLOOP.
+        lv_milestonenum = lv_seq_num.
 
 *       Add planned event ItemPOD
         CLEAR:
@@ -974,6 +1036,13 @@ ENDMETHOD.
 
     ENDLOOP.
 
+    IF et_control_data IS INITIAL.
+      ls_control_data-paramindex = 1.
+      ls_control_data-paramname = gc_cp_yn_gtt_otl_locid.
+      ls_control_data-value = ''.
+      APPEND ls_control_data TO et_control_data.
+    ENDIF.
+
     LOOP AT et_control_data ASSIGNING FIELD-SYMBOL(<fs_control_data>).
       <fs_control_data>-appsys = is_control-appsys.
       <fs_control_data>-appobjtype = is_control-appobjtype.
@@ -984,7 +1053,7 @@ ENDMETHOD.
   ENDMETHOD.
 
 
-  METHOD PREPARE_CURRENT_LOC_DATA.
+  METHOD prepare_current_loc_data.
 
     DATA:
       lt_loc_info_tmp  TYPE tt_loc_info,
@@ -993,7 +1062,10 @@ ENDMETHOD.
       lt_addr_info_cur TYPE tt_address_info,
       ls_loc_addr      TYPE addr1_data,
       lv_loc_email     TYPE ad_smtpadr,
-      lv_loc_tel       TYPE char50.
+      lv_loc_tel       TYPE char50,
+      ls_loc_addr_tmp  TYPE addr1_data,
+      lv_loc_email_tmp TYPE ad_smtpadr,
+      lv_loc_tel_tmp   TYPE char50.
 
     CLEAR et_address_info.
 
@@ -1018,7 +1090,10 @@ ENDMETHOD.
       CLEAR:
         ls_loc_addr,
         lv_loc_email,
-        lv_loc_tel.
+        lv_loc_tel,
+        ls_loc_addr_tmp,
+        lv_loc_email_tmp,
+        lv_loc_tel_tmp.
 
       IF ls_loc_info_curr-locaddrnum CN '0 ' AND ls_loc_info_curr-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
         zcl_gtt_tools=>get_address_from_memory(
@@ -1029,12 +1104,25 @@ ENDMETHOD.
             ev_email      = lv_loc_email
             ev_telephone  = lv_loc_tel ).
 
-        ls_address_info-locid = ls_loc_info_curr-locid.
-        ls_address_info-loctype = ls_loc_info_curr-loctype.
-        ls_address_info-addr1 = ls_loc_addr.
-        ls_address_info-email = lv_loc_email.
-        ls_address_info-telephone = lv_loc_tel.
-        APPEND ls_address_info TO et_address_info.
+        zcl_gtt_tools=>get_address_detail_by_loctype(
+          EXPORTING
+            iv_loctype   = ls_loc_info_curr-loctype
+            iv_locid     = ls_loc_info_curr-locid
+          IMPORTING
+            es_addr      = ls_loc_addr_tmp
+            ev_email     = lv_loc_email_tmp
+            ev_telephone = lv_loc_tel_tmp ).
+
+        IF ls_loc_addr <> ls_loc_addr_tmp
+          OR lv_loc_email <> lv_loc_email_tmp
+          OR lv_loc_tel <> lv_loc_tel_tmp.
+          ls_address_info-locid = ls_loc_info_curr-locid.
+          ls_address_info-loctype = ls_loc_info_curr-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO et_address_info.
+        ENDIF.
         CLEAR:
           ls_address_info.
       ENDIF.
@@ -1093,14 +1181,17 @@ ENDMETHOD.
   METHOD prepare_relevant_loc_data.
 
     DATA:
-      lt_relevant_shp TYPE tt_tknum,
-      lt_tknum_range  TYPE STANDARD TABLE OF range_c10,
-      lt_vttsvb       TYPE vttsvb_tab,
-      lt_loc_info     TYPE tt_loc_info,
-      ls_address_info TYPE ts_address_info,
-      ls_loc_addr     TYPE addr1_data,
-      lv_loc_email    TYPE ad_smtpadr,
-      lv_loc_tel      TYPE char50.
+      lt_relevant_shp  TYPE tt_tknum,
+      lt_tknum_range   TYPE STANDARD TABLE OF range_c10,
+      lt_vttsvb        TYPE vttsvb_tab,
+      lt_loc_info      TYPE tt_loc_info,
+      ls_address_info  TYPE ts_address_info,
+      ls_loc_addr      TYPE addr1_data,
+      lv_loc_email     TYPE ad_smtpadr,
+      lv_loc_tel       TYPE char50,
+      ls_loc_addr_tmp  TYPE addr1_data,
+      lv_loc_email_tmp TYPE ad_smtpadr,
+      lv_loc_tel_tmp   TYPE char50.
 
     CLEAR et_address_info.
 
@@ -1138,7 +1229,10 @@ ENDMETHOD.
       CLEAR:
         ls_loc_addr,
         lv_loc_email,
-        lv_loc_tel.
+        lv_loc_tel,
+        ls_loc_addr_tmp,
+        lv_loc_email_tmp,
+        lv_loc_tel_tmp.
 
       IF ls_loc_info-locaddrnum CN '0 ' AND ls_loc_info-locindicator CA zif_gtt_ef_constants=>shp_addr_ind_man_all.
         zcl_gtt_tools=>get_address_from_db(
@@ -1149,14 +1243,82 @@ ENDMETHOD.
             ev_email      = lv_loc_email
             ev_telephone  = lv_loc_tel ).
 
-        ls_address_info-locid = ls_loc_info-locid.
-        ls_address_info-loctype = ls_loc_info-loctype.
-        ls_address_info-addr1 = ls_loc_addr.
-        ls_address_info-email = lv_loc_email.
-        ls_address_info-telephone = lv_loc_tel.
-        APPEND ls_address_info TO et_address_info.
+        zcl_gtt_tools=>get_address_detail_by_loctype(
+          EXPORTING
+            iv_loctype   = ls_loc_info-loctype
+            iv_locid     = ls_loc_info-locid
+          IMPORTING
+            es_addr      = ls_loc_addr_tmp
+            ev_email     = lv_loc_email_tmp
+            ev_telephone = lv_loc_tel_tmp ).
+
+        IF ls_loc_addr <> ls_loc_addr_tmp
+          OR lv_loc_email <> lv_loc_email_tmp
+          OR lv_loc_tel <> lv_loc_tel_tmp.
+          ls_address_info-locid = ls_loc_info-locid.
+          ls_address_info-loctype = ls_loc_info-loctype.
+          ls_address_info-addr1 = ls_loc_addr.
+          ls_address_info-email = lv_loc_email.
+          ls_address_info-telephone = lv_loc_tel.
+          APPEND ls_address_info TO et_address_info.
+        ENDIF.
         CLEAR:
           ls_address_info.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD get_likp_delta_data.
+
+    DATA:
+      ls_likp_delta TYPE likpvb,
+      lt_updkz      TYPE RANGE OF updkz_d,
+      lv_likp_flg   TYPE flag.
+
+    CLEAR et_likp_delta.
+
+    lt_updkz  = VALUE #(
+      (
+        sign = 'I'
+        option = 'EQ'
+        low = zif_gtt_ef_constants=>cs_change_mode-insert
+      )
+      (
+        sign = 'I'
+        option = 'EQ'
+        low = zif_gtt_ef_constants=>cs_change_mode-delete
+      ) ).
+
+    LOOP AT it_new_vttp TRANSPORTING NO FIELDS
+      WHERE tknum = iv_tknum
+        AND updkz IN lt_updkz.
+      lv_likp_flg = abap_true.
+      EXIT.
+    ENDLOOP.
+
+    LOOP AT it_new_vttp INTO DATA(ls_new_vttp)
+      WHERE tknum = iv_tknum.
+
+      READ TABLE it_new_vttk INTO DATA(ls_new_vttk)
+        WITH KEY tknum = ls_new_vttp-tknum.
+
+      READ TABLE it_old_vttk INTO DATA(ls_old_vttk)
+        WITH KEY tknum = ls_new_vttp-tknum.
+
+      IF ls_new_vttk-dpreg <> ls_old_vttk-dpreg OR ls_new_vttk-upreg <> ls_old_vttk-upreg
+        OR lv_likp_flg = abap_true.
+        READ TABLE it_likp_delta TRANSPORTING NO FIELDS
+          WITH KEY vbeln = ls_new_vttp-vbeln.
+        IF sy-subrc <> 0.
+          READ TABLE et_likp_delta TRANSPORTING NO FIELDS
+            WITH KEY vbeln = ls_new_vttp-vbeln.
+          IF sy-subrc <> 0.
+            ls_likp_delta-vbeln = ls_new_vttp-vbeln.
+            APPEND ls_likp_delta TO et_likp_delta.
+          ENDIF.
+        ENDIF.
       ENDIF.
     ENDLOOP.
 

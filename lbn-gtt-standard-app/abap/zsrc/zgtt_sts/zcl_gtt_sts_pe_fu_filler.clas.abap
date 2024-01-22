@@ -5,22 +5,6 @@ class ZCL_GTT_STS_PE_FU_FILLER definition
 
 public section.
 
-  types:
-    BEGIN OF ts_req2capa_info,
-      req_no              TYPE /scmtms/tor_id,
-      req_key             TYPE /bobf/conf_key,
-      req_stop_key        TYPE /bobf/conf_key,
-      req_assgn_stop_key  TYPE /bobf/conf_key,
-      req_log_locid       TYPE /scmtms/location_id,
-      cap_no              TYPE /scmtms/tor_id,
-      cap_key             TYPE /bobf/conf_key,
-      cap_stop_key        TYPE /bobf/conf_key,
-      cap_plan_trans_time TYPE /scmtms/stop_plan_date,
-      cap_seq             TYPE numc04,
-    END OF ts_req2capa_info .
-  types:
-    tt_req2capa_info TYPE TABLE OF ts_req2capa_info .
-
   methods GET_CAPA_MATCHKEY
     importing
       !IV_ASSGN_STOP_KEY type /SCMTMS/TOR_STOP_KEY
@@ -38,7 +22,7 @@ public section.
     redefinition .
 protected section.
 
-  data MT_REQ2CAPA_INFO type TT_REQ2CAPA_INFO .
+  data MT_REQ2CAPA_INFO type ZCL_GTT_STS_TOOLS=>TT_REQ2CAPA_INFO .
 
   methods LOAD_END
     redefinition .
@@ -54,7 +38,15 @@ protected section.
     redefinition .
   methods UNLOAD_START
     redefinition .
-  PRIVATE SECTION.
+private section.
+
+  methods ADD_PLANNED_SOURCE_ARRIVAL
+    importing
+      !IS_APP_OBJECTS type TRXAS_APPOBJ_CTAB_WA
+    changing
+      !CT_EXPEVENTDATA type ZIF_GTT_STS_EF_TYPES=>TT_EXPEVENTDATA
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -591,7 +583,7 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
       IMPORTING
         et_loc_address = DATA(lt_loc_address) ).
 
-    get_reqcapa_info( is_app_objects = is_app_objects  ).
+    get_reqcapa_info( is_app_objects = is_app_objects ).
 
     shp_arrival(
       EXPORTING
@@ -673,6 +665,13 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
       ENDLOOP.
     ENDLOOP.
 
+*   Add planned source arrival event
+    add_planned_source_arrival(
+      EXPORTING
+        is_app_objects  = is_app_objects
+      CHANGING
+        ct_expeventdata = ct_expeventdata ).
+
   ENDMETHOD.
 
 
@@ -696,6 +695,57 @@ CLASS ZCL_GTT_STS_PE_FU_FILLER IMPLEMENTATION.
         iv_old_data      = abap_false
       IMPORTING
         et_req2capa_info = mt_req2capa_info ).
+
+  ENDMETHOD.
+
+
+  METHOD add_planned_source_arrival.
+
+    DATA:
+      ls_eventdata TYPE zif_gtt_sts_ef_types=>ts_expeventdata,
+      lt_eventdata TYPE zif_gtt_sts_ef_types=>tt_expeventdata,
+      lv_length    TYPE i,
+      lv_seq       TYPE char04,
+      lv_tor_id    TYPE /scmtms/tor_id.
+
+    LOOP AT ct_expeventdata ASSIGNING FIELD-SYMBOL(<ls_expeventdata>)
+      WHERE milestone = zif_gtt_sts_constants=>cs_milestone-fo_shp_departure.
+      CLEAR:
+        lv_length,
+        lv_seq,
+        lv_tor_id,
+        ls_eventdata.
+
+      lv_length = strlen( <ls_expeventdata>-locid2 ) - 4.
+      IF lv_length >= 0.
+        lv_tor_id = <ls_expeventdata>-locid2+0(lv_length).
+        lv_tor_id = |{ lv_tor_id ALPHA = IN }| .
+        lv_seq = <ls_expeventdata>-locid2+lv_length(4).
+        READ TABLE mt_req2capa_info INTO DATA(ls_req2capa_info)
+          WITH KEY cap_no = lv_tor_id
+                   cap_trmodcat = /scmtms/if_common_c=>sc_c_trmodcat_road        "Road transport
+                   cap_shipping_type = /scmtms/if_common_c=>c_shipping_type-ltl. "Shipping Type = "LTL (Less Than Truck Load)"
+        IF sy-subrc = 0 AND lv_seq = '0001'. "only for source location of the freight order
+          ls_eventdata = <ls_expeventdata>.
+          ls_eventdata-milestonenum = 0.
+          ls_eventdata-milestone = zif_gtt_sts_constants=>cs_milestone-fo_shp_arrival.
+
+          READ TABLE ct_expeventdata INTO DATA(ls_exp_data)
+            WITH KEY milestone = zif_gtt_sts_constants=>cs_milestone-fo_load_start
+                     locid2    = <ls_expeventdata>-locid2.
+          IF sy-subrc = 0.
+            ls_eventdata-evt_exp_datetime = ls_exp_data-evt_exp_datetime.
+            ls_eventdata-evt_exp_tzone = ls_exp_data-evt_exp_tzone.
+          ENDIF.
+          APPEND ls_eventdata TO lt_eventdata.
+          CLEAR ls_exp_data.
+        ENDIF.
+      ENDIF.
+    ENDLOOP.
+
+    APPEND LINES OF lt_eventdata TO ct_expeventdata.
+    SORT ct_expeventdata BY locid2 ASCENDING
+                            milestonenum ASCENDING.
 
   ENDMETHOD.
 ENDCLASS.

@@ -68,6 +68,12 @@
     </SEOCOMPOTX>
     <SEOCOMPOTX>
      <CLSNAME>ZCL_GTT_STS_SEND_TOR_DATA</CLSNAME>
+     <CMPNAME>ADJUST_EXECINFO</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Adjust the execution information</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_SEND_TOR_DATA</CLSNAME>
      <CMPNAME>CALL_EVENT_MANAGER</CMPNAME>
      <LANGU>E</LANGU>
      <DESCRIPT>Fill Application Table and Event Manager Communication</DESCRIPT>
