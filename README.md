@@ -7,7 +7,7 @@
 3. The actual events that you report in SAP S/4HANA 2023 can be sent to SAP Business Network Global Track and Trace.
 4. Fix the planned “Proof of Delivery” event issue for inbound deliveries.
 5. Fix one-time location relevant issues. 
-6. The document "SAP ERP Sample Code Configuration Guide for Fulfillment Tracking Apps" is renamed "[Sample Code Configuration Guide for Integration with SAP Business Network Global Track and Trace](https://github.wdf.sap.corp/TrackAndTrace/GTT-V2-Standard-Apps/blob/test/lbn-gtt-standard-app/Documents/Sample%20Code%20Configuration%20Guide%20for%20Integration%20with%20SAP%20Business%20Network%20Global%20Track%20and%20Trace.pdf)".
+6. The document "SAP ERP Sample Code Configuration Guide for Fulfillment Tracking Apps" is renamed "[Sample Code Configuration Guide for Integration with SAP Business Network Global Track and Trace](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/Sample%20Code%20Configuration%20Guide%20for%20Integration%20with%20SAP%20Business%20Network%20Global%20Track%20and%20Trace.pdf)".
 
 For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
 
@@ -28,7 +28,7 @@ You should determine what documents with certain condition need to be sent to SA
 
 ## Download and Installation
 Click the link below to find the detailed installation guide. You can also find the guide in the “Document” folder.
-* [Sample Code Configuration Guide for Integration with SAP Business Network Global Track and Trace.pdf](https://github.wdf.sap.corp/TrackAndTrace/GTT-V2-Standard-Apps/blob/test/lbn-gtt-standard-app/Documents/Sample%20Code%20Configuration%20Guide%20for%20Integration%20with%20SAP%20Business%20Network%20Global%20Track%20and%20Trace.pdf) </br>
+* [Sample Code Configuration Guide for Integration with SAP Business Network Global Track and Trace.pdf](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/test/lbn-gtt-standard-app/Documents/Sample%20Code%20Configuration%20Guide%20for%20Integration%20with%20SAP%20Business%20Network%20Global%20Track%20and%20Trace.pdf) </br>
 
 
 ## Known Issues
