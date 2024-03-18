@@ -143,9 +143,6 @@ CLASS ZCL_GTT_STS_SEND_DELETION_IDOC IMPLEMENTATION.
     IF is_gtt_enabled( ) = abap_true.
       ro_updater  = NEW #( ).
       ro_updater->initiate( it_tor_root ).
-    ELSE.
-      MESSAGE e006(zgtt_sts) INTO DATA(lv_dummy) ##needed.
-      throw_exception( ).
     ENDIF.
 
   ENDMETHOD.
@@ -164,16 +161,7 @@ CLASS ZCL_GTT_STS_SEND_DELETION_IDOC IMPLEMENTATION.
       throw_exception( ).
     ENDIF.
 
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-      IMPORTING
-        timezone            = mv_tzone
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
-    IF sy-subrc <> 0.
-      MESSAGE e003(zgtt_sts) INTO lv_dummy.
-      throw_exception( ).
-    ENDIF.
+    mv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
     SELECT /scmtms/c_torty~type          AS tor_type,
            /scmtms/c_torty~aotype        AS aot_type,

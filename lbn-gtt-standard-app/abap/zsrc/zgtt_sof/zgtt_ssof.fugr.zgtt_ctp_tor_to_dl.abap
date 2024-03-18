@@ -16,7 +16,8 @@ FUNCTION zgtt_ctp_tor_to_dl .
     lv_base_btd_tco    TYPE /scmtms/base_btd_tco,
     lo_tor_to_dlv_it   TYPE REF TO zif_gtt_ctp_tor_to_dl,
     lv_result          TYPE syst_binpt,
-    lt_callstack       TYPE abap_callstack.
+    lt_callstack       TYPE abap_callstack,
+    lv_error_flag      TYPE flag.
 
   CALL FUNCTION 'SYSTEM_CALLSTACK'
     IMPORTING
@@ -64,7 +65,7 @@ FUNCTION zgtt_ctp_tor_to_dl .
   TRY.
 *     Process Delivery Item IDOC
       CLEAR lv_result.
-      lo_tor_to_dlv_it->initiate(
+      lv_error_flag = lo_tor_to_dlv_it->initiate(
         it_tor_root        = it_tor_root_sstring
         it_tor_root_before = it_tor_root_before_sstring
         it_tor_item        = it_tor_item_sstring
@@ -73,15 +74,16 @@ FUNCTION zgtt_ctp_tor_to_dl .
         it_tor_stop_before = lt_tor_stop_before
         it_fu_info         = lt_fu_info ).
 
-      lo_tor_to_dlv_it->check_relevance(
-        RECEIVING
-          rv_result = lv_result ).
+      IF lv_error_flag IS INITIAL.
+        lo_tor_to_dlv_it->check_relevance(
+          RECEIVING
+            rv_result = lv_result ).
 
-      IF lv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
-        lo_tor_to_dlv_it->extract_data( ).
-        lo_tor_to_dlv_it->process_data( ).
+        IF lv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
+          lo_tor_to_dlv_it->extract_data( ).
+          lo_tor_to_dlv_it->process_data( ).
+        ENDIF.
       ENDIF.
-
     CATCH cx_udm_message INTO DATA(lo_udm_message).
       zcl_gtt_sof_tm_tools=>log_exception(
         EXPORTING

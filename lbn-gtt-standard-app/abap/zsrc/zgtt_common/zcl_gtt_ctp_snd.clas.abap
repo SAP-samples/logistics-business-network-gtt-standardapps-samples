@@ -266,7 +266,7 @@ CLASS ZCL_GTT_CTP_SND IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD SEND_IDOC_DATA.
+  METHOD send_idoc_data.
 
     DATA: lt_bapiret1 TYPE bapiret2_t,
           lt_bapiret2 TYPE bapiret2_t.
@@ -332,6 +332,10 @@ CLASS ZCL_GTT_CTP_SND IMPLEMENTATION.
                                  ( LINES OF lt_bapiret2 ) ).
       ENDIF.
     ENDLOOP.
+
+    CLEAR:
+      mt_idoc_data,
+      mt_idoc_evt_data.
 
   ENDMETHOD.
 ENDCLASS.

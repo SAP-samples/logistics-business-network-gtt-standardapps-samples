@@ -30,6 +30,8 @@ private section.
       ebeln        TYPE /saptrx/paramname VALUE 'YN_PO_NUMBER',
       idlv_line_no TYPE /saptrx/paramname VALUE 'YN_IDLV_LINE_NO',
       idlv_no      TYPE /saptrx/paramname VALUE 'YN_IDLV_NO',
+      odlv_line_no TYPE /saptrx/paramname VALUE 'YN_ODLV_LINE_NO',
+      odlv_no      TYPE /saptrx/paramname VALUE 'YN_ODLV_NO',
     END OF cs_mapping .
 
   methods PREPARE_IDOC_DATA_FOR_PO
@@ -49,6 +51,7 @@ private section.
     importing
       !IS_AOTYPE type ZIF_GTT_CTP_TYPES=>TS_AOTYPE
       !IS_REF_LIST type ZIF_GTT_SPOF_APP_TYPES=>TS_REF_LIST
+      !IV_STO_IS_USED type BOOLEAN
     changing
       !CS_IDOC_DATA type ZIF_GTT_CTP_TYPES=>TS_IDOC_DATA
     raising
@@ -93,12 +96,20 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_POH IMPLEMENTATION.
   METHOD fill_idoc_control_data.
 
     DATA:
-      lt_control TYPE /saptrx/bapi_trk_control_tab,
-      lv_ebeln   TYPE ekko-ebeln,
-      lv_count   TYPE i VALUE 0.
+      lt_control       TYPE /saptrx/bapi_trk_control_tab,
+      lv_ebeln         TYPE ekko-ebeln,
+      lv_count         TYPE i VALUE 0,
+      lv_param_line_no TYPE /saptrx/paramname,
+      lv_param_dlv_no  TYPE /saptrx/paramname.
 
     lv_ebeln = is_ref_list-vgbel.
     SHIFT lv_ebeln LEFT DELETING LEADING '0'.
+
+    lv_param_line_no = SWITCH #( iv_sto_is_used WHEN abap_true THEN cs_mapping-odlv_line_no
+                                                               ELSE cs_mapping-idlv_line_no ).
+
+    lv_param_dlv_no = SWITCH #( iv_sto_is_used WHEN abap_true THEN cs_mapping-odlv_no
+                                                              ELSE cs_mapping-idlv_no ).
 
     lt_control  = VALUE #(
       (
@@ -134,13 +145,13 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_POH IMPLEMENTATION.
       lt_control  = VALUE #( BASE lt_control
         (
           paramindex  = lv_count
-          paramname   = cs_mapping-idlv_line_no
+          paramname   = lv_param_line_no
           value       = zcl_gtt_tools=>get_pretty_value(
                           iv_value = lv_count )
         )
         (
           paramindex  = lv_count
-          paramname   = cs_mapping-idlv_no
+          paramname   = lv_param_dlv_no
           value       = ls_vbeln
         )
       ).
@@ -150,7 +161,7 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_POH IMPLEMENTATION.
     IF is_ref_list-vbeln IS INITIAL.
       lt_control  = VALUE #( BASE lt_control (
           paramindex = 1
-          paramname  = cs_mapping-idlv_line_no
+          paramname  = lv_param_line_no
           value      = ''
       ) ).
     ENDIF.
@@ -201,9 +212,6 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_POH IMPLEMENTATION.
       <ls_exp_event>-appobjtype     = is_aotype-aot_type.
       <ls_exp_event>-appobjid       = zcl_gtt_spof_po_tools=>get_tracking_id_po_hdr( ir_ekko = REF #( is_ekko ) ).
       <ls_exp_event>-language       = sy-langu.
-      IF <ls_exp_event>-evt_exp_tzone IS INITIAL.
-        <ls_exp_event>-evt_exp_tzone  = zcl_gtt_tools=>get_system_time_zone(  ).
-      ENDIF.
     ENDLOOP.
 
     cs_idoc_data-exp_event = VALUE #( BASE cs_idoc_data-exp_event
@@ -250,9 +258,7 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_POH IMPLEMENTATION.
     IF is_gtt_enabled( it_trk_obj_type = lt_trk_obj_type ) = abap_true.
       ro_sender  = NEW #( ).
       ro_sender->initiate( ).
-    ELSE.
-      MESSAGE e006(zgtt) INTO DATA(lv_dummy).
-      zcl_gtt_tools=>throw_exception( ).
+
     ENDIF.
 
   ENDMETHOD.
@@ -291,12 +297,13 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_POH IMPLEMENTATION.
 
     io_dlh_data->get_related_po_data(
       IMPORTING
-        rr_ekko     = DATA(lr_ekko)
-        rr_ekpo     = DATA(lr_ekpo)
-        rr_eket     = DATA(lr_eket)
-        rr_ref_list = DATA(lr_ref_list)
-        rr_likp     = DATA(lr_likp)
-        rr_lips     = DATA(lr_lips) ).
+        rr_ekko        = DATA(lr_ekko)
+        rr_ekpo        = DATA(lr_ekpo)
+        rr_eket        = DATA(lr_eket)
+        rr_ref_list    = DATA(lr_ref_list)
+        rr_likp        = DATA(lr_likp)
+        rr_lips        = DATA(lr_lips)
+        ev_sto_is_used = DATA(lv_sto_is_used) ).
 
     ASSIGN lr_ekko->* TO <lt_ekko>.
     ASSIGN lr_ekpo->* TO <lt_ekpo>.
@@ -350,10 +357,11 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_POH IMPLEMENTATION.
 
         fill_idoc_control_data(
           EXPORTING
-            is_aotype    = <ls_aotype>
-            is_ref_list  = <fs_ref_list>
+            is_aotype      = <ls_aotype>
+            is_ref_list    = <fs_ref_list>
+            iv_sto_is_used = lv_sto_is_used
           CHANGING
-            cs_idoc_data = ls_idoc_data ).
+            cs_idoc_data   = ls_idoc_data ).
 
         fill_idoc_exp_event(
           EXPORTING

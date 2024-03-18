@@ -1,4 +1,12 @@
 # What's New for Fulfillment Tracking Apps
+## March 16th, 2024
+1. Enhanced the logic to retrieve the system time zone.
+2. The error message "GTT is not enabled " will not show even if GTT-related configuration is not done or completed during cross tracked process update.
+3. Fixed the mapping of the delivery number and the delivery item number when the freight unit cross-updates the outbound delivery item.
+4. Fixed the mapping of the delivery number when the LE-TRA shipment cross-updates the inbound delivery header.
+5. For the stock transport order scenario, when the outbound delivery process is updated and sent to SAP Business Network Global Track and Trace, the preceding purchase order header, and its planned events are also updated and sent to SAP Business Network Global Track and Trace.
+6. Fixed issues occurred when canceling handling unit in the scenario "Maintain Tracked Objects on Freight Unit".
+
 ## January 20th, 2024
 1. You can send the carrier’s note to SAP Business Network Global Track and Trace as shipment’s tracked object to initialize tracking.
 2. Add the planned "Arrival" event on the source location of the LTL shipment.

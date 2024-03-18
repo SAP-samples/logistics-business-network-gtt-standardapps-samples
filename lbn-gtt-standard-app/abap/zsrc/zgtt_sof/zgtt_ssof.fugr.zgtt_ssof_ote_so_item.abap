@@ -44,6 +44,7 @@ FUNCTION zgtt_ssof_ote_so_item.
     lt_control_data TYPE TABLE OF /saptrx/control_data.
 
   CLEAR:gt_loc_data.
+  lv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
 * Read Schedule Item New
   PERFORM read_appl_table
@@ -227,12 +228,6 @@ FUNCTION zgtt_ssof_ote_so_item.
     APPEND LINES OF lt_loc_data TO gt_loc_data.
 
 *   Actual Business Time zone
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-      IMPORTING
-        timezone            = lv_tzone
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
     ls_control_data-paramname = gc_cp_yn_act_timezone.
     ls_control_data-value     = lv_tzone.
     APPEND ls_control_data TO e_control_data.

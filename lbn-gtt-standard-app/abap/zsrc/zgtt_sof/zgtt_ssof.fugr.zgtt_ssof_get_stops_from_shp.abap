@@ -40,14 +40,9 @@ FUNCTION zgtt_ssof_get_stops_from_shp.
     lv_loc_id_exsit      TYPE flag.
 
   RANGES:
-      ls_tknum_range FOR vttk-tknum.
+    ls_tknum_range FOR vttk-tknum.
 
-  CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-    IMPORTING
-      timezone            = lv_tzone
-    EXCEPTIONS
-      customizing_missing = 1
-      OTHERS              = 2.
+  lv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
 * Read Stage Information
   IF it_vtts_new IS SUPPLIED.

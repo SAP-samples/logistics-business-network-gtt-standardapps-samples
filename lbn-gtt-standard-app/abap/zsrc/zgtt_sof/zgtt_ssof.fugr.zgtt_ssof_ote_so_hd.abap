@@ -45,6 +45,7 @@ FUNCTION zgtt_ssof_ote_so_hd.
     <ls_xvbak> TYPE /saptrx/sd_sds_hdr.
 
   CLEAR:gt_loc_data.
+  lv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
 * <1> Read necessary application tables from table reference
 * Read Business Data New
@@ -249,6 +250,7 @@ FUNCTION zgtt_ssof_ote_so_hd.
     zcl_gtt_tools=>get_delivery_by_ref_doc(
       EXPORTING
         iv_vgbel = <ls_xvbak>-vbeln
+        iv_vbtyp = if_sd_doc_category=>delivery
       IMPORTING
         et_vbeln = lt_vbeln ).
 
@@ -274,12 +276,6 @@ FUNCTION zgtt_ssof_ote_so_hd.
     ENDIF.
 
 *   Actual Business Time zone
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-      IMPORTING
-        timezone            = lv_tzone
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
     ls_control_data-paramname = gc_cp_yn_act_timezone.
     ls_control_data-value     = lv_tzone.
     APPEND ls_control_data TO e_control_data.

@@ -63,6 +63,7 @@ FUNCTION zgtt_ssof_ote_de_hd.
   CLEAR:gt_loc_data.
 
   lo_gtt_toolkit = zcl_gtt_sof_toolkit=>get_instance( ).
+  lv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
 * <1> Read necessary application tables from table reference
 * Read Header Status Data New
@@ -439,12 +440,6 @@ FUNCTION zgtt_ssof_ote_de_hd.
     APPEND ls_control_data TO e_control_data.
 
 *   Actual Business Time zone
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-      IMPORTING
-        timezone            = lv_tzone
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
     ls_control_data-paramname = gc_cp_yn_act_timezone.
     ls_control_data-value     = lv_tzone.
     APPEND ls_control_data TO e_control_data.

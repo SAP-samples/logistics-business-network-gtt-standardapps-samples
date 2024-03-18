@@ -340,9 +340,7 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLI IMPLEMENTATION.
       ro_sender  = NEW #( ).
 
       ro_sender->initiate( ).
-    ELSE.
-      MESSAGE e006(zgtt) INTO DATA(lv_dummy).
-      zcl_gtt_tools=>throw_exception( ).
+
     ENDIF.
 
   ENDMETHOD.

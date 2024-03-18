@@ -85,12 +85,7 @@ FUNCTION zgtt_ssof_ee_de_itm.
   ls_expeventdata-language   = sy-langu.
 
 *   Get System TimeZone
-  CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-    IMPORTING
-      timezone            = lv_timezone
-    EXCEPTIONS
-      customizing_missing = 1
-      OTHERS              = 2.
+  lv_timezone = zcl_gtt_tools=>get_system_time_zone( ).
 
 * <3> Loop at application objects
   LOOP AT i_app_objects INTO ls_app_objects.

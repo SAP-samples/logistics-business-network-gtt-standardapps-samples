@@ -112,9 +112,7 @@ public section.
       value(RV_PRETTY) type /SAPTRX/PARAMVAL200 .
   class-methods GET_SYSTEM_TIME_ZONE
     returning
-      value(RV_TZONE) type TIMEZONE
-    raising
-      CX_UDM_MESSAGE .
+      value(RV_TZONE) type TIMEZONE .
   class-methods GET_SYSTEM_DATE_TIME
     returning
       value(RV_DATETIME) type STRING
@@ -209,6 +207,7 @@ public section.
   class-methods GET_DELIVERY_BY_REF_DOC
     importing
       !IV_VGBEL type VGBEL
+      !IV_VBTYP type VBTYPL
     exporting
       !ET_VBELN type VBELN_VL_T .
   class-methods GET_PO_SO_BY_DELIVERY
@@ -216,6 +215,7 @@ public section.
       !IV_VGTYP type VBTYPL_V
       !IT_XLIKP type SHP_LIKP_T
       !IT_XLIPS type SHP_LIPS_T
+      !IV_STO_IS_USED type BOOLEAN default ABAP_FALSE
     exporting
       !ET_REF_LIST type TT_REF_LIST
       !EV_REF_CHG_FLG type BOOLEAN .
@@ -560,15 +560,18 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
 
   METHOD get_system_time_zone.
 
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
+    CLEAR rv_tzone.
+    CALL FUNCTION 'VB_GET_TZ_FROM_TZONE'
+      EXPORTING
+        i_tzone   = sy-tzone
       IMPORTING
-        timezone            = rv_tzone
+        e_tz      = rv_tzone
       EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
+        not_found = 1
+        OTHERS    = 2.
     IF sy-subrc <> 0.
-      MESSAGE e003(zgtt) INTO DATA(lv_dummy).
-      zcl_gtt_tools=>throw_exception( ).
+      "Set default time zone - UTC
+      rv_tzone = 'UTC'.
     ENDIF.
 
   ENDMETHOD.
@@ -1082,14 +1085,37 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
 
   METHOD get_delivery_by_ref_doc.
 
+    DATA:
+      lt_likp_dt TYPE tt_likp,
+      lt_vbeln   TYPE vbeln_vl_t.
+
     CLEAR et_vbeln.
     SELECT vbeln
-      INTO TABLE et_vbeln
+      INTO TABLE lt_vbeln
       FROM lips
      WHERE vgbel = iv_vgbel.
 
-    SORT et_vbeln BY table_line.
-    DELETE ADJACENT DUPLICATES FROM et_vbeln COMPARING ALL FIELDS.
+    SORT lt_vbeln BY table_line.
+    DELETE ADJACENT DUPLICATES FROM lt_vbeln COMPARING ALL FIELDS.
+
+    IF lt_vbeln IS NOT INITIAL.
+      SELECT vbeln
+             vbtyp
+        INTO TABLE lt_likp_dt
+        FROM likp
+         FOR ALL ENTRIES IN lt_vbeln
+       WHERE vbeln = lt_vbeln-table_line.
+    ENDIF.
+
+    LOOP AT lt_vbeln INTO DATA(ls_vbeln).
+      READ TABLE lt_likp_dt INTO DATA(ls_likp_dt) WITH KEY vbeln = ls_vbeln
+                                                           vbtyp = iv_vbtyp.
+      IF sy-subrc <> 0.
+        DELETE lt_vbeln.
+      ENDIF.
+    ENDLOOP.
+
+    et_vbeln = lt_vbeln.
 
   ENDMETHOD.
 
@@ -1097,32 +1123,41 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
   METHOD get_po_so_by_delivery.
 
     DATA:
-      lt_ref_doc_curr TYPE tt_ref_doc,
-      ls_ref_doc_curr TYPE ts_ref_doc,
-      lt_ref_doc_db   TYPE tt_ref_doc,
-      ls_ref_doc_db   TYPE ts_ref_doc,
-      lt_ref_doc_all  TYPE tt_ref_doc,
-      ls_ref_doc_all  TYPE ts_ref_doc,
-      lt_ref_list     TYPE tt_ref_list,
-      ls_ref_list     TYPE ts_ref_list,
-      ls_likp         TYPE likpvb,
-      lt_likp_dt      TYPE tt_likp,
-      ls_likp_dt      TYPE ts_likp,
-      lv_no_changes   TYPE flag.
+      lt_ref_doc_curr    TYPE tt_ref_doc,
+      ls_ref_doc_curr    TYPE ts_ref_doc,
+      lt_ref_doc_db      TYPE tt_ref_doc,
+      ls_ref_doc_db      TYPE ts_ref_doc,
+      lt_ref_doc_all     TYPE tt_ref_doc,
+      ls_ref_doc_all     TYPE ts_ref_doc,
+      lt_ref_doc_all_bak TYPE tt_ref_doc,
+      ls_ref_doc_all_bak TYPE ts_ref_doc,
+      lt_ref_list        TYPE tt_ref_list,
+      ls_ref_list        TYPE ts_ref_list,
+      ls_likp            TYPE likpvb,
+      lt_likp_dt         TYPE tt_likp,
+      ls_likp_dt         TYPE ts_likp,
+      lv_no_changes      TYPE flag.
 
     CLEAR:
      et_ref_list,
      ev_ref_chg_flg.
 
-*   Based on current processing delivery,get preceding document
+*   Step 1.Based on current processing delivery,get preceding document
     LOOP AT it_xlips INTO DATA(ls_lips) WHERE vgtyp = iv_vgtyp.
-*    For purchase order,only need the inbound delivery
       IF ls_lips-vgtyp = if_sd_doc_category=>purchase_order.
         CLEAR ls_likp.
         READ TABLE it_xlikp INTO ls_likp WITH KEY vbeln = ls_lips-vbeln.
         IF sy-subrc = 0.
-          IF ls_likp-vbtyp = if_sd_doc_category=>delivery.
-            CONTINUE.
+*         In normal scenario,for purchase order,only need the inbound delivery
+          IF iv_sto_is_used IS INITIAL.
+            IF ls_likp-vbtyp = if_sd_doc_category=>delivery.
+              CONTINUE.
+            ENDIF.
+          ELSE.
+*           In STO scenario,for purchase order,only need the outbound delivery
+            IF ls_likp-vbtyp = if_sd_doc_category=>delivery_shipping_notif.
+              CONTINUE.
+            ENDIF.
           ENDIF.
         ENDIF.
       ENDIF.
@@ -1135,7 +1170,7 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
     SORT lt_ref_doc_curr BY vbeln vgbel.
     DELETE ADJACENT DUPLICATES FROM lt_ref_doc_curr COMPARING ALL FIELDS.
 
-*   Based on reference document,get preceding document from DB
+*   Step 2.Based on reference document,get preceding document from DB
     IF lt_ref_doc_curr IS NOT INITIAL.
       SELECT vbeln
              vgbel
@@ -1154,25 +1189,34 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
        WHERE vbeln = lt_ref_doc_db-vbeln.
     ENDIF.
 
-*   For purchase order,only need the inbound delivery
+*   Step 2.1 Delete the unnecessary delivery
     IF iv_vgtyp = if_sd_doc_category=>purchase_order.
       LOOP AT lt_ref_doc_db INTO ls_ref_doc_db.
         CLEAR ls_likp_dt.
         READ TABLE lt_likp_dt INTO ls_likp_dt WITH KEY vbeln = ls_ref_doc_db-vbeln.
         IF sy-subrc = 0.
-          IF ls_likp_dt-vbtyp = if_sd_doc_category=>delivery.
-            DELETE lt_ref_doc_db.
+*         In normal scenario,for purchase order,only need the inbound delivery
+          IF iv_sto_is_used IS INITIAL.
+            IF ls_likp_dt-vbtyp = if_sd_doc_category=>delivery.
+              DELETE lt_ref_doc_db.
+            ENDIF.
+          ELSE.
+*           In STO scenario,for purchase order,only need the outbound delivery
+            IF ls_likp_dt-vbtyp = if_sd_doc_category=>delivery_shipping_notif.
+              DELETE lt_ref_doc_db.
+            ENDIF.
           ENDIF.
         ENDIF.
       ENDLOOP.
     ENDIF.
 
-*   Merge the preceding document
+*   Step 3. Merge the preceding document
     APPEND LINES OF lt_ref_doc_curr TO lt_ref_doc_all.
     APPEND LINES OF lt_ref_doc_db TO lt_ref_doc_all.
 
     SORT lt_ref_doc_all BY vbeln vgbel.
     DELETE ADJACENT DUPLICATES FROM lt_ref_doc_all COMPARING ALL FIELDS.
+    APPEND LINES OF lt_ref_doc_all TO lt_ref_doc_all_bak.
 
     LOOP AT lt_ref_doc_all INTO ls_ref_doc_all
       GROUP BY ls_ref_doc_all-vgbel ASSIGNING FIELD-SYMBOL(<ft_ref_group>).
@@ -1182,7 +1226,7 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
 *       Do not consider the deleted delivery
         CLEAR ls_likp.
         READ TABLE it_xlikp INTO ls_likp WITH KEY vbeln = <fs_ref>-vbeln.
-        IF sy-subrc = 0 AND ls_likp-updkz = /bobf/if_frw_c=>sc_modify_delete.
+        IF sy-subrc = 0 AND ls_likp-updkz = /scmtms/if_logint_c=>sc_updkz-delete.
           CLEAR <fs_ref>-vbeln.
         ENDIF.
         IF <fs_ref>-vbeln IS NOT INITIAL.
@@ -1197,13 +1241,30 @@ CLASS ZCL_GTT_TOOLS IMPLEMENTATION.
 
     et_ref_list = lt_ref_list.
 
-*   Check the reference document is changed or not
+*   Step 4.Check the reference document is changed or not
     IF ev_ref_chg_flg IS REQUESTED.
       SORT lt_ref_doc_db BY vbeln vgbel.
+
+      LOOP AT lt_ref_doc_db INTO ls_ref_doc_db.
+        CLEAR ls_likp.
+        READ TABLE it_xlikp INTO ls_likp WITH KEY vbeln = ls_ref_doc_db-vbeln.
+        IF sy-subrc = 0 AND ls_likp-updkz = /scmtms/if_logint_c=>sc_updkz-insert.
+          DELETE lt_ref_doc_db.
+        ENDIF.
+      ENDLOOP.
+
+      LOOP AT lt_ref_doc_all_bak INTO ls_ref_doc_all_bak.
+        CLEAR ls_likp.
+        READ TABLE it_xlikp INTO ls_likp WITH KEY vbeln = ls_ref_doc_all_bak-vbeln.
+        IF sy-subrc = 0 AND ls_likp-updkz = /scmtms/if_logint_c=>sc_updkz-delete.
+          DELETE lt_ref_doc_all_bak.
+        ENDIF.
+      ENDLOOP.
+
       CALL FUNCTION 'CTVB_COMPARE_TABLES'
         EXPORTING
           table_old  = lt_ref_doc_db
-          table_new  = lt_ref_doc_all
+          table_new  = lt_ref_doc_all_bak
           key_length = 20
         IMPORTING
           no_changes = lv_no_changes.

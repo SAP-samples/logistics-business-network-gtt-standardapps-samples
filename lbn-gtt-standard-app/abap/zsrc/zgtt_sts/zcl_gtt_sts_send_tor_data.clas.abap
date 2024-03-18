@@ -973,8 +973,10 @@ CLASS ZCL_GTT_STS_SEND_TOR_DATA IMPLEMENTATION.
     ENDIF.
     TRY.
         DATA(lo_send_deletion_idoc) = zcl_gtt_sts_send_deletion_idoc=>get_instance( it_tor_root ).
-        lo_send_deletion_idoc->prepare_idoc_data( it_tor_root ).
-        lo_send_deletion_idoc->send_idoc_data( ).
+        IF lo_send_deletion_idoc IS BOUND.
+          lo_send_deletion_idoc->prepare_idoc_data( it_tor_root ).
+          lo_send_deletion_idoc->send_idoc_data( ).
+        ENDIF.
       CATCH cx_udm_message.
         RAISE EXCEPTION TYPE /scmtms/cx_event_management
           EXPORTING

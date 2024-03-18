@@ -1882,16 +1882,7 @@ CLASS ZCL_GTT_STS_TOOLS IMPLEMENTATION.
 
   METHOD get_system_time_zone.
 
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-      IMPORTING
-        timezone            = rv_tzone
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
-    IF sy-subrc <> 0.
-      MESSAGE e003(ZGTT_STS) INTO DATA(lv_dummy) ##needed.
-      zcl_gtt_sts_tools=>throw_exception( ).
-    ENDIF.
+    rv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
   ENDMETHOD.
 

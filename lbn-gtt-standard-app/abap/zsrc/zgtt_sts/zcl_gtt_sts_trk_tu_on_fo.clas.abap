@@ -58,7 +58,8 @@ CLASS ZCL_GTT_STS_TRK_TU_ON_FO IMPLEMENTATION.
 
     rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
-    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete.
+    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete OR
+      is_root-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-canceled.
       rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
       RETURN.
     ENDIF.

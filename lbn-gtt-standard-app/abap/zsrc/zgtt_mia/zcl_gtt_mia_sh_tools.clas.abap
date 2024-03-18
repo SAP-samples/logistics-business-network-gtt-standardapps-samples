@@ -171,12 +171,7 @@ CLASS ZCL_GTT_MIA_SH_TOOLS IMPLEMENTATION.
 
     DATA: lt_tknum_range TYPE STANDARD TABLE OF range_c10.
 
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE' ##FM_SUBRC_OK
-      IMPORTING
-        timezone            = lv_tzone
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
+    lv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
 *   Read Stage Information
     IF it_vtts IS SUPPLIED.

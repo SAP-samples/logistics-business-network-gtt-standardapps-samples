@@ -224,12 +224,7 @@ METHOD if_ex_le_shp_delivery_proc~save_and_publish_document .
       own_logical_system = lv_appsys.
 
 * Actual Business Time zone
-  CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-    IMPORTING
-      timezone            = lv_tzone
-    EXCEPTIONS
-      customizing_missing = 1
-      OTHERS              = 2.
+  lv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
   SELECT rst_option AS option,
          rst_sign   AS sign,
@@ -379,6 +374,12 @@ METHOD if_ex_le_shp_delivery_proc~save_and_publish_document .
         ls_control-value     = lv_tzone.
         APPEND ls_control TO lt_control.
         ls_control-paramname = 'ACTUAL_BUSINESS_DATETIME'.
+        CONCATENATE '0' sy-datum sy-uzeit INTO ls_control-value.
+        APPEND ls_control TO lt_control.
+        ls_control-paramname = 'ACTUAL_TECHNICAL_TIMEZONE'.
+        ls_control-value     = lv_tzone.
+        APPEND ls_control TO lt_control.
+        ls_control-paramname = 'ACTUAL_TECHNICAL_DATETIME'.
         CONCATENATE '0' sy-datum sy-uzeit INTO ls_control-value.
         APPEND ls_control TO lt_control.
         ls_control-paramname = 'REPORTED_BY'.
@@ -667,6 +668,12 @@ endmethod. "IF_EX_LE_SHP_DELIVERY_PROC~SAVE_DOCUMENT_PREPARE
         ls_control-value     = lv_tzone.
         APPEND ls_control TO lt_control.
         ls_control-paramname = 'ACTUAL_BUSINESS_DATETIME'.
+        CONCATENATE '0' sy-datum sy-uzeit INTO ls_control-value.
+        APPEND ls_control TO lt_control.
+        ls_control-paramname = 'ACTUAL_TECHNICAL_TIMEZONE'.
+        ls_control-value     = lv_tzone.
+        APPEND ls_control TO lt_control.
+        ls_control-paramname = 'ACTUAL_TECHNICAL_DATETIME'.
         CONCATENATE '0' sy-datum sy-uzeit INTO ls_control-value.
         APPEND ls_control TO lt_control.
         ls_control-paramname = 'REPORTED_BY'.

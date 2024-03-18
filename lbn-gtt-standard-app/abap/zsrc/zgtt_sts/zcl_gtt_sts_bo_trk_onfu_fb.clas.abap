@@ -147,6 +147,15 @@ private section.
       !CS_FREIGHT_BOOKING type TS_FREIGHT_BOOKING
     raising
       CX_UDM_MESSAGE .
+  methods GET_TRACK_ID_DATA
+    importing
+      !IS_APP_OBJECT type TRXAS_APPOBJ_CTAB_WA
+      !IR_ROOT type ref to DATA
+      !IV_OLD_DATA type ABAP_BOOL default ABAP_FALSE
+    exporting
+      !ET_TRACK_ID_DATA type ZIF_GTT_STS_EF_TYPES=>TT_ENH_TRACK_ID_DATA
+    raising
+      CX_UDM_MESSAGE .
 ENDCLASS.
 
 
@@ -742,22 +751,14 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
 
     "FB
     FIELD-SYMBOLS:
-      <ls_root_new>         TYPE /scmtms/s_em_bo_tor_root,
-      <lt_root_old>         TYPE /scmtms/t_em_bo_tor_root,
-      <lt_tor_root_req_new> TYPE /scmtms/t_em_bo_tor_root,
-      <lt_tor_root_req_old> TYPE /scmtms/t_em_bo_tor_root.
+      <ls_root_new> TYPE /scmtms/s_em_bo_tor_root,
+      <lt_root_old> TYPE /scmtms/t_em_bo_tor_root.
 
     DATA:
       lr_root_old          TYPE REF TO data,
       lt_track_id_data_new TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
       lt_track_id_data_old TYPE zif_gtt_sts_ef_types=>tt_enh_track_id_data,
-      lv_fotrxcod          TYPE /saptrx/trxcod,
-      lt_container         TYPE TABLE OF /scmtms/package_id,
-      lt_package_id        TYPE TABLE OF /scmtms/package_id,
-      lt_req_tor_new       TYPE /scmtms/t_em_bo_tor_root,
-      lt_req_tor_old       TYPE /scmtms/t_em_bo_tor_root,
-      lv_trxid             TYPE /saptrx/trxid,
-      lv_tutrxcod          TYPE /saptrx/trxcod.
+      lv_fotrxcod          TYPE /saptrx/trxcod.
 
     CLEAR et_track_id_data.
     ASSIGN is_app_object-maintabref->* TO <ls_root_new>.
@@ -770,7 +771,6 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
     ENDIF.
 
     lv_fotrxcod = zif_gtt_sts_constants=>cs_trxcod-fo_number.
-    lv_tutrxcod = zif_gtt_sts_constants=>cs_trxcod-tu_number.
 
     add_track_id_data(
       EXPORTING
@@ -780,33 +780,74 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
       CHANGING
         ct_track_id   = et_track_id_data ).
 
+    get_track_id_data(
+      EXPORTING
+        is_app_object    = is_app_object
+        ir_root          = REF #( <ls_root_new> )
+        iv_old_data      = abap_false
+      IMPORTING
+        et_track_id_data = lt_track_id_data_new ).
+
+    get_track_id_data(
+      EXPORTING
+        is_app_object    = is_app_object
+        ir_root          = REF #( <ls_root_new> )
+        iv_old_data      = abap_true
+      IMPORTING
+        et_track_id_data = lt_track_id_data_old ).
+
+    zcl_gtt_sts_tools=>get_track_obj_changes_v2(
+      EXPORTING
+        is_app_object        = is_app_object
+        iv_appsys            = mo_ef_parameters->get_appsys( )
+        it_track_id_data_new = lt_track_id_data_new
+        it_track_id_data_old = lt_track_id_data_old
+      CHANGING
+        ct_track_id_data     = et_track_id_data ).
+
+  ENDMETHOD.
+
+
+  METHOD get_track_id_data.
+
+    DATA:
+      lt_req_tor    TYPE /scmtms/t_em_bo_tor_root,
+      lt_container  TYPE TABLE OF /scmtms/package_id,
+      lt_package_id TYPE TABLE OF /scmtms/package_id,
+      lv_trxid      TYPE /saptrx/trxid,
+      lv_tutrxcod   TYPE /saptrx/trxcod.
+
+    CLEAR:et_track_id_data.
+
+    lv_tutrxcod = zif_gtt_sts_constants=>cs_trxcod-tu_number.
+
     zcl_gtt_sts_tools=>get_req_info(
       EXPORTING
-        ir_root     = REF #( <ls_root_new> )
-        iv_old_data = abap_false
+        ir_root     = ir_root
+        iv_old_data = iv_old_data
       IMPORTING
-        et_req_tor  = lt_req_tor_new ).
+        et_req_tor  = lt_req_tor ).
 
-    LOOP AT lt_req_tor_new ASSIGNING FIELD-SYMBOL(<ls_tor_root_req_new>)
+    LOOP AT lt_req_tor ASSIGNING FIELD-SYMBOL(<ls_tor_root_req>)
       WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
       CLEAR:
         lt_container,
         lt_package_id.
 
-      DATA(lv_tor_id) = |{ <ls_tor_root_req_new>-tor_id  ALPHA = OUT }|.
+      DATA(lv_tor_id) = |{ <ls_tor_root_req>-tor_id  ALPHA = OUT }|.
       CONDENSE lv_tor_id.
 
       zcl_gtt_sts_tools=>get_container_mobile_id(
         EXPORTING
-          ir_root      = REF #( <ls_tor_root_req_new> )
-          iv_old_data  = abap_false
+          ir_root      = REF #( <ls_tor_root_req> )
+          iv_old_data  = iv_old_data
         CHANGING
           et_container = lt_container ).
 
       zcl_gtt_sts_tools=>get_package_id(
         EXPORTING
-          ir_root           = REF #( <ls_tor_root_req_new> )
-          iv_old_data       = abap_false
+          ir_root           = REF #( <ls_tor_root_req> )
+          iv_old_data       = iv_old_data
         IMPORTING
           et_package_id_ext = lt_package_id ).
 
@@ -817,75 +858,15 @@ CLASS ZCL_GTT_STS_BO_TRK_ONFU_FB IMPLEMENTATION.
         lv_trxid = |{ lv_tor_id } { ls_container }|.
         CONDENSE lv_trxid NO-GAPS.
 
-        APPEND VALUE #( key = |{ <ls_tor_root_req_new>-tor_id ALPHA = OUT }|
+        APPEND VALUE #( key = |{ <ls_tor_root_req>-tor_id ALPHA = OUT }|
                 appsys      = mo_ef_parameters->get_appsys( )
                 appobjtype  = is_app_object-appobjtype
                 appobjid    = |{ is_app_object-appobjid ALPHA = OUT }|
                 trxcod      = lv_tutrxcod
-                trxid       = lv_trxid ) TO lt_track_id_data_new.
+                trxid       = lv_trxid ) TO et_track_id_data.
 
       ENDLOOP.
     ENDLOOP.
-
-    CLEAR:
-      lt_container,
-      lt_package_id.
-
-    zcl_gtt_sts_tools=>get_req_info(
-      EXPORTING
-        ir_root     = REF #( <ls_root_new> )
-        iv_old_data = abap_true
-      IMPORTING
-        et_req_tor  = lt_req_tor_old ).
-
-    LOOP AT lt_req_tor_old ASSIGNING FIELD-SYMBOL(<ls_tor_root_req_old>)
-      WHERE tor_cat = /scmtms/if_tor_const=>sc_tor_category-freight_unit.
-      CLEAR:
-        lt_container,
-        lt_package_id.
-
-      lv_tor_id = |{ <ls_tor_root_req_old>-tor_id  ALPHA = OUT }|.
-      CONDENSE lv_tor_id.
-
-      zcl_gtt_sts_tools=>get_container_mobile_id(
-        EXPORTING
-          ir_root      = REF #( <ls_tor_root_req_old> )
-          iv_old_data  = abap_true
-        CHANGING
-          et_container = lt_container ).
-
-      zcl_gtt_sts_tools=>get_package_id(
-        EXPORTING
-          ir_root           = REF #( <ls_tor_root_req_old> )
-          iv_old_data       = abap_true
-        IMPORTING
-          et_package_id_ext = lt_package_id ).
-
-      APPEND LINES OF lt_package_id TO lt_container.
-
-      LOOP AT lt_container INTO ls_container.
-        CLEAR lv_trxid.
-        lv_trxid = |{ lv_tor_id } { ls_container }|.
-        CONDENSE lv_trxid NO-GAPS.
-
-        APPEND VALUE #( key = |{ <ls_tor_root_req_old>-tor_id ALPHA = OUT }|
-                appsys      = mo_ef_parameters->get_appsys( )
-                appobjtype  = is_app_object-appobjtype
-                appobjid    = |{ is_app_object-appobjid ALPHA = OUT }|
-                trxcod      = lv_tutrxcod
-                trxid       = lv_trxid ) TO lt_track_id_data_old.
-
-      ENDLOOP.
-    ENDLOOP.
-
-    zcl_gtt_sts_tools=>get_track_obj_changes_v2(
-      EXPORTING
-        is_app_object        = is_app_object
-        iv_appsys            = mo_ef_parameters->get_appsys( )
-        it_track_id_data_new = lt_track_id_data_new
-        it_track_id_data_old = lt_track_id_data_old
-      CHANGING
-        ct_track_id_data     = et_track_id_data ).
 
   ENDMETHOD.
 ENDCLASS.
