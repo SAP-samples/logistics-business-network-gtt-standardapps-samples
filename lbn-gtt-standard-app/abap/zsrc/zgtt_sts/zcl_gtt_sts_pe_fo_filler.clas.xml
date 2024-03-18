@@ -18,6 +18,18 @@
      <LANGU>E</LANGU>
      <DESCRIPT>Add planned source arrival event for LTL shipment</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_PE_FO_FILLER</CLSNAME>
+     <CMPNAME>ADD_PLANNED_SOURCE_ARRIVAL</CMPNAME>
+     <LANGU>늑</LANGU>
+     <DESCRIPT>CLAS ZCL_GTT_STS_PE_FO_FILLER</DESCRIPT>
+    </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_STS_PE_FO_FILLER</CLSNAME>
+     <CMPNAME>ADD_PLANNED_SOURCE_ARRIVAL</CMPNAME>
+     <LANGU>닱</LANGU>
+     <DESCRIPT>[Āƌƌ∙ρĺąŋŋēƌ∙şŏűŗċē∙ąŗŗįʋąĺ∙ēʋēŋţ∙ƒŏŗ∙ĻŢĻ∙şĥįρɱēŋţ∙∙∙∙∙∙∙∙∙]</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

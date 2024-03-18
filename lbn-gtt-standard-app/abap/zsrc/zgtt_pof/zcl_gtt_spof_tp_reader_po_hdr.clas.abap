@@ -29,7 +29,7 @@ private section.
   types TV_IND_PO_ITM_DEL type ABAP_BOOL .
   types TV_IND_PO_ITM_NO type CHAR20 .
   types TV_IND_PO_NO type CHAR10 .
-  types TV_IN_DLV_LINE_NO type INT4 .
+  types TV_IN_DLV_LINE_NO type CHAR4 .
   types TV_IN_DLV_NO type VBELN_VL .
   types:
     tt_ind_po_itm_del   TYPE STANDARD TABLE OF tv_ind_po_itm_del
@@ -76,6 +76,8 @@ private section.
       ind_po_itm_del    TYPE tt_ind_po_itm_del,
       in_dlv_line_no    TYPE tt_in_dlv_line_no,
       in_dlv_no         TYPE tt_in_dlv_no,
+      out_dlv_line_no   TYPE tt_in_dlv_line_no,
+      out_dlv_no        TYPE tt_in_dlv_no,
       otl_locid         TYPE tt_otl_locid,
       otl_loctype       TYPE tt_otl_loctype,
       otl_timezone      TYPE tt_otl_timezone,
@@ -117,6 +119,8 @@ private section.
       ind_po_itm_del    TYPE /saptrx/paramname VALUE 'YN_PO_IND_PO_ITEM_DELETED',
       in_dlv_line_no    TYPE /saptrx/paramname VALUE 'YN_IDLV_LINE_NO',
       in_dlv_no         TYPE /saptrx/paramname VALUE 'YN_IDLV_NO',
+      out_dlv_line_no   TYPE /saptrx/paramname VALUE 'YN_ODLV_LINE_NO',
+      out_dlv_no        TYPE /saptrx/paramname VALUE 'YN_ODLV_NO',
       otl_locid         TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCID',
       otl_loctype       TYPE /saptrx/paramname VALUE 'GTT_OTL_LOCTYPE',
       otl_timezone      TYPE /saptrx/paramname VALUE 'GTT_OTL_TIMEZONE',
@@ -206,6 +210,22 @@ private section.
       !IR_EKKO type ref to DATA
     changing
       !CS_PO_HEADER type TS_PO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_OUTBOUND_DLV_TABLE
+    importing
+      !IV_EBELN type EBELN
+    changing
+      !CS_PO_HEADER type TS_PO_HEADER
+    raising
+      CX_UDM_MESSAGE .
+  methods FILL_DLV_TABLE
+    importing
+      !IV_EBELN type EBELN
+      !IV_VBTYP type VBTYPL
+    exporting
+      !ET_LINE_NO type TT_IN_DLV_LINE_NO
+      !ET_DLV_NO type TT_IN_DLV_NO
     raising
       CX_UDM_MESSAGE .
 ENDCLASS.
@@ -559,6 +579,12 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
 
   METHOD zif_gtt_tp_reader~get_data.
     FIELD-SYMBOLS: <ls_header>      TYPE ts_po_header.
+    DATA:
+      lv_ebeln TYPE ekko-ebeln.
+
+    lv_ebeln = zcl_gtt_tools=>get_field_of_structure(
+      ir_struct_data = is_app_object-maintabref
+      iv_field_name  = 'EBELN' ).
 
     rr_data   = NEW ts_po_header( ).
 
@@ -605,9 +631,13 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
 
     fill_inbound_dlv_table(
       EXPORTING
-        iv_ebeln      = CONV #( zcl_gtt_tools=>get_field_of_structure(
-                                  ir_struct_data = is_app_object-maintabref
-                                  iv_field_name  = 'EBELN'  ) )
+        iv_ebeln     = lv_ebeln
+      CHANGING
+        cs_po_header = <ls_header> ).
+
+    fill_outbound_dlv_table(
+      EXPORTING
+        iv_ebeln     = lv_ebeln
       CHANGING
         cs_po_header = <ls_header> ).
 
@@ -687,6 +717,12 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
       CHANGING
         cs_po_header = <ls_header> ).
 
+    fill_outbound_dlv_table(
+      EXPORTING
+        iv_ebeln     = lv_ebeln
+      CHANGING
+        cs_po_header = <ls_header> ).
+
     fill_one_time_location_old(
       EXPORTING
         iv_ebeln     = lv_ebeln
@@ -738,32 +774,13 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
 
   METHOD fill_inbound_dlv_table.
 
-    DATA:
-      lt_vbeln   TYPE vbeln_vl_t,
-      lv_count   TYPE i,
-      lv_line_no TYPE char20.
-
-    zcl_gtt_tools=>get_delivery_by_ref_doc(
+    fill_dlv_table(
       EXPORTING
-        iv_vgbel = iv_ebeln
+        iv_ebeln   = iv_ebeln
+        iv_vbtyp   = if_sd_doc_category=>delivery_shipping_notif
       IMPORTING
-        et_vbeln = lt_vbeln ).
-
-    LOOP AT lt_vbeln INTO DATA(ls_vbeln).
-      lv_count = lv_count + 1.
-      lv_line_no = lv_count.
-      CONDENSE lv_line_no NO-GAPS.
-      APPEND lv_line_no TO cs_po_header-in_dlv_line_no.
-
-      SHIFT ls_vbeln LEFT DELETING LEADING '0'.
-      APPEND ls_vbeln TO cs_po_header-in_dlv_no.
-      CLEAR lv_line_no.
-    ENDLOOP.
-
-    IF lt_vbeln IS INITIAL.
-      APPEND '1' TO cs_po_header-in_dlv_line_no.
-      APPEND '' TO cs_po_header-in_dlv_no.
-    ENDIF.
+        et_line_no = cs_po_header-in_dlv_line_no
+        et_dlv_no  = cs_po_header-in_dlv_no ).
 
   ENDMETHOD.
 
@@ -854,6 +871,55 @@ CLASS ZCL_GTT_SPOF_TP_READER_PO_HDR IMPLEMENTATION.
       MESSAGE e002(zgtt) WITH 'EKKO' INTO DATA(lv_dummy).
       zcl_gtt_tools=>throw_exception( ).
     ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD fill_dlv_table.
+
+    DATA:
+      lt_vbeln   TYPE vbeln_vl_t,
+      lv_count   TYPE i,
+      lv_line_no TYPE char20.
+
+    CLEAR:
+      et_line_no,
+      et_dlv_no.
+
+    zcl_gtt_tools=>get_delivery_by_ref_doc(
+      EXPORTING
+        iv_vgbel = iv_ebeln
+        iv_vbtyp = iv_vbtyp
+      IMPORTING
+        et_vbeln = lt_vbeln ).
+
+    LOOP AT lt_vbeln INTO DATA(ls_vbeln).
+      lv_count = lv_count + 1.
+      lv_line_no = lv_count.
+      CONDENSE lv_line_no NO-GAPS.
+      APPEND lv_line_no TO et_line_no.
+
+      SHIFT ls_vbeln LEFT DELETING LEADING '0'.
+      APPEND ls_vbeln TO et_dlv_no.
+      CLEAR lv_line_no.
+    ENDLOOP.
+
+    IF lt_vbeln IS INITIAL.
+      APPEND '' TO et_line_no.
+    ENDIF.
+
+  ENDMETHOD.
+
+
+  METHOD fill_outbound_dlv_table.
+
+    fill_dlv_table(
+      EXPORTING
+        iv_ebeln   = iv_ebeln
+        iv_vbtyp   = if_sd_doc_category=>delivery
+      IMPORTING
+        et_line_no = cs_po_header-out_dlv_line_no
+        et_dlv_no  = cs_po_header-out_dlv_no ).
 
   ENDMETHOD.
 ENDCLASS.

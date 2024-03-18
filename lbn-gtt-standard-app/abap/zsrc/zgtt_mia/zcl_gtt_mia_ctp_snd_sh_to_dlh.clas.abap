@@ -48,7 +48,7 @@ private section.
 
   constants:
     BEGIN OF cs_mapping,
-        vbeln                 TYPE /saptrx/paramname VALUE 'YN_DLV_NO',
+        vbeln                 TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
         shp_count             TYPE /saptrx/paramname VALUE 'YN_SHP_LINE_COUNT',
         shp_tknum             TYPE /saptrx/paramname VALUE 'YN_SHP_NO',
         shp_fstop             TYPE /saptrx/paramname VALUE 'YN_SHP_FIRST_STOP',
@@ -535,9 +535,6 @@ CLASS ZCL_GTT_MIA_CTP_SND_SH_TO_DLH IMPLEMENTATION.
       ro_sender  = NEW #( ).
 
       ro_sender->initiate( ).
-    ELSE.
-      MESSAGE e006(zgtt) INTO DATA(lv_dummy).
-      zcl_gtt_tools=>throw_exception( ).
     ENDIF.
 
   ENDMETHOD.

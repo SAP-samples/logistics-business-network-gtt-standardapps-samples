@@ -120,6 +120,12 @@
      <LANGU>닱</LANGU>
      <DESCRIPT>[Ţąƃĺē∙ƒŏŗ∙Ŝţŗűċţűŗē∙ĻĬƤŜƲƁ∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙∙]</DESCRIPT>
     </SEOCOMPOTX>
+    <SEOCOMPOTX>
+     <CLSNAME>ZCL_GTT_SPOF_CTP_DLH_DATA</CLSNAME>
+     <CMPNAME>MV_STO_IS_USED</CMPNAME>
+     <LANGU>E</LANGU>
+     <DESCRIPT>Boolean Variable (X = True, - = False, Space = Unknown)</DESCRIPT>
+    </SEOCOMPOTX>
    </DESCRIPTIONS>
   </asx:values>
  </asx:abap>

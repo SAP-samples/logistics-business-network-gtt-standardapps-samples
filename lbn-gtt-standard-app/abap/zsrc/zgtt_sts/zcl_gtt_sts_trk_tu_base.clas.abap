@@ -1085,7 +1085,7 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
     CASE mv_tor_cat.
       WHEN /scmtms/if_tor_const=>sc_tor_category-active OR
            /scmtms/if_tor_const=>sc_tor_category-booking.
-        ls_tu_info-tspid = get_carrier_name( iv_tspid = is_tor_root-tspid
+        ls_tu_info-tspid = get_carrier_name( iv_tspid    = is_tor_root-tspid
                                              iv_tsp_scac = is_tor_root-tsp_scac ).
         ls_tu_info-trmodcod = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = is_tor_root-trmodcod ).
         ls_tu_info-shipping_type  = is_tor_root-shipping_type.
@@ -1100,20 +1100,14 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
           IMPORTING
             et_capa     = lt_capa ).
 
-        LOOP AT lt_capa ASSIGNING FIELD-SYMBOL(<fs_capa>).
-          IF ( <fs_capa>-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-execution OR
-              <fs_capa>-track_exec_rel = zif_gtt_sts_constants=>cs_track_exec_rel-exec_with_extern_event_mngr ) AND
-            <fs_capa>-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-in_process AND
-            ( <fs_capa>-execution = zif_gtt_sts_constants=>cs_execution_status-in_execution OR
-              <fs_capa>-execution = zif_gtt_sts_constants=>cs_execution_status-ready_for_transp_exec ) AND
-            <fs_capa>-tspid IS NOT INITIAL.
+        LOOP AT lt_capa ASSIGNING FIELD-SYMBOL(<fs_capa>)
+          WHERE tspid IS NOT INITIAL.
 
-            ls_tu_info-tspid = get_carrier_name( iv_tspid = <fs_capa>-tspid
-                                                 iv_tsp_scac = <fs_capa>-tsp_scac ).
-            ls_tu_info-trmodcod = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = <fs_capa>-trmodcod ).
-            ls_tu_info-shipping_type  = <fs_capa>-shipping_type.
-            EXIT.
-          ENDIF.
+          ls_tu_info-tspid = get_carrier_name( iv_tspid    = <fs_capa>-tspid
+                                               iv_tsp_scac = <fs_capa>-tsp_scac ).
+          ls_tu_info-trmodcod = zcl_gtt_sts_tools=>get_trmodcod( iv_trmodcod = <fs_capa>-trmodcod ).
+          ls_tu_info-shipping_type  = <fs_capa>-shipping_type.
+          EXIT.
         ENDLOOP.
 
       WHEN OTHERS.
@@ -2351,7 +2345,9 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
       lt_idoc_data    TYPE tt_idoc_data,
       lv_result       TYPE syst_binpt,
       ls_tor_data     TYPE ts_tor_data,
-      lt_tor_data     TYPE TABLE OF ts_tor_data.
+      lt_tor_data     TYPE TABLE OF ts_tor_data,
+      ls_root_old     TYPE /scmtms/s_em_bo_tor_root,
+      lt_tor_root     TYPE /scmtms/t_em_bo_tor_root.
 
     LOOP AT it_tor_root_for_deletion INTO DATA(ls_tor_root_for_deletion)
       WHERE tor_cat = mv_tor_cat.
@@ -2371,7 +2367,16 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
       APPEND LINES OF lt_tmp_resource TO lt_resource1.
     ENDLOOP.
 
-    LOOP AT it_tor_root_sstring INTO DATA(ls_root)
+    lt_tor_root = it_tor_root_sstring.
+    LOOP AT lt_tor_root INTO DATA(ls_tor_root).
+      READ TABLE it_tor_root_for_deletion TRANSPORTING NO FIELDS
+        WITH KEY node_id = ls_tor_root-node_id.
+      IF sy-subrc = 0.
+        DELETE lt_tor_root.
+      ENDIF.
+    ENDLOOP.
+
+    LOOP AT lt_tor_root INTO DATA(ls_root)
       WHERE tor_cat = mv_tor_cat.
       CLEAR lt_tmp_resource.
 
@@ -2390,35 +2395,33 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
         CONTINUE.
       ENDIF.
 
-      READ TABLE it_tor_root_for_deletion TRANSPORTING NO FIELDS
+      CLEAR ls_root_old.
+      READ TABLE it_tor_root_before_sstring INTO ls_root_old
         WITH KEY node_id = ls_root-node_id.
       IF sy-subrc <> 0.
-
-        READ TABLE it_tor_root_before_sstring INTO DATA(ls_root_old)
-          WITH KEY node_id = ls_root-node_id.
-
-*       if FO changed from no relevant to relevent,do not delete the TU
-        status_changes_check(
-          EXPORTING
-            is_tor_root_before = ls_root_old
-            is_tor_root        = ls_root
-          RECEIVING
-            rv_result          = DATA(lv_status_result) ).
-        IF lv_status_result = abap_true.
-          CONTINUE.
-        ENDIF.
-
-        get_deleted_tu(
-          EXPORTING
-            is_tor_root        = ls_root
-            it_tor_item        = it_item_sstring
-            is_tor_root_before = ls_root_old
-            it_tor_item_before = it_item_before_sstring
-          IMPORTING
-            et_resource        = lt_tmp_resource ).
-        APPEND LINES OF lt_tmp_resource TO lt_resource2.
-
+        ls_root_old = ls_root.
       ENDIF.
+
+*     if FO changed from no relevant to relevent,do not delete the TU
+      status_changes_check(
+        EXPORTING
+          is_tor_root_before = ls_root_old
+          is_tor_root        = ls_root
+        RECEIVING
+          rv_result          = DATA(lv_status_result) ).
+      IF lv_status_result = abap_true.
+        CONTINUE.
+      ENDIF.
+
+      get_deleted_tu(
+        EXPORTING
+          is_tor_root        = ls_root
+          it_tor_item        = it_item_sstring
+          is_tor_root_before = ls_root_old
+          it_tor_item_before = it_item_before_sstring
+        IMPORTING
+          et_resource        = lt_tmp_resource ).
+      APPEND LINES OF lt_tmp_resource TO lt_resource2.
 
     ENDLOOP.
 
@@ -2468,7 +2471,8 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
       lt_idoc_data     TYPE tt_idoc_data,
       lt_tmp_idoc_data TYPE tt_idoc_data,
       lt_bapiret       TYPE bapiret2_t,
-      ls_relevance     TYPE ts_relevance.
+      ls_relevance     TYPE ts_relevance,
+      ls_root_old      TYPE /scmtms/s_em_bo_tor_root.
 
     LOOP AT it_tor_root_sstring INTO DATA(ls_root)
       WHERE tor_cat = mv_tor_cat.
@@ -2483,8 +2487,12 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
         CONTINUE.
       ENDIF.
 
-      READ TABLE it_tor_root_before_sstring INTO DATA(ls_root_old)
+      CLEAR ls_root_old.
+      READ TABLE it_tor_root_before_sstring INTO ls_root_old
         WITH KEY node_id = ls_root-node_id.
+      IF sy-subrc <> 0.
+        ls_root_old = ls_root.
+      ENDIF.
 
       get_changed_tu(
         EXPORTING
@@ -2621,7 +2629,8 @@ CLASS ZCL_GTT_STS_TRK_TU_BASE IMPLEMENTATION.
 
     rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
-    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete.
+    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete OR
+      is_root-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-canceled.
       RETURN.
     ENDIF.
 

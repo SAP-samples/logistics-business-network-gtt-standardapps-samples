@@ -38,6 +38,7 @@ protected section.
   constants:
     BEGIN OF cs_mapping,
       vbeln                 TYPE /saptrx/paramname VALUE 'YN_DLV_NO',
+      posnr                 TYPE /saptrx/paramname VALUE 'YN_DLV_ITEM_NO',
       fu_relevant           TYPE /saptrx/paramname VALUE 'YN_DL_FU_RELEVANT',
       pod_relevant          TYPE /saptrx/paramname VALUE 'YN_DL_POD_RELEVANT',
       dlv_vbeln             TYPE /saptrx/paramname VALUE 'YN_DL_DELEVERY',
@@ -939,7 +940,9 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD ZIF_GTT_CTP_TOR_TO_DL~INITIATE.
+  METHOD zif_gtt_ctp_tor_to_dl~initiate.
+
+    CLEAR rv_error_flag.
 
     mt_tor_root        = it_tor_root.
     mt_tor_root_before = it_tor_root_before.
@@ -950,8 +953,8 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
     mt_fu_info         = it_fu_info.
 
     IF is_gtt_enabled( iv_trk_obj_type = zif_gtt_ef_constants=>cs_trk_obj_type-esc_deliv ) = abap_false.
-      MESSAGE e006(zgtt) INTO DATA(lv_dummy).
-      zcl_gtt_tools=>throw_exception( ).
+      rv_error_flag = abap_true.
+      RETURN.
     ENDIF.
 
 *   Get current logical system
@@ -963,8 +966,9 @@ CLASS ZCL_GTT_CTP_TOR_TO_DL_BASE IMPLEMENTATION.
         OTHERS                         = 2.
 
     IF sy-subrc <> 0.
-      MESSAGE e007(zgtt_ssof) INTO lv_dummy.
-      zcl_gtt_sof_tm_tools=>throw_exception( ).
+      MESSAGE e007(zgtt_ssof) INTO DATA(lv_dummy).
+      rv_error_flag = abap_true.
+      RETURN.
     ENDIF.
 
 *   Get Restriction ID

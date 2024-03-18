@@ -35,11 +35,12 @@ ENDCLASS.
 CLASS ZCL_GTT_STS_TRK_TU_ON_CU IMPLEMENTATION.
 
 
-  METHOD DEL_CONDITION_CHECK.
+  METHOD del_condition_check.
 
     rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
-    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete.
+    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete OR
+      is_root-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-canceled.
       rv_result = zif_gtt_sts_ef_constants=>cs_condition-true.
       RETURN.
     ENDIF.
@@ -275,11 +276,12 @@ CLASS ZCL_GTT_STS_TRK_TU_ON_CU IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD PRE_CONDITION_CHECK.
+  METHOD pre_condition_check.
 
     rv_result = zif_gtt_sts_ef_constants=>cs_condition-false.
 
-    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete.
+    IF is_root-change_mode = /bobf/if_frw_c=>sc_modify_delete OR
+      is_root-lifecycle = zif_gtt_sts_constants=>cs_lifecycle_status-canceled.
       RETURN.
     ENDIF.
 

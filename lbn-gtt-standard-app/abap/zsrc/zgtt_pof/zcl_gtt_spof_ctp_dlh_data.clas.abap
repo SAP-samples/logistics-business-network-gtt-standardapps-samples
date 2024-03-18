@@ -9,6 +9,7 @@ public section.
       !IT_XLIKP type SHP_LIKP_T
       !IT_XLIPS type SHP_LIPS_T
       !IT_YLIPS type SHP_LIPS_T
+      !IV_STO_IS_USED type BOOLEAN default ABAP_FALSE
     raising
       CX_UDM_MESSAGE .
   methods GET_RELATED_PO_DATA
@@ -18,7 +19,8 @@ public section.
       !RR_EKET type ref to DATA
       !RR_REF_LIST type ref to DATA
       !RR_LIKP type ref to DATA
-      !RR_LIPS type ref to DATA .
+      !RR_LIPS type ref to DATA
+      !EV_STO_IS_USED type BOOLEAN .
   PROTECTED SECTION.
 private section.
 
@@ -28,6 +30,7 @@ private section.
   data MT_REF_LIST type ZIF_GTT_SPOF_APP_TYPES=>TT_REF_LIST .
   data MT_LIKP type VA_LIKPVB_T .
   data MT_LIPS type VA_LIPSVB_T .
+  data MV_STO_IS_USED type BOOLEAN .
 
   methods INIT_PO_HEADER_DATA
     importing
@@ -50,6 +53,16 @@ CLASS ZCL_GTT_SPOF_CTP_DLH_DATA IMPLEMENTATION.
 
   METHOD constructor.
 
+    CLEAR:
+      mt_ekko,
+      mt_ekpo,
+      mt_eket,
+      mt_ref_list,
+      mt_likp,
+      mt_lips,
+      mv_sto_is_used.
+
+    mv_sto_is_used = iv_sto_is_used.
     init_po_header_data(
       EXPORTING
         it_xlikp    = it_xlikp
@@ -75,6 +88,7 @@ CLASS ZCL_GTT_SPOF_CTP_DLH_DATA IMPLEMENTATION.
     rr_ref_list = REF #( mt_ref_list ).
     rr_likp     = REF #( mt_likp ).
     rr_lips     = REF #( mt_lips ).
+    ev_sto_is_used = mv_sto_is_used.
 
   ENDMETHOD.
 
@@ -101,8 +115,11 @@ CLASS ZCL_GTT_SPOF_CTP_DLH_DATA IMPLEMENTATION.
       IF sy-subrc <> 0.
         CONTINUE.
       ENDIF.
-
-      CHECK zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = REF #( ls_likp ) ir_lips = REF #( <ls_xlips> ) ) = abap_true.
+      IF mv_sto_is_used IS INITIAL."Normal scenario(Inbound delivery)
+        CHECK zcl_gtt_tools=>is_appropriate_dl_item( ir_likp = REF #( ls_likp ) ir_lips = REF #( <ls_xlips> ) ) = abap_true.
+      ELSE."STO scenario(outbound delivery)
+        CHECK zcl_gtt_tools=>is_appropriate_odlv_item( ir_likp = REF #( ls_likp ) ir_lips = REF #( <ls_xlips> ) ) = abap_true.
+      ENDIF.
       APPEND <ls_xlips> TO lt_lips.
     ENDLOOP.
 
@@ -113,11 +130,12 @@ CLASS ZCL_GTT_SPOF_CTP_DLH_DATA IMPLEMENTATION.
         iv_vgtyp       = if_sd_doc_category=>purchase_order
         it_xlikp       = it_xlikp
         it_xlips       = lt_lips
+        iv_sto_is_used = mv_sto_is_used
       IMPORTING
         et_ref_list    = lt_ref_list
         ev_ref_chg_flg = DATA(lv_chg_flg) ).
 
-*   The relationship between PO and IDLV is not changed,no need send out the Cross TP IDOC
+*   The relationship between PO and IDLV or ODLV is not changed,no need send out the Cross TP IDOC
     IF lv_chg_flg IS INITIAL.
       RETURN.
     ENDIF.

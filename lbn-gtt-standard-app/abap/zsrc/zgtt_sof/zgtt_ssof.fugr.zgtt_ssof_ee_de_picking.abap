@@ -83,6 +83,8 @@ FUNCTION ZGTT_SSOF_EE_DE_PICKING.
 * <1> Fill general data for all control data records
 * Login Language
   ls_trackingheader-language   = sy-langu.
+* Event Time Zone
+  ls_trackingheader-evtzon = zcl_gtt_tools=>get_system_time_zone( ).
 
 * <2> Loop at application objects for geting delivery item data
   LOOP AT i_events INTO ls_events.
@@ -135,14 +137,6 @@ FUNCTION ZGTT_SSOF_EE_DE_PICKING.
     ls_trackingheader-evtdat  = sy-datum.
 *   Event Time
     ls_trackingheader-evttim  = sy-uzeit.
-*   Event Time Zone
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-      IMPORTING
-        timezone            = ls_trackingheader-evtzon
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
-
     APPEND ls_trackingheader TO ct_trackingheader.
 
 *   Mapping table

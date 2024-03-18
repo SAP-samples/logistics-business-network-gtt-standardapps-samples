@@ -418,16 +418,8 @@ CLASS ZCL_GTT_SOF_TM_TOOLS IMPLEMENTATION.
 
   METHOD get_system_time_zone.
 
-    CALL FUNCTION 'GET_SYSTEM_TIMEZONE'
-      IMPORTING
-        timezone            = rv_tzone
-      EXCEPTIONS
-        customizing_missing = 1
-        OTHERS              = 2.
-    IF sy-subrc <> 0.
-      MESSAGE e003(zgtt_ssof) INTO DATA(lv_dummy).
-      zcl_gtt_sof_tm_tools=>throw_exception( ).
-    ENDIF.
+    CLEAR rv_tzone.
+    rv_tzone = zcl_gtt_tools=>get_system_time_zone( ).
 
   ENDMETHOD.
 

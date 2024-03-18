@@ -14,21 +14,34 @@ FUNCTION zgtt_spof_ctp_dl_to_po .
         it_xlikp = it_xlikp
         it_xlips = it_xlips
         it_ylips = it_ylips ).
-      lo_header->prepare_idoc_data( io_dlh_data = lo_dlh ).
-      lo_header->send_idoc_data( ).
+      IF lo_header IS BOUND.
+        lo_header->prepare_idoc_data( io_dlh_data = lo_dlh ).
+        lo_header->send_idoc_data( ).
+      ENDIF.
 
-*     Inbound delivery to PO item
+*     Outbound delivery to PO Header
+      lo_dlh = NEW zcl_gtt_spof_ctp_dlh_data(
+        it_xlikp       = it_xlikp
+        it_xlips       = it_xlips
+        it_ylips       = it_ylips
+        iv_sto_is_used = abap_true ).
+      IF lo_header IS BOUND.
+        lo_header->prepare_idoc_data( io_dlh_data = lo_dlh ).
+        lo_header->send_idoc_data( ).
+      ENDIF.
+
+*     Inbound/Outbound delivery to PO item
       DATA(lo_item) = zcl_gtt_spof_ctp_snd_dl_to_po=>get_instance( ).
       DATA(lo_dli) = NEW zcl_gtt_spof_ctp_dli_data(
         it_xlikp = it_xlikp
         it_xlips = it_xlips
         it_ylips = it_ylips
       ).
+      IF lo_item IS BOUND.
+        lo_item->prepare_idoc_data( io_dli_data = lo_dli ).
 
-      lo_item->prepare_idoc_data( io_dli_data = lo_dli ).
-
-      lo_item->send_idoc_data( ).
-
+        lo_item->send_idoc_data( ).
+      ENDIF.
     CATCH cx_udm_message INTO DATA(lo_udm_message).
       zcl_gtt_tools=>log_exception(
         EXPORTING

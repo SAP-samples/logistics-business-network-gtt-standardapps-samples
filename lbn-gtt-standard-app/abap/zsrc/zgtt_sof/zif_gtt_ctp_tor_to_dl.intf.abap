@@ -11,6 +11,8 @@ interface ZIF_GTT_CTP_TOR_TO_DL
       !IT_TOR_STOP type /SCMTMS/T_EM_BO_TOR_STOP
       !IT_TOR_STOP_BEFORE type /SCMTMS/T_EM_BO_TOR_STOP
       value(IT_FU_INFO) type /SCMTMS/T_TOR_ROOT_K optional
+    returning
+      value(RV_ERROR_FLAG) type FLAG
     raising
       CX_UDM_MESSAGE .
   methods CHECK_RELEVANCE

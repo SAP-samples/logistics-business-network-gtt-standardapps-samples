@@ -61,11 +61,11 @@ CLASS ZCL_GTT_CTP_TOR_TO_ODLVIT IMPLEMENTATION.
     " DL Item key data (obligatory)
     lt_control  = VALUE #(
       (
-        paramname = cs_mapping-dlv_vbeln
+        paramname = cs_mapping-vbeln
         value     = |{ is_delivery_item-likp-vbeln ALPHA = OUT }|
       )
       (
-        paramname = cs_mapping-dlv_posnr
+        paramname = cs_mapping-posnr
         value     = is_delivery_item-lips-posnr
       )
       (

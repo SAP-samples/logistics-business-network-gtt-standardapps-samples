@@ -223,9 +223,6 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_PO IMPLEMENTATION.
       <ls_exp_event>-appobjtype     = is_aotype-aot_type.
       <ls_exp_event>-appobjid       = zcl_gtt_spof_po_tools=>get_tracking_id_po_itm( ir_ekpo = REF #( is_ekpo ) ).
       <ls_exp_event>-language       = sy-langu.
-      IF <ls_exp_event>-evt_exp_tzone IS INITIAL.
-        <ls_exp_event>-evt_exp_tzone  = zcl_gtt_tools=>get_system_time_zone(  ).
-      ENDIF.
     ENDLOOP.
 
     cs_idoc_data-exp_event = VALUE #( BASE cs_idoc_data-exp_event
@@ -271,9 +268,7 @@ CLASS ZCL_GTT_SPOF_CTP_SND_DL_TO_PO IMPLEMENTATION.
     IF is_gtt_enabled( it_trk_obj_type = lt_trk_obj_type ) = abap_true.
       ro_sender  = NEW #( ).
       ro_sender->initiate( ).
-    ELSE.
-      MESSAGE e006(zgtt) INTO DATA(lv_dummy).
-      zcl_gtt_tools=>throw_exception( ).
+
     ENDIF.
 
   ENDMETHOD.
