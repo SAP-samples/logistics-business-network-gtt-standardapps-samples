@@ -22,7 +22,7 @@ You should determine what documents with certain condition need to be sent to SA
 ## Requirements
 
 * Make sure that you have met the requirements for the product version mentioned in the [Prerequisites](https://help.sap.com/docs/business-network-global-track-and-trace/cea0ff17c5ab4c1d96de9ccda35b6a6f/c9f7baf5f6e14be4ba9045786961de14.html) chapter of How to Send Documents from SAP S/4HANA to SAP Business Network Global Track and Trace. You can find this guide at http://help.sap.com/gtt. 
-* The ABAP codes on Github to support fulfillment tracking apps for SAP Business Network Global Track and Trace shall be implemented in SAP S/4HANA 1909 SP03 on premise or higher. Please note that the codes are not validated in its lower version or other ECC series of products, so you might need to do further adaptation work or build your own extractor.
+* The ABAP codes on Github to support fulfillment tracking apps for SAP Business Network Global Track and Trace shall be implemented in systems from SAP S/4HANA 1909 SP03 on premise to SAP S/4HANA 2022 on premise. Please note that the codes are not validated in its lower version or other ECC series of products, so you might need to do further adaptation work or build your own extractor.
 
 ## Download and Installation
 Click the link below to find the detailed installation guide. You can also find the guide in the “Document” folder.
@@ -31,7 +31,7 @@ Click the link below to find the detailed installation guide. You can also find 
 
 
 ## Known Issues
-* You cannot implement SAP Event Management (SAP EM) and sample codes for SAP Business Network Global Track and Trace at the same time, becuase some functions might be missing.
+* You cannot implement SAP Event Management (SAP EM) and sample codes for SAP Business Network Global Track and Trace at the same time, because some functions might be missing.
 
 * If multiple IDOC payloads are generated at the same time or in a very short period of time in SAP ERP, these payloads might enter the GTT system in disorder. This might cause update errors in some situations.
  
