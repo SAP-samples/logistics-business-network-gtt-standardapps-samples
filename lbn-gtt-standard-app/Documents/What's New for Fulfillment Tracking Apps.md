@@ -1,4 +1,7 @@
 # What's New for Fulfillment Tracking Apps
+## August 16th, 2025
+Minor enhancements are made to improve the system performance when there is a large number of freight units or freight unit items.
+
 ## March 16th, 2024
 1. Enhanced the logic to retrieve the system time zone.
 2. The error message "GTT is not enabled " will not show even if GTT-related configuration is not done or completed during cross tracked process update.

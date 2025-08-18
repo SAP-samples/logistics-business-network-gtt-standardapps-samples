@@ -1,17 +1,12 @@
 # Fulfillment Tracking Apps for SAP Business Network Global Track and Trace
 ## What's New 
-### March 16th, 2024
-1. Enhanced the logic to retrieve the system time zone.
-2. The error message "GTT is not enabled " will not show even if GTT-related configuration is not done or completed during cross tracked process update.
-3. Fixed the mapping of the delivery number and the delivery item number when the freight unit cross-updates the outbound delivery item.
-4. Fixed the mapping of the delivery number when the LE-TRA shipment cross-updates the inbound delivery header.
-5. For the stock transport order scenario, when the outbound delivery process is updated and sent to SAP Business Network Global Track and Trace, the preceding purchase order header, and its planned events are also updated and sent to SAP Business Network Global Track and Trace.
-6. Fixed issues occurred when canceling handling unit in the scenario "Maintain Tracked Objects on Freight Unit".
+### August 16th, 2025
+Minor enhancements are made to improve the system performance when there is a large number of freight units or freight unit items.
 
 For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/main/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
 
 ## Description
-You can find the following contents in this project:
+You can find the following content in this project:
 * Sample codes for SAP ERP extractors to send the tracked processes and events to SAP Business Network Global Track and Trace (ABAP)
 * Configuration file for SAP ERP extractors
 
