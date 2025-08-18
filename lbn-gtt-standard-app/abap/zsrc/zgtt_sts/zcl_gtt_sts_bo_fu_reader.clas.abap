@@ -463,7 +463,7 @@ CLASS ZCL_GTT_STS_BO_FU_READER IMPLEMENTATION.
     cs_freight_unit-inc_class_code   = <ls_fu_item>-inc_class_code.
     cs_freight_unit-inc_transf_loc_n = <ls_fu_item>-inc_transf_loc_n.
 
-    SORT <lt_tor_item> BY item_id.
+    "SORT <lt_tor_item> BY item_id.
 
     LOOP AT <lt_tor_item> ASSIGNING FIELD-SYMBOL(<ls_tor_item>) USING KEY parent_node_track_rel
       WHERE parent_node_id = <ls_tor_root>-node_id
