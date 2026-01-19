@@ -1,4 +1,8 @@
 # What's New for Fulfillment Tracking Apps
+
+## Januray 17th, 2026
+Supported the completion calculation of outbound deliveries in the batch split scenario.
+
 ## August 16th, 2025
 Minor enhancements are made to improve the system performance when there is a large number of freight units or freight unit items.
 

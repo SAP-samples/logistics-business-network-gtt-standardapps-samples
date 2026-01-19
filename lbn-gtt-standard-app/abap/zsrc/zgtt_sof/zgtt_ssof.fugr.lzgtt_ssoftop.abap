@@ -246,6 +246,7 @@ CONSTANTS:
   gc_cp_yn_de_incov              TYPE /saptrx/paramname     VALUE 'YN_DLV_INCO_VERSION',
   gc_cp_yn_dlv_line_cnt          TYPE /saptrx/paramname     VALUE 'YN_DLV_LINE_CNT',
   gc_cp_yn_dlv_fu_number         TYPE /saptrx/paramname     VALUE 'YN_DLV_FU_NUMBER',
+  gc_cp_yn_dlv_batch_split_ind   TYPE /saptrx/paramname     VALUE 'YN_DLV_BATCH_SPLIT_INDICATOR',
   gc_cp_yn_shp_no                TYPE /saptrx/paramname     VALUE 'YN_SHP_NO',
   gc_cp_yn_shp_shipment_type     TYPE /saptrx/paramname     VALUE 'YN_SHP_SHIPMENT_TYPE',
   gc_cp_yn_shp_sa_erp_id         TYPE /saptrx/paramname     VALUE 'YN_SHP_SA_ERP_ID',

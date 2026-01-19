@@ -62,7 +62,8 @@ FUNCTION zgtt_ssof_ote_de_item.
     lv_kunnr        TYPE vbpavb-kunnr,
     lv_matnr        TYPE lips-matnr,
     lt_loc_data     TYPE TABLE OF gtys_address_info,
-    lt_control_data TYPE TABLE OF /saptrx/control_data.
+    lt_control_data TYPE TABLE OF /saptrx/control_data,
+    lv_batch_ind    TYPE boolean.
 
   CLEAR:gt_loc_data.
 
@@ -271,6 +272,17 @@ FUNCTION zgtt_ssof_ote_de_item.
       lv_dgoods = ''.
     ENDIF.
     ls_control_data-value     = lv_dgoods.
+    APPEND ls_control_data TO e_control_data.
+
+*   Batch split indicator
+    CLEAR lv_batch_ind.
+    ls_control_data-paramname = gc_cp_yn_dlv_batch_split_ind.
+    IF <ls_xlips>-xchpf = abap_true AND <ls_xlips>-uecha IS INITIAL.
+      lv_batch_ind = abap_true.
+    ELSE.
+      lv_batch_ind = abap_false.
+    ENDIF.
+    ls_control_data-value     = lv_batch_ind.
     APPEND ls_control_data TO e_control_data.
 
     READ TABLE lt_xvbup ASSIGNING <ls_xvbup> WITH KEY vbeln = <ls_xlips>-vbeln
