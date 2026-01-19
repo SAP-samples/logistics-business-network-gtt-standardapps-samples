@@ -1,7 +1,7 @@
 # Fulfillment Tracking Apps for SAP Business Network Global Track and Trace
 ## What's New 
-### August 16th, 2025
-Minor enhancements are made to improve the system performance when there is a large number of freight units or freight unit items.
+### Janurary 17th, 2026
+Supported the completion calculation of outbound deliveries in the batch split scenario.
 
 For previous release information, see [What's New for Fulfillment Tracking Apps](https://github.com/SAP-samples/logistics-business-network-gtt-standardapps-samples/blob/main/lbn-gtt-standard-app/Documents/What's%20New%20for%20Fulfillment%20Tracking%20Apps.md).
 
